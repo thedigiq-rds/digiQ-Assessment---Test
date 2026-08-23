@@ -2426,7 +2426,24 @@ document.addEventListener('focusout', function(e) {
             </div>
           </div>
 
+          <!-- Send Result Email -->
+          <div style="margin-bottom:18px;">
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px;">
+              <label class="f-label" style="margin-bottom:0; white-space:nowrap;"><i class="ti ti-mail"></i> Send Result Email to Student</label>
+              <div class="compact-cert-switch">
+                <button type="button" class="cert-pill active-no" id="emailBtnNo" onclick="setEmailMode(false)">No</button>
+                <button type="button" class="cert-pill" id="emailBtnYes" onclick="setEmailMode(true)">Yes</button>
+              </div>
+            </div>
+            <div id="email-settings-panel" style="display:none; margin-top:8px; background:rgba(99,102,241,0.05); border:1px solid rgba(99,102,241,0.15); border-radius:12px; padding:14px;">
+              <label class="f-label" style="color:var(--primary-dk); margin-bottom:6px;">Custom Message (optional)</label>
+              <textarea id="cqMsg" class="f-textarea" rows="2" placeholder="Use {{name}}, {{score}}, {{rollNo}} as variables… Leave blank for default message."></textarea>
+              <div style="color:var(--text-muted); font-size:0.8rem; margin-top:6px;"><i class="ti ti-info-circle"></i> Email will include: Quiz Title, Date, Student Name, Score, and Pass/Fail status (if set). Certificate will be attached automatically if enabled above.</div>
+            </div>
+          </div>
+
           <!-- Section Configuration -->
+
           <div class="hr-rule"></div>
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
             <div>
@@ -2440,13 +2457,8 @@ document.addEventListener('focusout', function(e) {
             <i class="ti ti-info-circle"></i> No sections configured. All questions will be under a single section named after the Assessment Title.
           </div>
 
-          <!-- Custom Result Email -->
-          <div class="hr-rule"></div>
-          <div class="f-group" style="margin-bottom:0;">
-            <label class="f-label">Custom Result Email Message</label>
-            <textarea id="cqMsg" class="f-textarea" rows="1" placeholder="Use {{name}}, {{score}}, {{rollNo}} as variables…">Dear {{name}}, your result for the Assessment is ready.</textarea>
-          </div>
-        </div>
+
+
 
         <!-- Step 3: Question Bank -->
         <div class="panel" style="margin-bottom:18px;">
@@ -5014,6 +5026,22 @@ function setGeoMode(enabled, isEditMode = false) {
   }
 }
 
+let _emailEnabled = false;
+function setEmailMode(enabled) {
+  _emailEnabled = enabled;
+  const btnYes = document.getElementById('emailBtnYes'); const btnNo = document.getElementById('emailBtnNo');
+  const panel  = document.getElementById('email-settings-panel');
+  if (enabled) {
+    if (btnYes) { btnYes.classList.add('active-yes'); btnYes.classList.remove('active-no'); }
+    if (btnNo) { btnNo.classList.remove('active-no','active-yes'); }
+    if (panel) panel.style.display = 'block';
+  } else {
+    if (btnNo) { btnNo.classList.add('active-no'); btnNo.classList.remove('active-yes'); }
+    if (btnYes) { btnYes.classList.remove('active-yes','active-no'); }
+    if (panel) panel.style.display = 'none';
+  }
+}
+
 function resetCreateQuizForm(keepLinkBox = false) {
   if (!keepLinkBox) clearDeployedLinkBox();
   editingQuizId = null; existingQuestionsForEdit = null;
@@ -5036,9 +5064,9 @@ function resetCreateQuizForm(keepLinkBox = false) {
   const ampmEls = ['cqStartAmPm', 'cqEndAmPm'];
   ampmEls.forEach(id => { const el = document.getElementById(id); if (el) el.value = 'AM'; });
 
-  setCertMode(false); setGeoMode(false);
+  setCertMode(false); setGeoMode(false); setEmailMode(false);
   const certDocEl = document.getElementById('cqCertDocId'); if (certDocEl) certDocEl.value = '';
-  const msgEl = document.getElementById('cqMsg'); if (msgEl) msgEl.value = 'Dear {{name}}, your result for the Assessment is ready.';
+  const msgEl = document.getElementById('cqMsg'); if (msgEl) msgEl.value = '';
   const fileEl = document.getElementById('cqFile'); if (fileEl) fileEl.value = '';
   const secContainer = document.getElementById('sections-container'); if (secContainer) secContainer.innerHTML = '';
   const placeholderEl = document.getElementById('sections-placeholder'); if (placeholderEl) placeholderEl.style.display = 'block';
@@ -5081,15 +5109,18 @@ async function processQuizCreation() {
   const duration    = document.getElementById('cqTime').value.trim();
   const passPercent = document.getElementById('cqPass').value.trim();
   if (!duration || isNaN(duration) || parseInt(duration) < 1) { showToast('Please enter a valid duration.', 'warning'); loader.style.display='none'; hideLoader(); btn.disabled=false; return; }
-  if (!passPercent || isNaN(passPercent) || parseInt(passPercent) < 0 || parseInt(passPercent) > 100) { showToast('Please enter a valid passing percentage (0–100).', 'warning'); loader.style.display='none'; hideLoader(); btn.disabled=false; return; }
+  // passPercent is OPTIONAL — leave blank for score-only mode
+  if (passPercent !== '' && (isNaN(passPercent) || parseInt(passPercent) < 0 || parseInt(passPercent) > 100)) { showToast('Pass percentage must be a number between 0 and 100 (or leave blank for score-only mode).', 'warning'); loader.style.display='none'; hideLoader(); btn.disabled=false; return; }
 
   const certDocId = document.getElementById('cqCertDocId').value.trim();
   if (_certEnabled && !certDocId) { showToast('Please paste a Google Doc Template ID to enable certificates.', 'warning'); loader.style.display='none'; hideLoader(); btn.disabled=false; return; }
 
   const payload = {
     title, sections, stream: document.getElementById('cqStream').value, sem: document.getElementById('cqSem').value,
-    duration, passPercent, sendCert: _certEnabled ? "Yes" : "No", certDocId: _certEnabled ? certDocId : '',
-    customMsg: document.getElementById('cqMsg').value, enableGeofence: _geoEnabled ? "Yes" : "No",
+    duration, passPercent: passPercent || '0', sendCert: _certEnabled ? "Yes" : "No", certDocId: _certEnabled ? certDocId : '',
+    sendResultEmail: _emailEnabled ? "Yes" : "No",
+    customMsg: document.getElementById('cqMsg').value || `Dear {{name}}, your assessment result is ready. Score: {{score}}.`,
+    enableGeofence: _geoEnabled ? "Yes" : "No",
     maxRadiusMeters: parseInt(document.getElementById('cqGeoRadius')?.value, 10) || 500,
     campusLat: parseFloat(document.getElementById('cqGeoLat')?.value) || 23.5935,
     campusLon: parseFloat(document.getElementById('cqGeoLon')?.value) || 72.5487,
