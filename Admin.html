@@ -2470,7 +2470,7 @@ document.addEventListener('focusout', function(e) {
                 <span><i class="ti ti-info-circle"></i></span> Template &amp; Upload Instructions for <span id="file-qtype-label" style="text-decoration:underline;">Multiple Choice (MCQ)</span>
               </div>
               <div id="file-qtype-desc" style="color:var(--text-dim); line-height:1.6; font-size:0.85rem;">
-                Download the MCQ template below. Fill in 4 options and AnsIndex (1-4).
+                Download the MCQ template below. Place the <strong>correct answer in Option1</strong> column and set <strong>AnsIndex to 0</strong>. Other options (Option2–Option4) are the wrong choices.
               </div>
             </div>
             <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:18px;">
@@ -4847,7 +4847,7 @@ function downloadTemplate() {
   } else if (selectedQuestionType === 'ESSAY') {
     csv = "Section,Type,Question,Option1,Option2,Option3,Option4,AnsIndex\nSection A,Essay,Explain the themes of Shakespeare's Macbeth,,,,,10\nSection A,Essay,Discuss the impact of climate change on agriculture,,,,,15";
   } else {
-    csv = "Section,Type,Question,Option1,Option2,Option3,Option4,AnsIndex\nSection A,MCQ,What is 2+2?,1,2,3,4,4\nSection A,MCQ,Who wrote Hamlet?,Dickens,Shakespeare,Austen,Tolstoy,2";
+    csv = "Section,Type,Question,Option1,Option2,Option3,Option4,AnsIndex\nSection A,MCQ,What is 2+2?,4,1,2,3,0\nSection A,MCQ,Who wrote Hamlet?,Shakespeare,Dickens,Austen,Tolstoy,0";
   }
   const blob = new Blob([csv], { type:'text/csv' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -4894,7 +4894,7 @@ function selectQuestionType(type) {
   const tplLabel = document.getElementById('template-btn-label'); if (tplLabel) tplLabel.textContent = (type === 'MCQ' ? 'MCQ' : (type === 'SHORT' ? 'Short Answer' : 'Essay'));
   const descEl = document.getElementById('file-qtype-desc');
   if (descEl) {
-    if (type === 'MCQ') descEl.textContent = 'Download the MCQ template below. Fill in 4 options (Option1 to Option4) and AnsIndex (1-4).';
+    if (type === 'MCQ') descEl.innerHTML = 'Download the MCQ template below. Place the <strong>correct answer in Option1</strong> column and set <strong>AnsIndex to 0</strong>. Option2, Option3, Option4 are the wrong choices.';
     else if (type === 'SHORT') descEl.textContent = 'Download the Short Answer template. Fill in Question and ExpectedAnswer (Option1 column) for auto-grading.';
     else if (type === 'ESSAY') descEl.textContent = 'Download the Descriptive Essay template. Fill in QuestionPrompt and AssignedMarks (AnsIndex column).';
   }
