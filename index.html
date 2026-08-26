@@ -1775,65 +1775,143 @@ function callBackend(action, args, onSuccess, onFailure) {
 <!-- STUDENT DASHBOARD                                         -->
 <!-- ═══════════════════════════════════════════════════════ -->
 <style>
-  .sd-container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; font-family: 'Inter', sans-serif; }
-  .sd-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-  .sd-welcome { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text); display:flex; align-items:center; gap:12px; }
-  .sd-welcome span { color: var(--primary); }
-  .sd-btn-logout { background: transparent; border: 1.5px solid var(--danger); color: var(--danger); padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-  .sd-btn-logout:hover { background: rgba(239, 68, 68, 0.1); }
+  /* STUDENT DASHBOARD SPECIFIC CSS */
+  .sd-wrapper { display: flex; flex-direction: row; height: 100vh; overflow: hidden; background: var(--bg-surface); }
   
-  .sd-section-title { font-size: 1.1rem; font-weight: 700; color: var(--text-dim); margin-bottom: 16px; border-bottom: 2px solid var(--main-border); padding-bottom: 8px; }
+  /* Sidebar */
+  .sd-sidebar {
+    width: 240px; height: 100vh; flex-shrink: 0;
+    background: #0f172a; border-right: none;
+    display: flex; flex-direction: column; overflow-y: auto;
+    position: relative; z-index: 10;
+  }
+  .sd-sidebar-brand { padding: 22px 20px 14px; border-bottom: 1px solid rgba(99,102,241,0.15); flex-shrink:0; }
+  .sd-brand-college {
+    font-family: 'Poppins', 'Inter', sans-serif; font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em;
+    margin-bottom: 5px; line-height: 1.2;
+    background: linear-gradient(135deg, #a5b4fc 0%, #67e8f9 50%, #818cf8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;
+  }
+  .sd-brand-name { color: #e2e8f0; font-size: 0.9rem; font-weight: 400; }
+  .sd-brand-sub  { color: var(--teal-lt); font-size: 0.8rem; margin-top: 4px; font-weight: 300; letter-spacing: 0.04em; }
   
-  .sd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-bottom: 40px; }
-  
+  .sd-nav { flex:1; overflow-y:auto; overflow-x:hidden; padding-right:0; margin-top:10px; display:flex; flex-direction:column; padding: 0 12px; gap:4px; }
+  .sd-nav .nav-link {
+    display: flex; align-items: center; padding: 12px 16px; margin-bottom: 4px;
+    border-radius: 12px; color: var(--sidebar-dim, #94a3b8); text-decoration: none; font-size: 0.95rem; font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden;
+  }
+  .sd-nav .nav-link:hover { color: #fff; background: rgba(255,255,255,0.04); }
+  .sd-nav .nav-link.active { color: #fff; background: linear-gradient(90deg, rgba(99,102,241,0.15) 0%, rgba(99,102,241,0.05) 100%); font-weight: 600; }
+  .sd-nav .nav-icon { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-right: 14px; font-size: 1.2rem; transition: transform 0.2s; }
+  .sd-nav .nav-link.active .nav-icon { color: var(--primary-lt); transform: scale(1.1); }
+  .sd-nav .nav-link-danger { color: #ef4444; margin-top: auto; margin-bottom: 20px; }
+  .sd-nav .nav-link-danger:hover { background: rgba(239,68,68,0.1); color:#fca5a5; }
+
+  /* Main Content */
+  .sd-main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; position: relative; background: var(--bg-surface); padding-bottom:80px; }
+  .sd-page-heading { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text); padding: 30px 30px 10px; }
+  .sd-page-desc { padding: 0 30px 20px; font-size: 0.95rem; color: var(--text-muted); }
+  .sd-content-area { padding: 0 30px 30px; }
+
+  /* Grids */
+  .sd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
   .sd-card {
-    background: var(--bg-card); border: 1px solid var(--main-border); border-radius: 16px;
-    padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s;
+    background: var(--bg-card); border: 1px solid var(--main-border); border-radius: 16px; padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s;
     display: flex; flex-direction: column; min-height:180px;
   }
   .sd-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(99,102,241,0.08); border-color: var(--primary-lt); }
-  
   .sd-card-tag { align-self: flex-start; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
   .sd-tag-live { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; }
-  .sd-tag-past { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
-  
+  .sd-tag-passed { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+  .sd-tag-failed { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
   .sd-card-title { font-size: 1.15rem; font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
   .sd-card-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
-  
   .sd-btn-start {
-    margin-top: auto; padding: 10px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 16px; font-size: 0.95rem;
+    margin-top: auto; padding: 10px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 16px; font-size: 0.95rem; display: flex; justify-content:center; align-items:center; gap:8px;
   }
   .sd-btn-start:hover { background: var(--primary-dk); }
-  
   .sd-score-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-top: 16px; text-align: center; }
   .sd-score-text { font-size: 1.4rem; font-weight: 800; color: var(--primary-dk); }
-  .sd-btn-cert { background: var(--success); color: #fff; border: none; border-radius: 8px; padding: 8px; width: 100%; cursor: pointer; font-weight: 600; margin-top: 10px; }
-  .sd-btn-cert:hover { background: #059669; }
+
+  /* Mobile Tab Bar */
+  .sd-mobile-bar {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0,0,0,0.05); box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+    z-index: 9999; flex-direction: row; justify-content: space-around; align-items: center; padding: 0 10px;
+  }
+  .sd-mobile-item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 65px; height: 100%; color: var(--text-muted); text-decoration: none; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+  }
+  .sd-mobile-item i { font-size: 1.4rem; margin-bottom: 4px; transition: transform 0.2s, color 0.2s; }
+  .sd-mobile-item.active { color: var(--primary); }
+  .sd-mobile-item.active i { transform: translateY(-2px); }
+
+  @media (max-width: 768px) {
+    .sd-sidebar { display: none !important; }
+    .sd-mobile-bar { display: flex !important; }
+    .sd-page-heading { padding: 20px 20px 5px; font-size:1.4rem; }
+    .sd-page-desc { padding: 0 20px 15px; }
+    .sd-content-area { padding: 0 20px 30px; }
+  }
 </style>
-<div id="student-dashboard" style="display:none; min-height:100vh; background:var(--bg-surface);">
-  <div class="sd-container">
-    <div class="sd-header">
-      <div class="sd-welcome">
-        <div style="width:48px; height:48px; background:var(--primary); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
-          <i class="ti ti-user"></i>
+
+<div id="student-dashboard" style="display:none;">
+  <div class="sd-wrapper">
+    <!-- Desktop Sidebar -->
+    <div class="sd-sidebar">
+      <div class="sd-sidebar-brand">
+        <div class="sd-brand-college">M. N. College, Visnagar</div>
+        <div class="sd-brand-name">digiQ Assessment</div>
+        <div class="sd-brand-sub">Student Portal</div>
+      </div>
+      <nav class="sd-nav" id="sd-sidebarNav">
+        <a class="nav-link active" id="sd-nav-live" onclick="switchStudentTab('live', this)"><span class="nav-icon"><i class="ti ti-activity"></i></span>Live Exams</a>
+        <a class="nav-link" id="sd-nav-past" onclick="switchStudentTab('past', this)"><span class="nav-icon"><i class="ti ti-history"></i></span>History</a>
+        
+        <a class="nav-link nav-link-danger" onclick="logoutStudent()"><span class="nav-icon"><i class="ti ti-logout"></i></span>Logout</a>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="sd-main">
+      <div class="sd-page-heading">Welcome, <span id="sd-student-name" style="color:var(--primary);">Student</span></div>
+      <div class="sd-page-desc">Your personal dashboard for assessments and history.</div>
+      
+      <div class="sd-content-area">
+        <!-- Live Tab -->
+        <div id="tab-sd-live" style="display:block;">
+          <div style="font-size:1.1rem; font-weight:700; color:var(--text-dim); margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;">Live &amp; Upcoming</div>
+          <div class="sd-grid" id="sd-live-grid">
+            <div style="color:var(--text-muted); font-size:0.9rem;">Loading live exams...</div>
+          </div>
         </div>
-        <div>
-          <div style="font-size:0.8rem; color:var(--text-muted); font-weight:600; text-transform:uppercase;">Student Portal</div>
-          Welcome, <span id="sd-student-name">Student</span>
+
+        <!-- History Tab -->
+        <div id="tab-sd-past" style="display:none;">
+          <div style="font-size:1.1rem; font-weight:700; color:var(--text-dim); margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;">Assessment History</div>
+          <div class="sd-grid" id="sd-past-grid">
+            <div style="color:var(--text-muted); font-size:0.9rem;">Loading history...</div>
+          </div>
         </div>
       </div>
-      <button class="sd-btn-logout" onclick="logoutStudent()"><i class="ti ti-logout"></i> Logout</button>
     </div>
-    
-    <div class="sd-section-title">Live &amp; Upcoming Assessments</div>
-    <div class="sd-grid" id="sd-live-grid">
-      <div style="color:var(--text-muted); font-size:0.9rem;">Loading live exams...</div>
-    </div>
-    
-    <div class="sd-section-title" style="margin-top:20px;">Assessment History</div>
-    <div class="sd-grid" id="sd-past-grid">
-      <div style="color:var(--text-muted); font-size:0.9rem;">Loading history...</div>
-    </div>
+
+    <!-- Mobile Tab Bar -->
+    <nav class="sd-mobile-bar" id="sd-mobileTabBar">
+      <div class="sd-mobile-item active" id="sd-mtab-live" onclick="switchStudentTab('live')">
+        <i class="ti ti-activity"></i><span>Live</span>
+      </div>
+      <div class="sd-mobile-item" id="sd-mtab-past" onclick="switchStudentTab('past')">
+        <i class="ti ti-history"></i><span>History</span>
+      </div>
+      <div class="sd-mobile-item" onclick="logoutStudent()" style="color:var(--danger);">
+        <i class="ti ti-logout"></i><span>Logout</span>
+      </div>
+    </nav>
   </div>
 </div>
 <!-- ═══════════════════════════════════════════════════════ -->
@@ -2928,7 +3006,7 @@ function callBackend(action, args, onSuccess, onFailure) {
             rollNoStr = res.student.rollNo;
             studentEmailStr = res.student.email;
             document.getElementById('auth-portal').style.display = 'none';
-            document.getElementById('student-name-display').innerText = res.student.fullName;
+            document.getElementById('student-name-display').innerText = res.student.name;
             document.getElementById('student-name-display').style.display = 'block';
             pushScreen('ready');
             document.getElementById('ready-overlay').style.display = 'flex';
@@ -2936,7 +3014,7 @@ function callBackend(action, args, onSuccess, onFailure) {
             // Otherwise, load dashboard
             rollNoStr = res.student.rollNo;
             studentEmailStr = res.student.email;
-            document.getElementById('sd-student-name').innerText = res.student.fullName;
+            document.getElementById('sd-student-name').innerText = res.student.name;
             document.getElementById('auth-portal').style.display = 'none';
             document.getElementById('student-dashboard').style.display = 'block';
             pushScreen('dashboard');
@@ -2951,6 +3029,26 @@ function callBackend(action, args, onSuccess, onFailure) {
         _cModalShow('Connection Error', err.message);
       })
       .loginStudentPassword(rollNo, email, password);
+  }
+
+  function switchStudentTab(tabId, el) {
+    document.getElementById('tab-sd-live').style.display = 'none';
+    document.getElementById('tab-sd-past').style.display = 'none';
+    if (document.getElementById('tab-sd-' + tabId)) {
+      document.getElementById('tab-sd-' + tabId).style.display = 'block';
+    }
+
+    document.querySelectorAll('#sd-sidebarNav .nav-link').forEach(link => link.classList.remove('active'));
+    if (el && el.classList.contains('nav-link')) {
+      el.classList.add('active');
+    } else {
+      let matchingLink = document.getElementById('sd-nav-' + tabId);
+      if (matchingLink) matchingLink.classList.add('active');
+    }
+
+    document.querySelectorAll('#sd-mobileTabBar .sd-mobile-item').forEach(link => link.classList.remove('active'));
+    let mobItem = document.getElementById('sd-mtab-' + tabId);
+    if (mobItem) mobItem.classList.add('active');
   }
 
   function loadStudentDashboard() {
