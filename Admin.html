@@ -3283,6 +3283,9 @@ document.addEventListener('focusout', function(e) {
           <div class="info-box" style="margin-bottom:16px;">
             <strong>Expected CSV Format (No Headers):</strong><br>
             FullName, RollNo, Email, WhatsApp, Program, Semester, Password (Optional)
+            <div style="margin-top:8px;">
+              <a href="javascript:void(0)" onclick="downloadStudentCSVTemplate()" style="color:var(--primary); font-weight:600; text-decoration:underline; font-size:0.8rem;"><i class="ti ti-download"></i> Download Sample Template</a>
+            </div>
           </div>
           <input type="file" id="stdCsvFile" accept=".csv" class="f-input" style="padding:10px;">
           <button class="btn-primary-admin" onclick="uploadStudentsCSV()" style="width:100%; margin-top:16px; background:var(--teal); border-color:var(--teal);"><i class="ti ti-upload"></i> Upload CSV</button>
@@ -7056,6 +7059,18 @@ function addSingleStudent() {
       showACModal('Connection Error', err.message);
     })
     .adminCreateStudent(payload);
+}
+
+function downloadStudentCSVTemplate() {
+  const csvContent = "John Doe,CS2023001,john@example.com,9876543210,B.Tech,1,password123\nJane Smith,BA2023002,jane@example.com,9876543211,B.A.,3,";
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "student_upload_template.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function uploadStudentsCSV() {
