@@ -2151,6 +2151,7 @@ document.addEventListener('focusout', function(e) {
         <a class="nav-link"        id="nav-epb"       onclick="switchTab('epb',       this)"><span class="nav-icon"><i class="ti ti-file-text"></i></span>Exam Paper Builder</a>
         <a class="nav-link"        id="nav-qbank"     onclick="switchTab('qbank',     this)"><span class="nav-icon"><i class="ti ti-database"></i></span>Question Bank</a>
         <a class="nav-link"        id="nav-reports"   onclick="switchTab('reports',   this)"><span class="nav-icon"><i class="ti ti-chart-line"></i></span>Analytics &amp; Reports</a>
+        <a class="nav-link"        id="nav-students"  onclick="switchTab('students',  this)"><span class="nav-icon"><i class="ti ti-school"></i></span>Students</a>
         <a class="nav-link"        id="nav-subadmins" onclick="switchTab('subadmins', this)" style="display:none;"><span class="nav-icon"><i class="ti ti-users"></i></span>Sub-Admins</a>
       </nav>
     </div>
@@ -3226,6 +3227,97 @@ document.addEventListener('focusout', function(e) {
     </div>
 
 
+    <!-- ══════════ STUDENTS TAB ══════════ -->
+    <div id="tab-students" class="tab-content" style="display:none;">
+      <div class="page-heading"><i class="ti ti-school"></i> Manage Students</div>
+      <div class="page-desc">Create and manage student accounts for the dedicated portal</div>
+      
+      <div class="grid-2">
+        <!-- Single Student Add -->
+        <div class="panel" style="margin-bottom:0;">
+          <div class="panel-title">Add New Student</div>
+          <div class="panel-desc">Create a single student account</div>
+          
+          <div class="f-group">
+            <label class="f-label">Full Name</label>
+            <input type="text" id="stdName" class="f-input" placeholder="e.g. John Doe">
+          </div>
+          <div class="grid-2" style="margin-bottom:16px;">
+            <div class="f-group" style="margin-bottom:0;">
+              <label class="f-label">Roll Number</label>
+              <input type="text" id="stdRoll" class="f-input" placeholder="e.g. CS2023001">
+            </div>
+            <div class="f-group" style="margin-bottom:0;">
+              <label class="f-label">Email</label>
+              <input type="email" id="stdEmail" class="f-input" placeholder="student@example.com">
+            </div>
+          </div>
+          <div class="grid-2" style="margin-bottom:16px;">
+            <div class="f-group" style="margin-bottom:0;">
+              <label class="f-label">Program (Stream)</label>
+              <input type="text" id="stdProgram" class="f-input" placeholder="e.g. B.Tech">
+            </div>
+            <div class="f-group" style="margin-bottom:0;">
+              <label class="f-label">Semester</label>
+              <input type="text" id="stdSemester" class="f-input" placeholder="e.g. 1">
+            </div>
+          </div>
+          <div class="grid-2" style="margin-bottom:16px;">
+            <div class="f-group" style="margin-bottom:0;">
+              <label class="f-label">WhatsApp Number</label>
+              <input type="text" id="stdWhatsApp" class="f-input" placeholder="Optional">
+            </div>
+            <div class="f-group" style="margin-bottom:0;">
+              <label class="f-label">Password</label>
+              <input type="text" id="stdPassword" class="f-input" placeholder="Auto-generated if empty">
+            </div>
+          </div>
+          <button class="btn-primary-admin" onclick="addSingleStudent()" style="width:100%;"><i class="ti ti-user-plus"></i> Create Student Account</button>
+        </div>
+
+        <!-- Bulk Upload -->
+        <div class="panel" style="margin-bottom:0;">
+          <div class="panel-title">Bulk Upload Students (CSV)</div>
+          <div class="panel-desc">Upload multiple students at once. Duplicates will be skipped automatically.</div>
+          
+          <div class="info-box" style="margin-bottom:16px;">
+            <strong>Expected CSV Format (No Headers):</strong><br>
+            FullName, RollNo, Email, WhatsApp, Program, Semester, Password (Optional)
+          </div>
+          <input type="file" id="stdCsvFile" accept=".csv" class="f-input" style="padding:10px;">
+          <button class="btn-primary-admin" onclick="uploadStudentsCSV()" style="width:100%; margin-top:16px; background:var(--teal); border-color:var(--teal);"><i class="ti ti-upload"></i> Upload CSV</button>
+          
+          <div id="stdUploadResults" style="margin-top:16px; font-size:0.85rem; display:none; padding:12px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; max-height:200px; overflow-y:auto; color:var(--text);">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div class="panel-title" style="margin-bottom:0;">Registered Students</div>
+          <button class="btn-outline" onclick="loadStudentsList()"><i class="ti ti-refresh"></i> Refresh List</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="quiz-table" id="studentsTable">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Roll No</th>
+                <th>Email</th>
+                <th>Program/Sem</th>
+                <th>Password</th>
+                <th>Created</th>
+                <th style="text-align:right;">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="7" style="text-align:center; color:#94a3b8;">Click Refresh List to load students.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- ══════════ SUB-ADMINS TAB ══════════ -->
     <div id="tab-subadmins" class="tab-content" style="display:none;">
       <div class="page-heading"><i class="ti ti-users"></i> Manage Sub-Admins</div>
@@ -4001,6 +4093,7 @@ function switchTab(tabId, navEl, fromPopState = false) {
   if (activeFabLabel) activeFabLabel.classList.add('active-item');
   setMobileTabActive(tabId);
   if (tabId === 'essays') { loadPendingEssays(); }
+  else if (tabId === 'students') { loadStudentsList(); }
   else if (tabId === 'qbank') { loadQuestionBank(); }
   else if (tabId === 'create') {
     if (typeof renderGeoPresetOptions === 'function') { const pSel = document.getElementById('cqGeoPreset'); if (pSel && pSel.options.length <= 4) renderGeoPresetOptions(pSel.value); }
@@ -6920,6 +7013,167 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 
+/* =========================================================
+   STUDENT ACCOUNTS LOGIC
+   ========================================================= */
+
+function addSingleStudent() {
+  const name = document.getElementById('stdName').value.trim();
+  const roll = document.getElementById('stdRoll').value.trim();
+  const email = document.getElementById('stdEmail').value.trim();
+  const prog = document.getElementById('stdProgram').value.trim();
+  const sem = document.getElementById('stdSemester').value.trim();
+  const whatsapp = document.getElementById('stdWhatsApp').value.trim();
+  const pwd = document.getElementById('stdPassword').value.trim();
+
+  if (!name || !roll || !email || !prog || !sem) {
+    showToast('Name, Roll No, Email, Program, and Semester are required.', 'warning');
+    return;
+  }
+
+  const payload = { fullName: name, rollNo: roll, email: email, program: prog, semester: sem, whatsapp: whatsapp, password: pwd };
+  
+  showLoader('Creating Student...');
+  google.script.run
+    .withSuccessHandler(res => {
+      hideLoader();
+      if (res.success) {
+        showToast(res.message, 'success');
+        document.getElementById('stdName').value = '';
+        document.getElementById('stdRoll').value = '';
+        document.getElementById('stdEmail').value = '';
+        document.getElementById('stdWhatsApp').value = '';
+        document.getElementById('stdPassword').value = '';
+        loadStudentsList();
+      } else {
+        showACModal('Error', res.message);
+      }
+    })
+    .withFailureHandler(err => {
+      hideLoader();
+      showACModal('Connection Error', err.message);
+    })
+    .adminCreateStudent(payload);
+}
+
+function uploadStudentsCSV() {
+  const fileInput = document.getElementById('stdCsvFile');
+  if (!fileInput.files || fileInput.files.length === 0) {
+    showToast('Please select a CSV file to upload.', 'warning');
+    return;
+  }
+
+  const file = fileInput.files[0];
+  const reader = new FileReader();
+
+  reader.onload = function(e) {
+    const text = e.target.result;
+    const lines = text.split('\n');
+    let csvData = [];
+    // Simple CSV parser ignoring quotes for now, assuming clean data
+    for (let i = 0; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      // Split by comma but allow simple escaping if needed. A robust parser handles quotes, but a simple split is often enough for this context.
+      const cols = lines[i].split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+      csvData.push(cols);
+    }
+    
+    if (csvData.length === 0) {
+       showToast('CSV is empty.', 'error');
+       return;
+    }
+
+    showLoader('Uploading Students...');
+    google.script.run
+      .withSuccessHandler(res => {
+        hideLoader();
+        const resultsBox = document.getElementById('stdUploadResults');
+        resultsBox.style.display = 'block';
+        resultsBox.innerHTML = '';
+        
+        let html = `<div style="font-weight:600; margin-bottom:8px; color:var(--success);">✅ Added: ${res.added}</div>`;
+        html += `<div style="font-weight:600; margin-bottom:8px; color:var(--warning);">⚠️ Skipped (Duplicates): ${res.skipped || 0}</div>`;
+        
+        if (res.errors && res.errors.length > 0) {
+          html += `<div style="font-weight:600; margin-bottom:4px; color:var(--danger);">❌ Errors / Skips:</div>`;
+          html += `<ul style="margin:0; padding-left:20px; font-size:0.8rem;">`;
+          res.errors.forEach(err => {
+            html += `<li>${err}</li>`;
+          });
+          html += `</ul>`;
+        }
+        
+        resultsBox.innerHTML = html;
+        fileInput.value = '';
+        if (res.added > 0) {
+          showToast(`Successfully added ${res.added} students!`, 'success');
+          loadStudentsList();
+        } else if (res.skipped > 0) {
+          showToast(`No new students added. All existing.`, 'warning');
+        }
+      })
+      .withFailureHandler(err => {
+        hideLoader();
+        showACModal('Connection Error', err.message);
+      })
+      .adminBulkUploadStudents(csvData);
+  };
+  reader.readAsText(file);
+}
+
+function loadStudentsList() {
+  const tbody = document.querySelector('#studentsTable tbody');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><span class="spin-sm"></span> Loading...</td></tr>';
+  
+  google.script.run
+    .withSuccessHandler(students => {
+      if (!students || students.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No students found.</td></tr>';
+        return;
+      }
+      
+      let html = '';
+      students.forEach(s => {
+        const d = s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'N/A';
+        html += `<tr>
+          <td style="font-weight:600; color:var(--text);">${s.fullName}</td>
+          <td><span style="background:#eef2ff; color:#4f46e5; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600;">${s.rollNo}</span></td>
+          <td>${s.email}<br><small style="color:#94a3b8;">${s.whatsapp || 'No WA'}</small></td>
+          <td>${s.program} - Sem ${s.semester}</td>
+          <td style="font-family:monospace;">${s.password || 'N/A'}</td>
+          <td style="font-size:0.8rem; color:#64748b;">${d}</td>
+          <td style="text-align:right;">
+            <button class="btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="deleteStudent('${s.rollNo}')"><i class="ti ti-trash"></i></button>
+          </td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+    })
+    .withFailureHandler(err => {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Failed to load: ${err.message}</td></tr>`;
+    })
+    .getAllStudents();
+}
+
+function deleteStudent(rollNo) {
+  if (!confirm(`Are you sure you want to delete student Roll No: ${rollNo}?`)) return;
+  showLoader('Deleting...');
+  google.script.run
+    .withSuccessHandler(res => {
+      hideLoader();
+      if (res.success) {
+        showToast('Student deleted', 'success');
+        loadStudentsList();
+      } else {
+        showToast(res.message, 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      hideLoader();
+      showToast(err.message, 'error');
+    })
+    .adminDeleteStudent(rollNo);
+}
 </script>
 </body>
 </html>
