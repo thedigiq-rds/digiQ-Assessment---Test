@@ -3015,29 +3015,49 @@ function callBackend(action, args, onSuccess, onFailure) {
     const email = document.getElementById('sEmailPwd').value.trim();
     const password = document.getElementById('sPassword').value.trim();
 
-    if (!rollNo || !password) {
-      _cModalShow('Missing Info', 'Please enter your Roll Number and Password.');
+    if (!rollNo || !email || !password) {
+      _cModalShow('Missing Info', 'Please enter your Roll Number, Email, and Password.');
       return;
     }
 
     document.getElementById('loader').style.display = 'flex';
 
-    google.script.run
-      .withSuccessHandler(res => {
-        document.getElementById('loader').style.display = 'none';
-        if (res.success) {
-          // If logged in via a quiz link, proceed to exam
-          if (QUIZ_ID) {
+    if (QUIZ_ID) {
+      // Direct login to a quiz via password
+      google.script.run
+        .withSuccessHandler(res => {
+          document.getElementById('loader').style.display = 'none';
+          if (res.success) {
+            examData       = res.exam;
+            globalDuration = res.duration;
+            config         = res.config;
+            geofenceConfig = res.geofence;
+            
             rollNoStr = res.student.rollNo;
             studentEmailStr = res.student.email;
+            
             document.getElementById('auth-portal').style.display = 'none';
             document.getElementById('student-name-display').innerText = res.student.name;
             document.getElementById('student-name-display').style.display = 'block';
             pushScreen('ready');
             document.getElementById('ready-overlay').style.display = 'flex';
           } else {
-            // Otherwise, load dashboard
+            _cModalShow('Login Failed', res.message);
+          }
+        })
+        .withFailureHandler(err => {
+          document.getElementById('loader').style.display = 'none';
+          _cModalShow('Connection Error', err.message);
+        })
+        .verifyPasswordAndBuildExam(rollNo, email, password, QUIZ_ID);
+    } else {
+      // Regular login to student dashboard
+      google.script.run
+        .withSuccessHandler(res => {
+          document.getElementById('loader').style.display = 'none';
+          if (res.success) {
             rollNoStr = res.student.rollNo;
+            studentEmailStr = res.student.email;
             studentEmailStr = res.student.email;
             document.getElementById('sd-student-name').innerText = res.student.name;
             const program = res.student.program || '';
