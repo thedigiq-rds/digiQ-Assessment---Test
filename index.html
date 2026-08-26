@@ -1795,16 +1795,25 @@ function callBackend(action, args, onSuccess, onFailure) {
   .sd-brand-name { color: #e2e8f0; font-size: 0.9rem; font-weight: 400; }
   .sd-brand-sub  { color: var(--teal-lt); font-size: 0.8rem; margin-top: 4px; font-weight: 300; letter-spacing: 0.04em; }
   
-  .sd-nav { flex:1; overflow-y:auto; overflow-x:hidden; padding-right:0; margin-top:10px; display:flex; flex-direction:column; padding: 0 12px; gap:4px; }
-  .sd-nav .nav-link {
-    display: flex; align-items: center; padding: 12px 16px; margin-bottom: 4px;
-    border-radius: 12px; color: var(--sidebar-dim, #94a3b8); text-decoration: none; font-size: 0.95rem; font-weight: 500;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden;
+  .sd-nav { flex:1; overflow-y:auto; overflow-x:hidden; padding-right:0; margin-top:10px; display:flex; flex-direction:column; padding: 0 12px; gap:4px; position:relative; }
+  .sd-nav-wrapper { flex: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; margin-top:10px; }
+  
+  /* Notch CSS */
+  .sd-notch-indicator {
+    position: absolute; top: -30px; left: 0; width: 100%; height: 100px;
+    pointer-events: none; transition: transform 0.38s cubic-bezier(0.34, 1.25, 0.64, 1); z-index: 1;
   }
-  .sd-nav .nav-link:hover { color: #fff; background: rgba(255,255,255,0.04); }
-  .sd-nav .nav-link.active { color: #fff; background: linear-gradient(90deg, rgba(99,102,241,0.15) 0%, rgba(99,102,241,0.05) 100%); font-weight: 600; }
+  .sd-notch-indicator svg { width: 100%; height: 100%; display: block; fill: var(--bg-surface); }
+
+  .sd-nav .nav-link {
+    display: flex; align-items: center; padding: 12px 16px; margin-bottom: 4px; height: 40px;
+    border-radius: 0; color: var(--sidebar-dim, #94a3b8); text-decoration: none; font-size: 0.95rem; font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden; z-index:2;
+  }
+  .sd-nav .nav-link:hover { color: var(--primary); }
+  .sd-nav .nav-link.active { color: var(--primary-dk); font-weight: 600; }
   .sd-nav .nav-icon { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-right: 14px; font-size: 1.2rem; transition: transform 0.2s; }
-  .sd-nav .nav-link.active .nav-icon { color: var(--primary-lt); transform: scale(1.1); }
+  .sd-nav .nav-link.active .nav-icon { color: var(--primary-dk); transform: scale(1.1); }
   .sd-nav .nav-link-danger { color: #ef4444; margin-top: auto; margin-bottom: 20px; }
   .sd-nav .nav-link-danger:hover { background: rgba(239,68,68,0.1); color:#fca5a5; }
 
@@ -1868,18 +1877,25 @@ function callBackend(action, args, onSuccess, onFailure) {
         <div class="sd-brand-name">digiQ Assessment</div>
         <div class="sd-brand-sub">Student Portal</div>
       </div>
-      <nav class="sd-nav" id="sd-sidebarNav">
-        <a class="nav-link active" id="sd-nav-live" onclick="switchStudentTab('live', this)"><span class="nav-icon"><i class="ti ti-activity"></i></span>Live Exams</a>
-        <a class="nav-link" id="sd-nav-past" onclick="switchStudentTab('past', this)"><span class="nav-icon"><i class="ti ti-history"></i></span>History</a>
-        
-        <a class="nav-link nav-link-danger" onclick="logoutStudent()"><span class="nav-icon"><i class="ti ti-logout"></i></span>Logout</a>
-      </nav>
+      <div class="sd-nav-wrapper">
+        <div class="sd-notch-indicator" id="sdSidebarNotch">
+          <svg width="240" height="100" viewBox="0 0 240 100" preserveAspectRatio="none">
+            <path d="M 240 0 C 240 16.5, 226.5 30, 210 30 L 56 30 A 20 20 0 0 0 56 70 L 210 70 C 226.5 70, 240 83.5, 240 100 L 240 0 Z"/>
+          </svg>
+        </div>
+        <nav class="sd-nav" id="sd-sidebarNav" onscroll="updateStudentSidebarNotch()">
+          <a class="nav-link active" id="sd-nav-live" onclick="switchStudentTab('live', this)"><span class="nav-icon"><i class="ti ti-activity"></i></span>Live Exams</a>
+          <a class="nav-link" id="sd-nav-past" onclick="switchStudentTab('past', this)"><span class="nav-icon"><i class="ti ti-history"></i></span>History</a>
+          
+          <a class="nav-link nav-link-danger" onclick="logoutStudent()" style="margin-top:auto;"><span class="nav-icon"><i class="ti ti-logout"></i></span>Logout</a>
+        </nav>
+      </div>
     </div>
 
     <!-- Main Content -->
     <div class="sd-main">
       <div class="sd-page-heading">Welcome, <span id="sd-student-name" style="color:var(--primary);">Student</span></div>
-      <div class="sd-page-desc">Your personal dashboard for assessments and history.</div>
+      <div class="sd-page-desc" id="sd-student-details">Your personal dashboard for assessments and history.</div>
       
       <div class="sd-content-area">
         <!-- Live Tab -->
@@ -3015,9 +3031,20 @@ function callBackend(action, args, onSuccess, onFailure) {
             rollNoStr = res.student.rollNo;
             studentEmailStr = res.student.email;
             document.getElementById('sd-student-name').innerText = res.student.name;
+            const program = res.student.program || '';
+            const semester = res.student.semester || '';
+            const sdDetails = document.getElementById('sd-student-details');
+            if (sdDetails) {
+               let detailsHtml = `<div style="margin-bottom:4px;"><i class="ti ti-mail" style="margin-right:6px;"></i>${res.student.email}</div>`;
+               if (program || semester) {
+                 detailsHtml += `<div><i class="ti ti-school" style="margin-right:6px;"></i>${program ? program : ''}${program && semester ? ' | ' : ''}${semester ? 'Semester ' + semester : ''}</div>`;
+               }
+               sdDetails.innerHTML = detailsHtml;
+            }
             document.getElementById('auth-portal').style.display = 'none';
             document.getElementById('student-dashboard').style.display = 'block';
             pushScreen('dashboard');
+            setTimeout(updateStudentSidebarNotch, 50);
             loadStudentDashboard();
           }
         } else {
@@ -3049,6 +3076,30 @@ function callBackend(action, args, onSuccess, onFailure) {
     document.querySelectorAll('#sd-mobileTabBar .sd-mobile-item').forEach(link => link.classList.remove('active'));
     let mobItem = document.getElementById('sd-mtab-' + tabId);
     if (mobItem) mobItem.classList.add('active');
+
+    setTimeout(updateStudentSidebarNotch, 50);
+  }
+
+  function updateStudentSidebarNotch() {
+    const nav = document.getElementById('sd-sidebarNav');
+    if (!nav) return;
+    const activeLink = nav.querySelector('.nav-link.active');
+    if (!activeLink) return;
+    
+    let index = 0;
+    const links = Array.from(nav.querySelectorAll('.nav-link:not([style*="display: none"]):not(.nav-link-danger)'));
+    for (let i = 0; i < links.length; i++) {
+      if (links[i] === activeLink) {
+        index = i;
+        break;
+      }
+    }
+    
+    const topRelative = (index * 44) - nav.scrollTop;
+    const notchEl = document.getElementById('sdSidebarNotch');
+    if (notchEl) {
+      notchEl.style.transform = `translateY(${topRelative}px)`;
+    }
   }
 
   function loadStudentDashboard() {
