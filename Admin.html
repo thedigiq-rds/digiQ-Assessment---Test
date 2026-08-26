@@ -3255,11 +3255,17 @@ document.addEventListener('focusout', function(e) {
           <div class="grid-2" style="margin-bottom:16px;">
             <div class="f-group" style="margin-bottom:0;">
               <label class="f-label">Program (Stream)</label>
-              <input type="text" id="stdProgram" class="f-input" placeholder="e.g. B.Tech">
+              <select id="stdProgram" class="f-select" onchange="updateStudentSemesterOptions()">
+                <option value="B.A.">B.A.</option>
+                <option value="B.Sc.">B.Sc.</option>
+                <option value="B.Com.">B.Com.</option>
+                <option value="M.A.">M.A.</option>
+                <option value="M.Sc.">M.Sc.</option>
+              </select>
             </div>
             <div class="f-group" style="margin-bottom:0;">
               <label class="f-label">Semester</label>
-              <input type="text" id="stdSemester" class="f-input" placeholder="e.g. 1">
+              <select id="stdSemester" class="f-select"></select>
             </div>
           </div>
           <div class="grid-2" style="margin-bottom:16px;">
@@ -6850,9 +6856,21 @@ function epbUpdatePreview() {
       });
       html += '</div></div>';
     }
-  });
+});
   sc.innerHTML = html;
   epbApplyLayout();
+}
+
+function downloadStudentCSVTemplate() {
+  const csvContent = "FullName,RollNo,Email,WhatsApp,Program,Semester,Password\nJohn Doe,CS2023001,john@example.com,9876543210,B.A.,Sem 1,password123\nJane Smith,BA2023002,jane@example.com,9876543211,B.A.,Sem 1,";
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", "student_upload_template.csv");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 }
 
 function epbApplyLayout() {
@@ -7021,6 +7039,13 @@ document.addEventListener('DOMContentLoaded', function() {
 /* =========================================================
    STUDENT ACCOUNTS LOGIC
    ========================================================= */
+
+function updateStudentSemesterOptions() {
+  const stream  = document.getElementById('stdProgram').value;
+  const sems    = SEM_MAP_FULL[stream] || ['Sem 1','Sem 2','Sem 3','Sem 4'];
+  const semSel  = document.getElementById('stdSemester');
+  semSel.innerHTML = sems.map(s => `<option value="${s}">${s}</option>`).join('');
+}
 
 function addSingleStudent() {
   const name = document.getElementById('stdName').value.trim();
