@@ -2151,8 +2151,8 @@ document.addEventListener('focusout', function(e) {
         <a class="nav-link"        id="nav-epb"       onclick="switchTab('epb',       this)"><span class="nav-icon"><i class="ti ti-file-text"></i></span>Exam Paper Builder</a>
         <a class="nav-link"        id="nav-qbank"     onclick="switchTab('qbank',     this)"><span class="nav-icon"><i class="ti ti-database"></i></span>Question Bank</a>
         <a class="nav-link"        id="nav-reports"   onclick="switchTab('reports',   this)"><span class="nav-icon"><i class="ti ti-chart-line"></i></span>Analytics &amp; Reports</a>
-        <a class="nav-link"        id="nav-students"  onclick="switchTab('students',  this)"><span class="nav-icon"><i class="ti ti-school"></i></span>Students</a>
         <a class="nav-link"        id="nav-subadmins" onclick="switchTab('subadmins', this)" style="display:none;"><span class="nav-icon"><i class="ti ti-users"></i></span>Sub-Admins</a>
+        <a class="nav-link"        id="nav-students"  onclick="switchTab('students',  this)" style="display:none;"><span class="nav-icon"><i class="ti ti-school"></i></span>Students</a>
       </nav>
     </div>
         <div class="sidebar-footer" style="flex-shrink:0; margin-top:auto;">
@@ -3678,6 +3678,7 @@ function _restoreAdminSession(res) {
     const mobRoleInfo = document.getElementById('mob-role-info');
     if (mobRoleInfo) mobRoleInfo.textContent = `${displayName} · Master Admin`;
     document.getElementById('nav-subadmins').style.display = 'flex';
+    document.getElementById('nav-students').style.display = 'flex';
   } else {
     const spmRole = document.getElementById('spm-role');
     if (spmRole) spmRole.textContent = 'Sub Admin';
@@ -3864,7 +3865,8 @@ let mobileTabDefs = [
   { id: 'qbank',    icon: 'ti-database',  label: 'Q-Bank',   action: () => switchTab('qbank') },
   { id: 'reports',  icon: 'ti-chart-line',label: 'Reports',  action: () => switchTab('reports') },
   { id: 'subadmins',icon: 'ti-users',     label: 'Sub-Admin',action: () => switchTab('subadmins'), masterOnly: true },
-  { id: 'epb',      icon: 'ti-file-text',label: 'Papers',   action: () => switchTab('epb') },
+  { id: 'students', icon: 'ti-school',    label: 'Students', action: () => switchTab('students'),  masterOnly: true },
+  { id: 'epb',      icon: 'ti-file-text', label: 'Papers',   action: () => switchTab('epb') },
 ];
 
 function buildMobileTabBar(isMaster) {
