@@ -3281,7 +3281,7 @@ document.addEventListener('focusout', function(e) {
           <div class="panel-desc">Upload multiple students at once. Duplicates will be skipped automatically.</div>
           
           <div class="info-box" style="margin-bottom:16px;">
-            <strong>Expected CSV Format (No Headers):</strong><br>
+            <strong>Expected CSV Format:</strong><br>
             FullName, RollNo, Email, WhatsApp, Program, Semester, Password (Optional)
             <div style="margin-top:8px;">
               <a href="javascript:void(0)" onclick="downloadStudentCSVTemplate()" style="color:var(--primary); font-weight:600; text-decoration:underline; font-size:0.8rem;"><i class="ti ti-download"></i> Download Sample Template</a>
@@ -7062,7 +7062,7 @@ function addSingleStudent() {
 }
 
 function downloadStudentCSVTemplate() {
-  const csvContent = "John Doe,CS2023001,john@example.com,9876543210,B.Tech,1,password123\nJane Smith,BA2023002,jane@example.com,9876543211,B.A.,3,";
+  const csvContent = "FullName,RollNo,Email,WhatsApp,Program,Semester,Password\nJohn Doe,CS2023001,john@example.com,9876543210,B.Tech,1,password123\nJane Smith,BA2023002,jane@example.com,9876543211,B.A.,3,";
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -7090,8 +7090,8 @@ function uploadStudentsCSV() {
     // Simple CSV parser ignoring quotes for now, assuming clean data
     for (let i = 0; i < lines.length; i++) {
       if (!lines[i].trim()) continue;
-      // Split by comma but allow simple escaping if needed. A robust parser handles quotes, but a simple split is often enough for this context.
       const cols = lines[i].split(',').map(s => s.trim().replace(/^"|"$/g, ''));
+      if (i === 0 && cols[0].toLowerCase() === 'fullname') continue; // Skip header row
       csvData.push(cols);
     }
     
