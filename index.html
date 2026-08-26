@@ -3119,33 +3119,37 @@ function callBackend(action, args, onSuccess, onFailure) {
         liveGrid.innerHTML = '';
         pastGrid.innerHTML = '';
         
-        if (data.live && data.live.length > 0) {
-          data.live.forEach(q => {
+        if (!data.success) {
+          liveGrid.innerHTML = `<div style="color:var(--danger); grid-column: 1 / -1;">Error: ${data.message}</div>`;
+          return;
+        }
+        
+        if (data.activeTests && data.activeTests.length > 0) {
+          data.activeTests.forEach(q => {
             liveGrid.innerHTML += `
               <div class="sd-card">
                 <div class="sd-card-tag sd-tag-live">LIVE</div>
                 <div class="sd-card-title">${q.title}</div>
-                <div class="sd-card-meta"><i class="ti ti-calendar"></i> ${q.date || 'TBA'}</div>
-                <div class="sd-card-meta"><i class="ti ti-clock"></i> ${q.duration || 'N/A'}</div>
-                <button class="sd-btn-start" onclick="window.location.href='?q=${q.id}'"><i class="ti ti-play"></i> Enter Assessment</button>
+                <div class="sd-card-meta"><i class="ti ti-clock"></i> ${q.duration || 'N/A'} Mins</div>
+                <button class="sd-btn-start" onclick="window.location.href='?q=${q.quizId}'"><i class="ti ti-play"></i> Enter Assessment</button>
               </div>`;
           });
         } else {
           liveGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem; grid-column: 1 / -1;">No live assessments available at this time.</div>';
         }
 
-        if (data.past && data.past.length > 0) {
-          data.past.forEach(sub => {
-            const passed = sub.percentage >= 40;
+        if (data.pastTests && data.pastTests.length > 0) {
+          data.pastTests.forEach(sub => {
+            const passed = sub.passed === 'Yes' || sub.passed === true;
             const tagClass = passed ? 'sd-tag-passed' : 'sd-tag-failed';
             pastGrid.innerHTML += `
               <div class="sd-card">
                 <div class="sd-card-tag ${tagClass}">${passed ? 'PASSED' : 'FAILED'}</div>
-                <div class="sd-card-title">${sub.quizTitle}</div>
+                <div class="sd-card-title">${sub.title}</div>
                 <div class="sd-card-meta"><i class="ti ti-calendar-check"></i> Submitted: ${new Date(sub.timestamp).toLocaleDateString()}</div>
                 <div class="sd-score-box">
-                  <div class="sd-score-text">${sub.score} / ${sub.totalMarks}</div>
-                  <div style="font-size:0.8rem; color:var(--text-dim); font-weight:600;">${sub.percentage}%</div>
+                  <div class="sd-score-text">${sub.score} / ${sub.total}</div>
+                  <div style="font-size:0.8rem; color:var(--text-dim); font-weight:600;">${sub.perc}%</div>
                 </div>
               </div>`;
           });
@@ -3157,7 +3161,7 @@ function callBackend(action, args, onSuccess, onFailure) {
         document.getElementById('sd-live-grid').innerHTML = '<div style="color:var(--danger); grid-column: 1 / -1;">Failed to load data.</div>';
         document.getElementById('sd-past-grid').innerHTML = '';
       })
-      .getStudentDashboardData(rollNoStr);
+      .getStudentDashboardData(studentEmailStr, rollNoStr);
   }
 
   function logoutStudent() {
