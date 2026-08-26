@@ -3058,7 +3058,6 @@ function callBackend(action, args, onSuccess, onFailure) {
           if (res.success) {
             rollNoStr = res.student.rollNo;
             studentEmailStr = res.student.email;
-            studentEmailStr = res.student.email;
             document.getElementById('sd-student-name').innerText = res.student.name;
             const program = res.student.program || '';
             const semester = res.student.semester || '';
@@ -3075,16 +3074,16 @@ function callBackend(action, args, onSuccess, onFailure) {
             pushScreen('dashboard');
             setTimeout(updateStudentSidebarNotch, 50);
             loadStudentDashboard();
+          } else {
+            _cModalShow('Login Failed', res.message);
           }
-        } else {
-          _cModalShow('Login Failed', res.message);
-        }
-      })
-      .withFailureHandler(err => {
-        document.getElementById('loader').style.display = 'none';
-        _cModalShow('Connection Error', err.message);
-      })
-      .loginStudentPassword(rollNo, email, password);
+        })
+        .withFailureHandler(err => {
+          document.getElementById('loader').style.display = 'none';
+          _cModalShow('Connection Error', err.message);
+        })
+        .loginStudentPassword(rollNo, email, password);
+    }
   }
 
   function switchStudentTab(tabId, el) {
