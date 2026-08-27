@@ -3030,18 +3030,41 @@ function callBackend(action, args, onSuccess, onFailure) {
           document.getElementById('loader').style.display = 'none';
           if (res.success) {
             examData       = res.exam;
-            globalDuration = res.duration;
+            globalDuration = parseInt(res.duration) * 60;
+            initialDuration = globalDuration;
             config         = res.config;
             geofenceConfig = res.geofence;
             
             rollNoStr = res.student.rollNo;
             studentEmailStr = res.student.email;
             
-            document.getElementById('auth-portal').style.display = 'none';
             document.getElementById('student-name-display').innerText = res.student.name;
             document.getElementById('student-name-display').style.display = 'block';
-            pushScreen('ready');
-            document.getElementById('ready-overlay').style.display = 'flex';
+            
+            // AUTO-RESUME RESTORE
+            const storageKey = 'digiQ_exam_' + QUIZ_ID + '_' + rollNoStr;
+            const savedDuration = localStorage.getItem(storageKey + '_duration');
+            const savedAnswers = localStorage.getItem(storageKey + '_answers');
+            if (savedDuration && !isNaN(savedDuration)) {
+              const pDur = parseInt(savedDuration, 10);
+              if (pDur > 0 && pDur < globalDuration) globalDuration = pDur;
+            }
+            if (savedAnswers) {
+              try { answers = JSON.parse(savedAnswers); } catch(e){}
+            }
+
+            if (!examData || examData.length === 0) {
+              _cModalShow('No Questions Found', 'No questions were found for this exam.');
+              return;
+            }
+
+            if (res.geofence && res.geofence.enable) {
+              checkGeofenceAndInit(res.geofence);
+            } else {
+              document.getElementById('auth-portal').style.display = 'none';
+              pushScreen('ready');
+              document.getElementById('ready-overlay').style.display = 'flex';
+            }
           } else {
             _cModalShow('Login Failed', res.message);
           }
