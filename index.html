@@ -2347,6 +2347,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     <div class="result-divider"></div>
     <div class="result-msg" id="r-msg"></div>
     <div class="result-college">M.N. College, Visnagar</div>
+    <button class="sd-btn-start" style="margin-top:24px; width:auto; padding: 12px 24px;" onclick="returnToDashboard()">Return to Dashboard</button>
   </div>
 </div>
 
@@ -3057,6 +3058,14 @@ function callBackend(action, args, onSuccess, onFailure) {
     }, 1000);
   }
 
+  function returnToDashboard() {
+    document.getElementById('result-ui').style.display = 'none';
+    document.getElementById('exam-ui').style.display = 'none';
+    document.getElementById('student-dashboard').style.display = 'block';
+    if (typeof pushScreen === 'function') pushScreen('dashboard');
+    loadStudentDashboard();
+  }
+
   /* ──────────────────────────────────────────────────────── */
   /* SUBMIT                                                    */
   /* ──────────────────────────────────────────────────────── */
@@ -3103,7 +3112,7 @@ function callBackend(action, args, onSuccess, onFailure) {
         if (isEssayQuiz) {
           showModal('Quiz Submitted Successfully! <svg class="svg-icon anim-draw" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
                     'Your descriptive essay answers have been submitted successfully.<br><br><svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> <strong>You will receive an email with your detailed results and feedback once your instructor has graded your submission.</strong>',
-                    'success');
+                    'success').then(() => returnToDashboard());
           return;
         }
 
