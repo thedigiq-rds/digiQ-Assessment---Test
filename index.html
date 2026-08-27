@@ -1587,4 +1587,1845 @@ function callBackend(action, args, onSuccess, onFailure) {
     .anim-tick   { animation: animTick 1s infinite ease-in-out; }
     .anim-draw   { stroke-dasharray: 100; animation: animDraw 0.6s ease forwards; }
 
-  �� 
+      /* " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " 
+       TOAST SYSTEM
+    " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " "  */
+    #toast-container {
+      position: fixed; top: 20px; right: 20px;
+      z-index: 99999;
+      display: flex; flex-direction: column; gap: 8px;
+      pointer-events: none;
+    }
+    .toast-item {
+      background: var(--bg-card);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-left: 4px solid var(--primary);
+      border-radius: 12px;
+      padding: 13px 16px;
+      min-width: 270px; max-width: 340px;
+      font-family: var(--font-primary);
+      color: var(--text-body);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+      pointer-events: all;
+      animation: toastIn 0.3s ease forwards;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .toast-item.success { border-left-color: var(--success); }
+    .toast-item.error   { border-left-color: var(--danger);  }
+    .toast-item.warning { border-left-color: var(--warning); }
+    .toast-icon { flex-shrink: 0; }
+    @keyframes toastIn  { from { transform: translateX(110%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes toastOut { from { transform: translateX(0); opacity: 1; }    to { transform: translateX(110%); opacity: 0; } }
+    .toast-item.hide { animation: toastOut 0.3s ease forwards; }
+
+    /* " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " 
+       CENTRE DIALOGUE MODAL
+    " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " " "  */
+    #aCModal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(8,12,16,0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 999999;
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      animation: aCMFadeIn 0.22s ease forwards;
+    }
+    @keyframes aCMFadeIn  { from{opacity:0}  to{opacity:1} }
+    @keyframes aCMFadeOut { from{opacity:1}  to{opacity:0} }
+    #aCModal-overlay.closing { animation: aCMFadeOut 0.22s ease forwards; }
+    .aCModal-card {
+      background: linear-gradient(145deg, #1e2d52 0%, #111827 100%);
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 24px;
+      padding: 40px 36px 32px;
+      max-width: 430px; width: 100%;
+      text-align: center;
+      box-shadow: 0 40px 90px rgba(0,0,0,0.7), 0 8px 24px rgba(0,0,0,0.4);
+      animation: aCMSpring 0.4s cubic-bezier(0.175,0.885,0.32,1.275) forwards;
+      position: relative; overflow: hidden;
+    }
+    .aCModal-card::before {
+      content: ''; position: absolute; top: -60px; right: -60px;
+      width: 180px; height: 180px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    @keyframes aCMSpring {
+      0%   { transform: scale(0.55) translateY(30px); opacity: 0; }
+      70%  { transform: scale(1.04) translateY(-4px); opacity: 1; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .aCModal-card.closing { animation: aCMShrink 0.22s ease forwards; }
+    @keyframes aCMShrink { from{transform:scale(1);opacity:1} to{transform:scale(0.82);opacity:0} }
+    .aCModal-icon-ring {
+      width: 76px; height: 76px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 18px; font-size: 2rem; position: relative;
+    }
+    .aCModal-icon-ring::before {
+      content: ''; position: absolute; inset: -7px; border-radius: 50%;
+      opacity: 0.16; animation: aCMIconPulse 2.2s ease-in-out infinite;
+    }
+    @keyframes aCMIconPulse { 0%,100%{transform:scale(1);opacity:0.16} 50%{transform:scale(1.14);opacity:0.08} }
+    .aCModal-icon-ring.acm-success { background: var(--success); }
+    .aCModal-icon-ring.acm-success::before { background:#10b981; }
+    .aCModal-icon-ring.acm-error   { background: var(--danger); }
+    .aCModal-icon-ring.acm-error::before   { background:#ef4444; }
+    .aCModal-icon-ring.acm-warning { background: var(--warning); }
+    .aCModal-icon-ring.acm-warning::before { background:#f59e0b; }
+    .aCModal-icon-ring.acm-info    { background: var(--info); }
+    .aCModal-icon-ring.acm-info::before    { background:#3b82f6; }
+    .aCModal-icon-ring.acm-confirm { background: var(--primary); }
+    .aCModal-icon-ring.acm-confirm::before { background:#6366f1; }
+    .aCModal-icon-ring.acm-danger  { background: var(--danger); }
+    .aCModal-icon-ring.acm-danger::before  { background:#ef4444; }
+    .aCModal-title {
+      font-family: var(--font-heading); font-weight: 700;
+      font-size: 1.25rem;
+      color: #ffffff; margin-bottom: 9px; line-height: 1.3;
+    }
+    .aCModal-msg {
+      color: var(--sidebar-dim); line-height: 1.68; margin-bottom: 28px;
+    }
+    .aCModal-actions { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .aCModal-btn {
+      padding: 11px 28px; border-radius: 11px;
+      font-weight: 600; cursor: pointer; border: none;
+      font-family: var(--font-primary);
+      transition: transform 0.15s, box-shadow 0.2s;
+      min-width: 110px;
+    }
+    .aCModal-btn:hover { transform: translateY(-1px); }
+    .aCModal-btn-ok {
+      background: linear-gradient(135deg, var(--primary-dk), var(--primary));
+      color: #fff; box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+    }
+    .aCModal-btn-ok:hover { box-shadow: 0 6px 22px rgba(99,102,241,0.55); }
+    .aCModal-btn-ok.acm-danger-ok { background: var(--danger); box-shadow: 0 4px 16px rgba(239,68,68,0.4); }
+    .aCModal-btn-ok.acm-danger-ok:hover { box-shadow: 0 6px 22px rgba(239,68,68,0.55); }
+    .aCModal-btn-ok.acm-warning-ok { background: var(--warning); color: #1a1000; box-shadow: 0 4px 16px rgba(245,158,11,0.4); }
+    .aCModal-btn-ok.acm-confirm-ok { background: var(--primary); box-shadow: 0 4px 16px rgba(99,102,241,0.4); }
+    .aCModal-btn-cancel {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: var(--sidebar-dim);
+    }
+    .aCModal-btn-cancel:hover { background: rgba(255,255,255,0.12); color:#fff; }
+    .aCModal-timer-bar {
+      position: absolute; bottom:0; left:0;
+      height: 3px; border-radius: 0 0 24px 24px;
+      background: var(--primary); transition: width linear;
+    }
+
+
+</style>
+</head>
+<body>
+<!-- " " " " " " " " "  TOASTS " " " " " " " " "  -->
+<div id="toast-container"></div>
+
+<!-- " " " " " " " " "  ADMIN CENTRE DIALOGUE MODAL " " " " " " " " "  -->
+<div id="aCModal-overlay" style="display:none;" role="dialog" aria-modal="true">
+  <div class="aCModal-card" id="aCModal-card">
+    <div class="aCModal-icon-ring acm-info" id="aCModal-icon"><i class="ti ti-info-circle"></i></div>
+    <div class="aCModal-title" id="aCModal-title">Notice</div>
+    <div class="aCModal-msg"   id="aCModal-msg">Message here.</div>
+    <div class="aCModal-actions" id="aCModal-actions">
+      <button class="aCModal-btn aCModal-btn-ok" id="aCModal-btn-ok" onclick="_aCMClose(true)">OK</button>
+    </div>
+    <div class="aCModal-timer-bar" id="aCModal-timer-bar" style="width:100%;"></div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PROCTORING WARNING OVERLAY                              -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="strike-overlay" style="display:none;">
+  <div class="strike-card">
+    <div class="strike-icon"><svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4v.01M5.07 19H19a2 2 0 001.75-2.75L13.75 4a2 2 0 00-3.5 0L3.25 16.25a2 2 0 001.75 2.75z"></path></svg></div>
+    <div class="strike-title">PROCTORING ALERT</div>
+    <div class="strike-desc">
+      Switching tabs or exiting fullscreen mode is strictly prohibited during the examination.
+      Repeated violations will result in automatic submission.
+    </div>
+    <div class="strike-counter">Strike <span id="strike-count">0</span> / 3</div>
+    <br>
+    <button class="btn-dismiss" onclick="dismissStrike()">Acknowledge &amp; Return to Exam</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="ready-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-surface, #ffffff); z-index:9999999; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:20px;">
+  <i class="ti ti-circle-check" style="font-size:4.5rem; color:var(--success, #10b981); margin-bottom:20px;"></i>
+  <h2 style="font-family:'Poppins', sans-serif; font-size:1.5rem; font-weight:700; color:var(--text-main, #1e293b); margin-bottom:12px;">Ready to Start</h2>
+  <p style="color:var(--text-muted, #64748b); font-size:0.95rem; margin-bottom:32px; max-width:400px; line-height:1.5;">Your setup is complete. Click below to enter the fullscreen exam environment.</p>
+  <button class="btn-primary-auth" onclick="startExamNow()" style="width:100%; max-width:320px; font-size:1.05rem;">
+    Start Fullscreen Exam
+  </button>
+</div>
+
+<!-- LOADING SPINNER                                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="loader">
+  <div class="loader-wrapper">
+    <div class="loader"></div>
+    <span class="loader-letter" style="animation-delay: 0.100s">L</span>
+    <span class="loader-letter" style="animation-delay: 0.205s">O</span>
+    <span class="loader-letter" style="animation-delay: 0.310s">A</span>
+    <span class="loader-letter" style="animation-delay: 0.415s">D</span>
+    <span class="loader-letter" style="animation-delay: 0.520s">I</span>
+    <span class="loader-letter" style="animation-delay: 0.625s">N</span>
+    <span class="loader-letter" style="animation-delay: 0.730s">G</span>
+    <span class="loader-letter" style="animation-delay: 0.835s">.</span>
+    <span class="loader-letter" style="animation-delay: 0.940s">.</span>
+    <span class="loader-letter" style="animation-delay: 1.045s">.</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- AUTH PORTAL (Student Login)                             -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="auth-portal" style="display:none;">
+
+  <div class="auth-split-container">
+
+    <!-- ── LEFT: Illustration Panel ── -->
+    <div class="auth-illus-panel">
+      <!-- Floating animated background objects -->
+      <div style="position: absolute; width: 140px; height: 140px; border-radius: 50%; filter: blur(40px); background: rgba(255,255,255,0.15); top: 15%; left: 10%; animation: orbFloat 9s infinite alternate ease-in-out; z-index: 0;"></div>
+      <div style="position: absolute; width: 200px; height: 200px; border-radius: 50%; filter: blur(50px); background: rgba(16,185,129,0.15); bottom: 15%; right: 10%; animation: orbFloat 11s infinite alternate ease-in-out; animation-delay: -3s; z-index: 0;"></div>
+      <svg class="auth-illus-img" viewBox="0 0 320 260" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 100%; max-width: 320px; z-index: 1; position: relative; filter: drop-shadow(0 20px 48px rgba(0,0,0,0.18)); animation: studentFloat 6s ease-in-out infinite;">
+        <!-- Desk line -->
+        <line x1="20" y1="220" x2="300" y2="220" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" />
+        <!-- Stack of Books -->
+        <g transform="translate(40, 160)">
+          <path d="M0,40 L60,40 L55,20 L5,20 Z" fill="var(--success)" opacity="0.8" />
+          <rect x="5" y="20" width="50" height="20" rx="2" fill="var(--primary-dk)" />
+          <rect x="12" y="5" width="40" height="15" rx="2" fill="#fbbf24" transform="rotate(-10)" />
+        </g>
+        <!-- Laptop Base -->
+        <path d="M80,210 L240,210 L250,218 L70,218 Z" fill="rgba(255,255,255,0.9)" />
+        <!-- Laptop Screen -->
+        <rect x="95" y="110" width="130" height="96" rx="6" fill="#1e1b4b" stroke="rgba(255,255,255,0.8)" stroke-width="4" />
+        <!-- Screen contents -->
+        <rect x="105" y="120" width="40" height="30" rx="3" fill="var(--primary)" opacity="0.7" />
+        <rect x="150" y="120" width="65" height="8" rx="2" fill="#fbbf24" opacity="0.8" />
+        <rect x="150" y="132" width="50" height="6" rx="2" fill="var(--success)" opacity="0.8" />
+        <rect x="150" y="142" width="60" height="6" rx="2" fill="rgba(255,255,255,0.5)" />
+        <rect x="105" y="160" width="110" height="4" rx="1" fill="#a5b4fc" opacity="0.4" />
+        <rect x="105" y="168" width="80" height="4" rx="1" fill="#a5b4fc" opacity="0.4" />
+        <rect x="105" y="176" width="95" height="4" rx="1" fill="#a5b4fc" opacity="0.4" />
+        <circle cx="160" cy="214" r="2" fill="#ffffff" opacity="0.7" />
+        <!-- Floating Graduation Cap -->
+        <g transform="translate(140, 25)">
+          <path d="M40,10 L80,25 L40,40 L0,25 Z" fill="rgba(255,255,255,0.95)" stroke="var(--primary-lt)" stroke-width="1.5" />
+          <path d="M22,29 L22,38 C22,42 58,42 58,38 L58,29" fill="rgba(255,255,255,0.8)" />
+          <path d="M40,25 L15,35 L12,48" stroke="#fbbf24" stroke-width="2" fill="none" stroke-linecap="round" />
+          <circle cx="12" cy="48" r="3" fill="#fbbf24" />
+        </g>
+        <!-- Floating particles -->
+        <circle cx="270" cy="90" r="10" fill="var(--success)" opacity="0.8" />
+        <path d="M266,90 L274,90 M270,86 L270,94" stroke="#ffffff" stroke-width="2" stroke-linecap="round" />
+        <circle cx="275" cy="150" r="12" fill="rgba(255,255,255,0.2)" opacity="0.9" />
+        <text x="271" y="158" fill="#ffffff" font-family="'Poppins', sans-serif" font-size="11" font-weight="bold">?</text>
+        <circle cx="65" cy="85" r="8" fill="#fbbf24" opacity="0.8" />
+      </svg>
+      <div class="auth-welcome-heading">
+        Welcome!! <svg class="svg-icon anim-shake" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg><br>
+        <span>Glad to see you</span>
+      </div>
+      <div class="auth-welcome-sub">
+        M. N. College · digiQ Assessment<br>
+        Enter your details to begin your exam
+      </div>
+      <div class="auth-illus-dots">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+
+    <!-- ── RIGHT: Form Panel ── -->
+    <div class="auth-card">
+      <div class="auth-logo"><svg class="svg-icon anim-float" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg></div>
+      <div class="auth-title" id="quiz-title-display">digiQ</div>
+      <div class="auth-subtitle">Let Insights Emerge!!!</div>
+
+      <!-- Step 1: Login Methods -->
+      <div id="step-1">
+        
+        <!-- Toggle Buttons -->
+        <div id="login-toggle-btn" style="display:flex; background:#f1f5f9; border-radius:12px; padding:4px; margin-bottom:20px;">
+          <button id="btn-login-pwd" type="button" onclick="toggleLoginMethod('pwd')" style="flex:1; padding:8px; border-radius:8px; border:none; background:#fff; color:var(--primary); font-weight:600; cursor:pointer; transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.05);">Password Login</button>
+          <button id="btn-login-otp" type="button" onclick="toggleLoginMethod('otp')" style="flex:1; padding:8px; border-radius:8px; border:none; background:transparent; color:var(--text-muted); font-weight:600; cursor:pointer; transition:all 0.2s;">OTP Login</button>
+        </div>
+
+        <!-- Password Login Section -->
+        <div id="login-pwd-section">
+          <div class="form-group">
+            <label class="form-label">Roll Number</label>
+            <input type="text" id="sRollPwd" class="form-control" autocapitalize="none" autocorrect="off" placeholder="e.g. CS2023001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="sEmailPwd" class="form-control" autocapitalize="none" autocorrect="off" placeholder="student@example.com">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="sPassword" class="form-control" autocapitalize="none" autocorrect="off" placeholder="••••••••" onkeyup="if(event.key==='Enter'||event.keyCode===13) loginWithPassword()">
+          </div>
+          <button id="loginPwdBtn" class="btn-primary-auth" onclick="loginWithPassword()">
+            <svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> Login to Portal
+          </button>
+        </div>
+
+        <!-- OTP Login Section (Existing) -->
+        <div id="login-otp-section" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="sName" class="form-control" placeholder="Enter your full name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Roll Number</label>
+            <input type="text" id="sRoll" class="form-control" placeholder="e.g. 2024BA001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" id="sEmail" class="form-control" autocapitalize="none" autocorrect="off" placeholder="your@email.com">
+          </div>
+          <button id="reqStudentBtn" class="btn-primary-auth" onclick="sendOTP()">
+            <svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg> Request Access (OTP via Email)
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: OTP Verification -->
+      <div id="step-2" style="display:none;">
+        <div class="otp-sent-box">
+          <svg class="svg-icon anim-draw" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> OTP sent to your email inbox. Check spam if not received within a minute.
+        </div>
+        <div class="form-group">
+          <label class="form-label">Enter 4-Digit OTP</label>
+          <input type="text" id="sOtp" class="form-control otp-input" maxlength="4" placeholder="••••" autocomplete="off" onkeyup="if(event.key==='Enter'||event.keyCode===13) verifyOTP()">
+        </div>
+        <button class="btn-primary-auth" onclick="verifyOTP()">
+          <svg class="svg-icon anim-draw" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Verify &amp; Start Fullscreen Exam
+        </button>
+      </div>
+
+      <div class="developer-credit" style="margin-top: 18px; margin-bottom: 6px;">
+        Developed By <span>Dr. Rajendra Suthar</span>
+      </div>
+      <div class="auth-footer">Powered by digiQ · M. N. College, Visnagar</div>
+    </div><!-- /auth-card -->
+
+  </div><!-- /auth-split-container -->
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- STUDENT DASHBOARD                                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<style>
+  /* STUDENT DASHBOARD SPECIFIC CSS */
+  .sd-wrapper { display: flex; flex-direction: row; height: 100vh; overflow: hidden; background: var(--bg-surface); }
+  
+  /* Sidebar */
+  .sd-sidebar {
+    width: 240px; height: 100vh; flex-shrink: 0;
+    background: #0f172a; border-right: none;
+    display: flex; flex-direction: column; overflow-y: auto;
+    position: relative; z-index: 10;
+  }
+  .sd-sidebar-brand { padding: 22px 20px 14px; border-bottom: 1px solid rgba(99,102,241,0.15); flex-shrink:0; }
+  .sd-brand-college {
+    font-family: 'Poppins', 'Inter', sans-serif; font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em;
+    margin-bottom: 5px; line-height: 1.2;
+    background: linear-gradient(135deg, #a5b4fc 0%, #67e8f9 50%, #818cf8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;
+  }
+  .sd-brand-name { color: #e2e8f0; font-size: 0.9rem; font-weight: 400; }
+  .sd-brand-sub  { color: var(--teal-lt); font-size: 0.8rem; margin-top: 4px; font-weight: 300; letter-spacing: 0.04em; }
+  
+  .sd-nav { flex:1; overflow-y:auto; overflow-x:hidden; padding: 0; margin: 0; display:flex; flex-direction:column; list-style: none; position:relative; }
+  .sd-nav-wrapper { flex: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+  
+  /* Notch CSS */
+  .sd-notch-indicator {
+    position: absolute; top: -30px; left: 0; width: 100%; height: 100px;
+    pointer-events: none; transition: transform 0.38s cubic-bezier(0.34, 1.25, 0.64, 1); z-index: 1;
+  }
+  .sd-notch-indicator svg { width: 100%; height: 100%; display: block; fill: var(--bg-surface); }
+
+  .sd-nav .nav-link {
+    height: 40px; display: flex; align-items: center; gap: 14px; padding: 0 26px; border-radius: 0;
+    color: #ffffff; text-decoration: none; font-size: 13.5px; font-weight: 500;
+    transition: color 0.25s ease, transform 0.38s cubic-bezier(0.34, 1.25, 0.64, 1), font-size 0.25s ease;
+    cursor: pointer; position: relative; overflow: hidden; z-index:2; border:none; margin:0;
+  }
+  .sd-nav .nav-link:hover { color: #f97316; }
+  .sd-nav .nav-link:hover .nav-icon { color: #f97316; }
+  .sd-nav .nav-link.active {
+    color: #f97316 !important; font-size: 15px; font-weight: 600;
+    background: transparent; box-shadow: none; transform: translateX(24px);
+  }
+  .sd-nav .nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; font-size: 1.05rem; transition: transform 0.2s, color 0.2s; color: #ffffff; flex-shrink: 0; }
+  .sd-nav .nav-link.active .nav-icon { color: #f97316 !important; transform: scale(1.18); }
+  
+  .sd-nav .nav-link-danger { color: #ef4444; margin-top: auto; margin-bottom: 20px; }
+  .sd-nav .nav-link-danger:hover { color:#fca5a5; }
+  .sd-nav .nav-link-danger .nav-icon { color: #ef4444; }
+
+  /* Main Content */
+  .sd-main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; position: relative; background: var(--bg-surface); padding-bottom:80px; }
+  .sd-page-heading { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text); padding: 30px 30px 10px; }
+  .sd-page-desc { padding: 0 30px 20px; font-size: 0.95rem; color: var(--text-muted); }
+  .sd-content-area { padding: 0 30px 30px; }
+
+  /* Grids */
+  .sd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  .sd-card {
+    background: var(--bg-card); border: 1px solid var(--main-border); border-radius: 16px; padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03); transition: transform 0.2s, box-shadow 0.2s;
+    display: flex; flex-direction: column; min-height:180px;
+  }
+  .sd-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(99,102,241,0.08); border-color: var(--primary-lt); }
+  .sd-card-tag { align-self: flex-start; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
+  .sd-tag-live { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; }
+  .sd-tag-passed { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+  .sd-tag-failed { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+  .sd-card-title { font-size: 1.15rem; font-weight: 700; color: var(--text); margin-bottom: 8px; line-height: 1.3; }
+  .sd-card-meta { font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+  .sd-btn-start {
+    margin-top: auto; padding: 10px; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; width: 100%; margin-top: 16px; font-size: 0.95rem; display: flex; justify-content:center; align-items:center; gap:8px;
+  }
+  .sd-btn-start:hover { background: var(--primary-dk); }
+  .sd-score-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-top: 16px; text-align: center; }
+  .sd-score-text { font-size: 1.4rem; font-weight: 800; color: var(--primary-dk); }
+
+  /* Mobile Tab Bar */
+  .sd-mobile-bar {
+    display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
+    background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0,0,0,0.05); box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+    z-index: 9999; flex-direction: row; justify-content: space-around; align-items: center; padding: 0 10px;
+  }
+  .sd-mobile-item {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 65px; height: 100%; color: var(--text-muted); text-decoration: none; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+  }
+  .sd-mobile-item i { font-size: 1.4rem; margin-bottom: 4px; transition: transform 0.2s, color 0.2s; }
+  .sd-mobile-item.active { color: var(--primary); }
+  .sd-mobile-item.active i { transform: translateY(-2px); }
+
+  @media (max-width: 768px) {
+    .sd-sidebar { display: none !important; }
+    .sd-mobile-bar { display: flex !important; }
+    .sd-page-heading { padding: 20px 20px 5px; font-size:1.4rem; }
+    .sd-page-desc { padding: 0 20px 15px; }
+    .sd-content-area { padding: 0 20px 30px; }
+  }
+</style>
+
+<div id="student-dashboard" style="display:none;">
+  <div class="sd-wrapper">
+    <!-- Desktop Sidebar -->
+    <div class="sd-sidebar">
+      <div class="sd-sidebar-brand">
+        <div class="sd-brand-college">M. N. College, Visnagar</div>
+        <div class="sd-brand-name">digiQ Assessment</div>
+        <div class="sd-brand-sub">Student Portal</div>
+      </div>
+      <div class="sd-nav-wrapper">
+        <div class="sd-notch-indicator" id="sdSidebarNotch">
+          <svg width="240" height="100" viewBox="0 0 240 100" preserveAspectRatio="none">
+            <path d="M 240 0 C 240 16.5, 226.5 30, 210 30 L 56 30 A 20 20 0 0 0 56 70 L 210 70 C 226.5 70, 240 83.5, 240 100 L 240 0 Z"/>
+          </svg>
+        </div>
+        <nav class="sd-nav" id="sd-sidebarNav" onscroll="updateStudentSidebarNotch()">
+          <a class="nav-link active" id="sd-nav-live" onclick="switchStudentTab('live', this)"><span class="nav-icon"><i class="ti ti-activity"></i></span>Live Exams</a>
+          <a class="nav-link" id="sd-nav-past" onclick="switchStudentTab('past', this)"><span class="nav-icon"><i class="ti ti-history"></i></span>History</a>
+          
+          <a class="nav-link nav-link-danger" onclick="logoutStudent()" style="margin-top:auto;"><span class="nav-icon"><i class="ti ti-logout"></i></span>Logout</a>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="sd-main">
+      <div class="sd-page-heading">Welcome, <span id="sd-student-name" style="color:var(--primary);">Student</span></div>
+      <div class="sd-page-desc" id="sd-student-details">Your personal dashboard for assessments and history.</div>
+      
+      <div class="sd-content-area">
+        <!-- Live Tab -->
+        <div id="tab-sd-live" style="display:block;">
+          <div style="font-size:1.1rem; font-weight:700; color:var(--text-dim); margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;">Live &amp; Upcoming</div>
+          <div class="sd-grid" id="sd-live-grid">
+            <div style="color:var(--text-muted); font-size:0.9rem;">Loading live exams...</div>
+          </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="tab-sd-past" style="display:none;">
+          <div style="font-size:1.1rem; font-weight:700; color:var(--text-dim); margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;">Assessment History</div>
+          <div class="sd-grid" id="sd-past-grid">
+            <div style="color:var(--text-muted); font-size:0.9rem;">Loading history...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Tab Bar -->
+    <nav class="sd-mobile-bar" id="sd-mobileTabBar">
+      <div class="sd-mobile-item active" id="sd-mtab-live" onclick="switchStudentTab('live')">
+        <i class="ti ti-activity"></i><span>Live</span>
+      </div>
+      <div class="sd-mobile-item" id="sd-mtab-past" onclick="switchStudentTab('past')">
+        <i class="ti ti-history"></i><span>History</span>
+      </div>
+      <div class="sd-mobile-item" onclick="logoutStudent()" style="color:var(--danger);">
+        <i class="ti ti-logout"></i><span>Logout</span>
+      </div>
+    </nav>
+  </div>
+</div>
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- EXAM UI                                                 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="exam-ui">
+  <!-- Top Header -->
+  <div id="sticky-header">
+    <div style="display:flex; flex-direction:column; justify-content:center; gap:2px;">
+      <span style="font-size:0.7rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">M. N. College, Visnagar</span>
+      <span class="header-title" style="font-weight:800; font-size:1.05rem; color:var(--primary); font-family:'Poppins',sans-serif; line-height:1.2;">
+        digiQ Assessment
+      </span>
+    </div>
+    <div id="progress-summary" style="font-size:0.8rem; color:var(--text-muted); display:none;">
+      <span id="answered-count">0</span> / <span id="total-count">0</span> answered
+    </div>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div id="student-name-display" style="font-size: 0.85rem; font-weight: 600; color: var(--text-dim); display:none;"></div>
+      <div class="timer-badge" id="timer-badge">
+        <svg class="svg-icon anim-tick" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 9v4l2 2"></path><polyline points="10 3 14 3"></polyline></svg> <span id="timer-display">00:00</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="exam-body">
+    <!-- Tracker Sidebar (Desktop) -->
+    <div class="offcanvas-md offcanvas-start tracker-sidebar" tabindex="-1" id="sidebarMenu" style="padding:20px 16px; width:260px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div class="tracker-title">Question Map</div>
+        <button type="button" class="btn-close d-md-none" onclick="closeSidebar()" aria-label="Close"></button>
+      </div>
+
+      <!-- Answered progress -->
+      <div class="progress-label">
+        <span>Answered</span>
+        <span><span id="sidebar-answered">0</span> / <span id="sidebar-total">0</span></span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="sidebar-progress" style="width:0%;"></div>
+      </div>
+
+      <div id="tracker-container"></div>
+    </div>
+
+    <!-- Question Area -->
+    <div class="question-area">
+      <div class="section-badge" id="sec-badge">Section</div>
+      <div class="question-number" id="q-number">Question 1</div>
+      <div id="q-text"></div>
+      <div id="options-container"></div>
+      <!-- Developer credit: centered between last question and tab bar -->
+      <div style="text-align:center; padding: 14px 0 8px; display:flex; flex-direction:column; align-items:center; gap:3px;">
+        <div style="font-size:0.72rem; font-weight:400; color:#94a3b8; font-family:'Inter',sans-serif; letter-spacing:0.03em;">Developed by</div>
+        <div style="font-size:0.78rem; font-weight:400; color:#f97316; font-family:'Inter',sans-serif; letter-spacing:0.02em;">Dr. Rajendra Suthar</div>
+      </div>
+      <!-- Desktop nav-buttons hidden; mobile uses orange tab bar below -->
+    </div>
+  </div>
+
+  <!-- ─── ORANGE THEME MOBILE TAB BAR (Student Quiz) ─── -->
+  <div class="bottom-nav-container d-md-none" id="studentMobileTabBar">
+
+    <!-- Orange gradient background with curved centre cutout -->
+    <div class="tab-bar-bg"></div>
+
+    <!-- Left (Prev) and Right (Next / Submit) button zones -->
+    <div class="tab-bar-content">
+      <div class="tab-group left">
+        <button class="orange-nav-btn onb-prev" id="mob-tab-prev" onclick="navQ(-1)" aria-label="Previous Question">
+          <svg class="modern-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="20" y1="12" x2="9" y2="12" class="arrow-line"/>
+            <polyline points="11 5 4 12 11 19" class="arrow-head"/>
+          </svg>
+          <span>Prev</span>
+        </button>
+      </div>
+
+      <div class="tab-group right">
+        <!-- Next — hidden on last question -->
+        <button class="orange-nav-btn onb-next" id="mob-tab-next" onclick="navQ(1)" aria-label="Next Question">
+          <span>Next</span>
+          <svg class="modern-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="12" x2="15" y2="12" class="arrow-line"/>
+            <polyline points="13 5 20 12 13 19" class="arrow-head"/>
+          </svg>
+        </button>
+        <!-- Submit — shown on last question -->
+        <button class="orange-nav-btn onb-submit" id="mob-tab-submit" onclick="submitExam(false)" style="display:none;" aria-label="Submit Exam">
+          <span>Submit ✓</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Central Blue FAB with colored sifter squares — opens question palette -->
+    <div class="center-fab-wrapper">
+      <button class="fab-button" id="main-action-btn" onclick="openSectionDrawer()" aria-label="Open Question Palette">
+        <!-- 7 Smaller Colored Sifter Squares -->
+        <div class="sifter-square sq-1"></div>
+        <div class="sifter-square sq-2"></div>
+        <div class="sifter-square sq-3"></div>
+        <div class="sifter-square sq-4"></div>
+        <div class="sifter-square sq-5"></div>
+        <div class="sifter-square sq-6"></div>
+        <div class="sifter-square sq-7"></div>
+        <!-- 3×3 Grid Icon (Colored Rects) -->
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:2;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));">
+          <rect x="3"  y="3"  width="4" height="4" rx="0.5" fill="#fca5a5" stroke="none"></rect>
+          <rect x="10" y="3"  width="4" height="4" rx="0.5" fill="#fef08a" stroke="none"></rect>
+          <rect x="17" y="3"  width="4" height="4" rx="0.5" fill="#bbf7d0" stroke="none"></rect>
+          <rect x="3"  y="10" width="4" height="4" rx="0.5" fill="#bfdbfe" stroke="none"></rect>
+          <rect x="10" y="10" width="4" height="4" rx="0.5" fill="#ffffff" stroke="none"></rect>
+          <rect x="17" y="10" width="4" height="4" rx="0.5" fill="#e9d5ff" stroke="none"></rect>
+          <rect x="3"  y="17" width="4" height="4" rx="0.5" fill="#fbcfe8" stroke="none"></rect>
+          <rect x="10" y="17" width="4" height="4" rx="0.5" fill="#fed7aa" stroke="none"></rect>
+          <rect x="17" y="17" width="4" height="4" rx="0.5" fill="#99f6e4" stroke="none"></rect>
+        </svg>
+
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ─── SECTION DRAWER MODAL ─── -->
+  <div class="section-drawer-overlay d-md-none" id="section-drawer-overlay" onclick="closeSectionDrawer()"></div>
+  <div class="section-drawer d-md-none" id="section-drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-legend">
+      <div class="legend-item"><div class="legend-dot ld-ans"></div> Answered</div>
+      <div class="legend-item"><div class="legend-dot ld-view"></div> Viewed</div>
+      <div class="legend-item"><div class="legend-dot ld-not"></div> Not Visited</div>
+      <div class="legend-item"><div class="legend-dot ld-act"></div> Active</div>
+    </div>
+    <div class="drawer-content" id="drawer-content">
+      <!-- Dynamically populated by buildSidebarTracker() -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- RESULT UI                                               -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<div id="result-ui">
+  <div class="result-card">
+    <div class="result-emoji" id="r-emoji"><svg class="svg-icon anim-bounce" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></div>
+    <div class="result-score" id="r-score"></div>
+    <div class="result-status" id="r-status"></div>
+    <div class="result-perc-bar">
+      <div class="result-perc-fill" id="r-perc-fill" style="width:0%;"></div>
+    </div>
+    <div class="result-divider"></div>
+    <div class="result-msg" id="r-msg"></div>
+    <div class="result-college">M.N. College, Visnagar</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     CUSTOM CENTRE DIALOGUE MODAL (replaces alert/confirm)
+═══════════════════════════════════════════════════════ -->
+<div id="cModal-overlay" style="display:none;" role="dialog" aria-modal="true">
+  <div class="cModal-card" id="cModal-card">
+    <div class="cModal-icon-ring info" id="cModal-icon"><svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></div>
+    <div class="cModal-title" id="cModal-title">Notice</div>
+    <div class="cModal-msg"   id="cModal-msg">Message here.</div>
+    <div class="cModal-actions" id="cModal-actions">
+      <button class="cModal-btn cModal-btn-ok info-ok" id="cModal-btn-ok" onclick="_cModalClose(true)">OK</button>
+    </div>
+    <div class="cModal-timer-bar" id="cModal-timer-bar" style="width:100%;"></div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  const _search = window.location.search;
+  const sp = new URLSearchParams(_search);
+  let QUIZ_ID = (sp.get('quizId') || sp.get('id') || sp.get('q') || _search.substring(1).split('&')[0].split('=')[0] || '').trim();
+  let examData = [], config = [], answers = {}, currentIdx = 0, isExamLive = false;
+  let timerInt, strikes = 0, globalDuration = 0, initialDuration = 0, examSendCert = true;
+  let viewedQuestions = new Set();
+  const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
+
+  /* ══════════════════════════════════════════════════
+     CUSTOM CENTRE DIALOGUE MODAL SYSTEM
+  ══════════════════════════════════════════════════ */
+  let _cModalResolve = null;
+  const _cModalTypeMap = {
+    success: { icon:'<svg class="svg-icon anim-draw" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>', label:'OK',   okClass:'success-ok' },
+    error:   { icon:'<svg class="svg-icon anim-shake" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>', label:'Got it', okClass:'error-ok'   },
+    warning: { icon:'<svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4v.01M5.07 19H19a2 2 0 001.75-2.75L13.75 4a2 2 0 00-3.5 0L3.25 16.25a2 2 0 001.75 2.75z"></path></svg>', label:'OK',   okClass:'warning-ok' },
+    info:    { icon:'<svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>', label:'OK',   okClass:'info-ok'    },
+    confirm: { icon:'<svg class="svg-icon anim-bounce" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>', label:'Confirm', okClass:'confirm-ok' },
+  };
+
+  function showToast(msg, type = 'info', ms = 5000) {
+    const icons = { success:'<svg class="svg-icon anim-draw" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>', error:'<svg class="svg-icon anim-shake" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>', warning:'<svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4v.01M5.07 19H19a2 2 0 001.75-2.75L13.75 4a2 2 0 00-3.5 0L3.25 16.25a2 2 0 001.75 2.75z"></path></svg>', info:'<svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>' };
+    const c = document.getElementById('toast-container');
+    if (!c) return;
+    const t = document.createElement('div');
+    t.className = `toast-item ${type}`;
+    t.innerHTML = `<span class="toast-icon">${icons[type]||'<svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>'}</span><span>${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 340); }, ms);
+  }
+
+  function showModal(title, msg, type = 'info', autoCloseMs = 0) {
+    return new Promise(resolve => {
+      _cModalResolve = resolve;
+      const t = _cModalTypeMap[type] || _cModalTypeMap.info;
+      const overlay   = document.getElementById('cModal-overlay');
+      const card      = document.getElementById('cModal-card');
+      const iconEl    = document.getElementById('cModal-icon');
+      const titleEl   = document.getElementById('cModal-title');
+      const msgEl     = document.getElementById('cModal-msg');
+      const actionsEl = document.getElementById('cModal-actions');
+      const timerBar  = document.getElementById('cModal-timer-bar');
+
+      iconEl.innerHTML = t.icon;
+      iconEl.className   = `cModal-icon-ring ${type}`;
+      titleEl.innerHTML = title;
+      msgEl.innerHTML    = msg;
+
+      actionsEl.innerHTML = `<button class="cModal-btn cModal-btn-ok ${t.okClass}" onclick="_cModalClose(true)">${t.label}</button>`;
+
+      timerBar.style.transition = 'none';
+      timerBar.style.width = '100%';
+      overlay.style.display = 'flex';
+      card.classList.remove('closing');
+      overlay.classList.remove('closing');
+
+      if (autoCloseMs > 0) {
+        requestAnimationFrame(() => {
+          timerBar.style.transition = `width ${autoCloseMs}ms linear`;
+          timerBar.style.width = '0%';
+        });
+        setTimeout(() => _cModalClose(true), autoCloseMs);
+      }
+    });
+  }
+
+  function showConfirm(title, msg, confirmText = 'Confirm', cancelText = 'Cancel') {
+    return new Promise(resolve => {
+      _cModalResolve = resolve;
+      const overlay   = document.getElementById('cModal-overlay');
+      const card      = document.getElementById('cModal-card');
+      const iconEl    = document.getElementById('cModal-icon');
+      const titleEl   = document.getElementById('cModal-title');
+      const msgEl     = document.getElementById('cModal-msg');
+      const actionsEl = document.getElementById('cModal-actions');
+      const timerBar  = document.getElementById('cModal-timer-bar');
+
+      iconEl.innerHTML = '<svg class="svg-icon anim-bounce" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>';
+      iconEl.className   = 'cModal-icon-ring confirm';
+      titleEl.innerHTML = title;
+      msgEl.innerHTML    = msg;
+
+      actionsEl.innerHTML =
+        `<button class="cModal-btn cModal-btn-cancel" onclick="_cModalClose(false)">${cancelText}</button>
+         <button class="cModal-btn cModal-btn-ok confirm-ok" onclick="_cModalClose(true)">${confirmText}</button>`;
+
+      timerBar.style.width = '0';
+      overlay.style.display = 'flex';
+      card.classList.remove('closing');
+      overlay.classList.remove('closing');
+    });
+  }
+
+  function _cModalClose(result) {
+    const overlay = document.getElementById('cModal-overlay');
+    const card    = document.getElementById('cModal-card');
+    card.classList.add('closing');
+    overlay.classList.add('closing');
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      card.classList.remove('closing');
+      overlay.classList.remove('closing');
+      if (_cModalResolve) { _cModalResolve(result); _cModalResolve = null; }
+    }, 230);
+  }
+
+  // Close on backdrop click
+  document.getElementById('cModal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) _cModalClose(false);
+  });
+  // Keyboard support
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('cModal-overlay').style.display === 'flex')
+      _cModalClose(false);
+    if (e.key === 'Enter' && document.getElementById('cModal-overlay').style.display === 'flex') {
+      const okBtn = document.getElementById('cModal-btn-ok');
+      if (okBtn) okBtn.click();
+    }
+  });
+
+  /* ──────────────────────────────────────────────────────── */
+  /* INIT                                                      */
+  /* ──────────────────────────────────────────────────────── */
+  window.onload = () => {
+    if (!QUIZ_ID) {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('auth-portal').style.display = 'flex';
+      document.getElementById('quiz-title-display').innerText = 'Student Portal';
+      const subTitle = document.querySelector('.auth-subtitle');
+      if (subTitle) subTitle.innerText = 'Login to view your dashboard';
+      
+      const otpToggle = document.getElementById('btn-login-otp');
+      if (otpToggle) otpToggle.style.display = 'none'; // Only password login for portal
+      return;
+    }
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loader').style.display = 'none';
+        if (res.error) {
+          document.getElementById('auth-portal').style.display = 'flex';
+          document.getElementById('auth-portal').innerHTML =
+            `<div class="auth-card" style="text-align:center;">
+              <div style="font-size:3rem; margin-bottom:16px;"><svg class="svg-icon anim-shake" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg></div>
+              <h4 style="color:var(--danger); margin-bottom:8px;">Assessment Unavailable</h4>
+              <p style="color:var(--text-muted); font-size:0.87rem;">${res.error}</p>
+            </div>`;
+          return;
+        }
+        examSendCert = res.sendCert;
+        document.getElementById('quiz-title-display').innerText = res.title;
+        document.getElementById('auth-portal').style.display = 'flex';
+      })
+      .withFailureHandler(err => {
+        document.getElementById('loader').innerHTML =
+          `<h4 style="color:var(--danger);">Connection Error</h4><p style="color:var(--text-muted);">${err.message}</p>`;
+      })
+      .getQuizMeta(QUIZ_ID);
+  };
+
+  /* ──────────────────────────────────────────────────────── */
+  /* OTP FLOW                                                  */
+  /* ──────────────────────────────────────────────────────── */
+  function sendOTP() {
+    const payload = {
+      name:   document.getElementById('sName').value.trim(),
+      rollNo: document.getElementById('sRoll').value.trim(),
+      email:  document.getElementById('sEmail').value.trim()
+    };
+    if (!payload.name || !payload.rollNo || !payload.email) {
+      showModal('Missing Details', 'Please fill in your <strong>Full Name</strong>, <strong>Roll Number</strong>, and <strong>Email Address</strong> before requesting access.', 'warning');
+      return;
+    }
+    const btn = document.getElementById('reqStudentBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="inline-spinner"></span>Sending OTP…';
+
+    google.script.run
+      .withSuccessHandler(res => {
+        if (res.success) {
+          document.getElementById('step-1').style.display = 'none';
+          document.getElementById('step-2').style.display = 'block';
+          document.getElementById('sOtp').focus();
+        } else {
+          btn.disabled = false;
+          btn.innerHTML = '<svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg> Request Access (OTP via Email)';
+          showModal('Access Denied', res.message, 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg> Request Access (OTP via Email)';
+        showModal('Connection Error', 'Unable to connect to server. Please check your internet connection.<br><small style="color:#94a3b8">Details: ' + err.message + '</small>', 'error');
+      })
+      .requestOTP(payload, QUIZ_ID);
+  }
+
+  function showLoader(text) {
+    const loader = document.getElementById('loader');
+    if (!loader) return;
+    let lettersHtml = '';
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      const displayChar = char === ' ' ? '&nbsp;' : char;
+      const delay = (0.1 + i * 0.105).toFixed(3);
+      lettersHtml += `<span class="loader-letter" style="animation-delay: ${delay}s">${displayChar}</span>`;
+    }
+    loader.innerHTML = `
+      <div class="loader-wrapper">
+        <div class="loader"></div>
+        ${lettersHtml}
+      </div>
+    `;
+    loader.style.display = 'flex';
+  }
+
+  function verifyOTP() {
+    const email = document.getElementById('sEmail').value.trim();
+    const otp   = document.getElementById('sOtp').value.trim();
+    if (!otp || otp.length < 4) { showModal('OTP Required', 'Please enter the <strong>4-digit OTP</strong> sent to your email.', 'warning'); return; }
+
+    document.getElementById('auth-portal').style.display = 'none';
+    showLoader('GENERATING');
+
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loader').style.display = 'none';
+        if (res.success) {
+          examData       = res.exam;
+          config         = res.config;
+          globalDuration = parseInt(res.duration) * 60;
+          initialDuration = globalDuration;
+
+          const rollNo = document.getElementById('sRoll').value.trim();
+          const studentName = document.getElementById('sName').value.trim();
+          document.getElementById('student-name-display').innerText = studentName;
+          document.getElementById('student-name-display').style.display = 'block';
+
+          // AUTO-RESUME RESTORE
+          const storageKey = 'digiQ_exam_' + QUIZ_ID + '_' + rollNo;
+          const savedDuration = localStorage.getItem(storageKey + '_duration');
+          const savedAnswers = localStorage.getItem(storageKey + '_answers');
+          if (savedDuration && !isNaN(savedDuration)) {
+            const pDur = parseInt(savedDuration, 10);
+            if (pDur > 0 && pDur < globalDuration) globalDuration = pDur;
+          }
+          if (savedAnswers) {
+            try { answers = JSON.parse(savedAnswers); } catch(e){}
+          }
+
+          if (!examData || examData.length === 0) {
+            showModal('No Questions Found', 'No questions were found for this exam. Please contact your instructor immediately.', 'error');
+            return;
+          }
+          if (res.geofence && res.geofence.enable) {
+            checkGeofenceAndInit(res.geofence);
+          } else {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('auth-portal').style.display = 'none';
+            document.getElementById('ready-overlay').style.display = 'flex';
+            if (typeof pushScreen === 'function') pushScreen('ready');
+          }
+        } else {
+          showModal('Verification Failed', res.message, 'error');
+          document.getElementById('auth-portal').style.display = 'flex';
+        }
+      })
+      .withFailureHandler(err => {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('auth-portal').style.display = 'flex';
+        showModal('Connection Error', 'Unable to verify OTP. Please try again.<br><small style="color:#94a3b8">Details: ' + err.message + '</small>', 'error');
+      })
+      .verifyOTPAndBuildExam(email, otp, QUIZ_ID);
+  }
+
+  /* ────────────────────────────────────────────────────────
+     GEOFENCE — DISTANCE CALCULATOR (Haversine Formula)
+  ──────────────────────────────────────────────────────── */
+  function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371e3; // Earth's radius in metres
+    const toRad = (d) => d * Math.PI / 180;
+    const phi1 = toRad(lat1), phi2 = toRad(lat2);
+    const dPhi = toRad(lat2 - lat1);
+    const dLam = toRad(lon2 - lon1);
+    const a = Math.sin(dPhi / 2) * Math.sin(dPhi / 2) +
+              Math.cos(phi1) * Math.cos(phi2) *
+              Math.sin(dLam / 2) * Math.sin(dLam / 2);
+    return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  }
+
+  /* ────────────────────────────────────────────────────────
+     GEOFENCE — VERIFY STUDENT LOCATION BEFORE EXAM
+  ──────────────────────────────────────────────────────── */
+  function checkGeofenceAndInit(geo) {
+    if (!navigator.geolocation) {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('auth-portal').style.display = 'flex';
+      showModal('Geolocation Required', 'Your browser does not support Geolocation. Please use a modern browser on a GPS-enabled device.', 'error');
+      return;
+    }
+
+    showLoader('VERIFYING LOCATION');
+
+    const targetLat     = parseFloat(geo.lat);
+    const targetLon     = parseFloat(geo.lon);
+    const allowedRadius = parseFloat(geo.radius);
+
+    if (isNaN(targetLat) || isNaN(targetLon) || isNaN(allowedRadius)) {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('auth-portal').style.display = 'flex';
+      showModal('Invalid Geofence Configuration', 'The GPS configuration for this assessment is invalid. Please contact your instructor.', 'error');
+      return;
+    }
+
+    /* Success handler — called once GPS returns coordinates */
+    const evaluatePosition = (position) => {
+      const userLat  = position.coords.latitude;
+      const userLon  = position.coords.longitude;
+      const accuracy = position.coords.accuracy;
+
+      console.log('Geofence: Location acquired', { lat: userLat, lon: userLon, accuracy });
+
+      /* ── Distance check ── */
+      const dist = calculateHaversineDistance(userLat, userLon, targetLat, targetLon);
+
+      if (dist <= allowedRadius) {
+        /* Location verified — exam ready */
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('auth-portal').style.display = 'none';
+        document.getElementById('ready-overlay').style.display = 'flex';
+        if (typeof pushScreen === 'function') pushScreen('ready');
+      } else {
+        /* <svg class="svg-icon anim-shake" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> Outside boundary */
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('auth-portal').style.display = 'flex';
+        showModal(
+          'Geofence Violation',
+          'Your physical location is outside the allowed campus boundary for this assessment.<br><br>' +
+          '<div style="background:#f8fafc;padding:12px;border-radius:8px;font-size:0.85rem;color:#334155;text-align:left;border:1px solid #e2e8f0;">' +
+          '<strong>Distance from Campus:</strong> ' + dist + ' meters<br>' +
+          '<strong>Allowed Radius:</strong> '  + allowedRadius + ' meters<br>' +
+          '<strong>GPS Accuracy:</strong> ±'   + Math.round(accuracy) + ' meters<br>' +
+          '<strong>Campus Coordinates:</strong> ' + targetLat.toFixed(4) + ', ' + targetLon.toFixed(4) + '<br>' +
+          '<strong>Your Coordinates:</strong> '   + userLat.toFixed(5)  + ', ' + userLon.toFixed(5)  +
+          '</div>',
+          'error'
+        );
+      }
+    };
+
+    /* Error handler — covers permission denied, timeout, etc. */
+    const handleLocationError = (err) => {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('auth-portal').style.display = 'flex';
+      let msg = 'Please allow GPS location access to verify you are on campus.';
+      if      (err && err.code === 1) msg = 'Location permission was denied. Please allow location access in your browser settings, then try again.';
+      else if (err && err.code === 2) msg = 'Your location could not be determined. Ensure high-accuracy location services are active on your device.';
+      else if (err && err.code === 3) msg = 'Location request timed out. Please check that GPS / Wi-Fi location services are enabled and try again.';
+      showModal('Location Verification Failed', msg, 'error');
+    };
+
+    /* ── Fire the GPS request ── */
+    navigator.geolocation.getCurrentPosition(
+      evaluatePosition,
+      (err) => { console.warn('Geolocation error:', err); handleLocationError(err); },
+      { enableHighAccuracy: true, timeout: 30000 }
+    );
+  }
+
+  /* ──────────────────────────────────────────────────────── */
+  /* EXAM ENVIRONMENT & FULLSCREEN SETUP                      */
+  /* ──────────────────────────────────────────────────────── */
+  function forceEnterFullscreen() {
+    try {
+      const el = document.documentElement;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen || el.webkitEnterFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+      if (req) {
+        const res = req.call(el);
+        if (res && typeof res.catch === 'function') {
+          res.catch(err => console.warn("Fullscreen promise caught:", err));
+        }
+      }
+    } catch (e) {
+      console.warn("Fullscreen request ignored or unsupported:", e);
+    }
+  }
+
+  ['click', 'touchstart', 'pointerdown'].forEach(evt => {
+    document.addEventListener(evt, () => {
+      if (isExamLive && !document.fullscreenElement && !document.webkitFullscreenElement) {
+        forceEnterFullscreen();
+      }
+    }, { passive: true });
+  });
+  function startExamNow() {
+    document.getElementById('ready-overlay').style.display = 'none';
+    forceEnterFullscreen();
+    initExamEnvironment();
+  }
+
+  function initExamEnvironment() {
+    try {
+      document.getElementById('loader').style.display = 'none';
+      document.addEventListener('contextmenu', e => e.preventDefault());
+      document.addEventListener('copy',  e => e.preventDefault());
+      document.addEventListener('paste', e => e.preventDefault());
+      document.body.style.userSelect = 'none';
+
+      forceEnterFullscreen();
+
+      isExamLive = true;
+      document.getElementById('exam-ui').style.display = 'block';
+      document.getElementById('sticky-header').style.display = 'flex';
+      document.getElementById('progress-summary').style.display = 'block';
+      if (typeof pushScreen === 'function') pushScreen('exam');
+      document.getElementById('total-count').innerText = examData.length;
+      document.getElementById('sidebar-total').innerText = examData.length;
+
+      buildSidebarTracker();
+      renderQuestion();
+      startTimer();
+    } catch (err) {
+      console.error("Error initializing exam:", err);
+      document.getElementById('loader').style.display = 'none';
+      showModal('Initialization Error', 'An error occurred while loading the exam: ' + err.message, 'error');
+    }
+  }
+
+  /* ──────────────────────────────────────────────────────── */
+  /* SIDEBAR TRACKER                                           */
+  /* ──────────────────────────────────────────────────────── */
+  function buildSidebarTracker() {
+    let html = ''; let globalQIndex = 0;
+    if (Array.isArray(config)) {
+      config.forEach(sec => {
+        html += `<div class="sec-title">${sec.name}</div><div class="circle-grid">`;
+        for (let i = 0; i < (sec.pick || 0); i++) {
+          html += `<div class="q-circle" id="circle-${globalQIndex}" data-index="${globalQIndex}" onclick="jumpTo(${globalQIndex})">${i+1}</div>`;
+          globalQIndex++;
+        }
+        html += `</div>`;
+      });
+    }
+    const container = document.getElementById('tracker-container');
+    if (container) container.innerHTML = html;
+    
+    // Also build for mobile section drawer
+    const drawerContainer = document.getElementById('drawer-content');
+    if (drawerContainer) drawerContainer.innerHTML = html;
+  }
+
+  function updateProgressUI() {
+    const answeredCount = Object.keys(answers).length;
+    const total = examData.length;
+    const pct = total > 0 ? (answeredCount / total * 100).toFixed(0) : 0;
+
+    document.getElementById('sidebar-answered').innerText = answeredCount;
+    document.getElementById('sidebar-progress').style.width = pct + '%';
+    document.getElementById('answered-count').innerText = answeredCount;
+  }
+
+  /* ──────────────────────────────────────────────────────── */
+  /* RENDER QUESTION                                           */
+  /* ──────────────────────────────────────────────────────── */
+  function renderQuestion() {
+    const q = examData[currentIdx];
+    document.getElementById('sec-badge').innerHTML = '<svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"></path></svg> ' + q.section.toUpperCase();
+    document.getElementById('q-number').innerText  = `Question ${currentIdx + 1} of ${examData.length}`;
+    document.getElementById('q-text').innerHTML    = q.question;
+
+    const container = document.getElementById('options-container');
+    const qType = String(q.type || 'MCQ').toUpperCase();
+    const currentAns = (answers[q.id] != null) ? String(answers[q.id]) : '';
+
+    if (qType === 'SHORT') {
+      const safeAns = currentAns.replace(/"/g, '&quot;');
+      container.innerHTML = `
+        <div style="padding: 14px 0;">
+          <input type="text" class="f-input"
+                 placeholder="Type your brief answer here..."
+                 value="${safeAns}"
+                 oninput="onTextAns('${q.id}', this.value)"
+                 style="font-size: 1.05rem; padding: 16px 20px; border: 2px solid #cbd5e1; border-radius: 12px; width: 100%; background: #ffffff; color: #1e293b; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+          <div style="margin-top:8px; font-size:0.8rem; color:#64748b;"><svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> Type a brief word or phrase. Minor typing typos are automatically accommodated.</div>
+        </div>`;
+    } else if (qType === 'ESSAY') {
+      const safeAns = currentAns.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      container.innerHTML = `
+        <div style="padding: 14px 0;">
+          <textarea class="f-textarea"
+                    placeholder="Type your descriptive essay answer here..."
+                    rows="7"
+                    oninput="onTextAns('${q.id}', this.value)"
+                    style="font-size: 0.98rem; padding: 16px 20px; border: 2px solid #cbd5e1; border-radius: 12px; width: 100%; background: #ffffff; color: #1e293b; font-weight: 500; resize: vertical; line-height: 1.6;">${safeAns}</textarea>
+          <div style="margin-top:8px; font-size:0.8rem; color:#64748b;"><svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> Your descriptive answer will be submitted for review and evaluation by your instructor.</div>
+        </div>`;
+    } else {
+      container.innerHTML = q.options.map((opt, i) => {
+        const isSelected = (answers[q.id] != null && String(answers[q.id]).trim() === String(opt).trim());
+        const sel = isSelected ? 'selected' : '';
+        const safeOpt = String(opt).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `<button class="option-btn ${sel}" onclick="selectAns('${q.id}', '${safeOpt}')">
+          <span class="option-letter">${OPTION_LETTERS[i]}</span>
+          <span>${opt}</span>
+        </button>`;
+      }).join('');
+    }
+
+    /* ── Desktop nav buttons (kept null-safe; elements removed from DOM) ── */
+    const isLast      = currentIdx === examData.length - 1;
+    const prevBtnEl   = document.getElementById('prev-btn');
+    const nextBtnEl   = document.getElementById('next-btn');
+    const submitBtnEl = document.getElementById('submit-btn');
+    if (prevBtnEl)   prevBtnEl.disabled              = (currentIdx === 0);
+    if (nextBtnEl)   nextBtnEl.style.display          = isLast ? 'none' : 'inline-flex';
+    if (submitBtnEl) submitBtnEl.style.display        = isLast ? 'inline-flex' : 'none';
+
+    // Update mobile tab bar buttons (<768px)
+    const mobPrev = document.getElementById('mob-tab-prev');
+    const mobNext = document.getElementById('mob-tab-next');
+    const mobSubm = document.getElementById('mob-tab-submit');
+    if (mobPrev) mobPrev.disabled = (currentIdx === 0);
+    if (mobNext) {
+      mobNext.style.display = isLast ? 'none' : 'flex';
+    }
+    if (mobSubm) {
+      mobSubm.style.display = isLast ? 'flex' : 'none';
+    }
+
+    viewedQuestions.add(currentIdx);
+
+    document.querySelectorAll('.q-circle').forEach(c => {
+      const idxStr = c.getAttribute('data-index');
+      if (!idxStr) return;
+      const idx = parseInt(idxStr, 10);
+      const q = examData[idx];
+      
+      c.className = 'q-circle'; // Reset classes
+      let isAns = false;
+      if (q && answers[q.id] != null && String(answers[q.id]).trim() !== '') {
+        c.classList.add('answered');
+        isAns = true;
+      }
+      
+      if (idx === currentIdx) {
+        c.classList.add('active');
+      } else if (viewedQuestions.has(idx) && !isAns) {
+        c.classList.add('viewed');
+      }
+    });
+
+    updateProgressUI();
+
+    if (window.MathJax && typeof MathJax.typesetPromise === 'function') {
+      if (typeof MathJax.typesetClear === 'function') MathJax.typesetClear();
+      MathJax.typesetPromise().catch(err => console.warn('MathJax error:', err.message));
+    }
+  }
+
+  /* ──────────────────────────────────────────────────────── */
+  /* INTERACTION                                               */
+  /* ──────────────────────────────────────────────────────── */
+  function selectAns(qId, val) {
+    let decoded = String(val).replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\\\\'/g, "'");
+    answers[qId] = decoded;
+    renderQuestion();
+    saveStateToLocal();
+    updateProgressUI();
+  }
+
+  function onTextAns(qId, val) {
+    answers[qId] = val;
+    saveStateToLocal();
+    updateProgressUI();
+    document.querySelectorAll('.q-circle').forEach(c => {
+      const idxStr = c.getAttribute('data-index');
+      if (!idxStr) return;
+      const idx = parseInt(idxStr, 10);
+      const q = examData[idx];
+      if (q && q.id === qId) {
+        if (val && String(val).trim() !== '') {
+          c.classList.add('answered');
+        } else {
+          c.classList.remove('answered');
+        }
+      }
+    });
+  }
+
+  function navQ(dir) { currentIdx += dir; renderQuestion(); }
+
+  function jumpTo(idx) {
+    currentIdx = idx;
+    renderQuestion();
+    closeSidebar();
+  }
+
+  function closeSidebar() {
+    if (window.innerWidth < 768) {
+      const el = document.getElementById('sidebarMenu');
+      if (el) {
+        const bsOC = bootstrap.Offcanvas.getInstance(el) || bootstrap.Offcanvas.getOrCreateInstance(el);
+        if (bsOC) bsOC.hide();
+      }
+      closeSectionDrawer();
+    }
+  }
+
+  function openSectionDrawer() {
+    document.getElementById('section-drawer').classList.add('open');
+    document.getElementById('section-drawer-overlay').classList.add('open');
+    /* Lift the FAB up with a spring animation */
+    const fab = document.getElementById('main-action-btn');
+    if (fab) fab.classList.add('fab-lifted');
+  }
+
+  function closeSectionDrawer() {
+    const drawer  = document.getElementById('section-drawer');
+    const overlay = document.getElementById('section-drawer-overlay');
+    if (drawer)  drawer.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+    /* Return FAB to resting position */
+    const fab = document.getElementById('main-action-btn');
+    if (fab) fab.classList.remove('fab-lifted');
+  }
+
+  /* ──────────────────────────────────────────────────────── */
+  /* PROCTORING                                                */
+  /* ──────────────────────────────────────────────────────── */
+  document.addEventListener('visibilitychange', () => { if (isExamLive && document.hidden) handleStrike(); });
+  document.addEventListener('fullscreenchange', () => { if (isExamLive && !document.fullscreenElement) handleStrike(); });
+
+  function handleStrike() {
+    if (!isExamLive) return;
+    strikes++;
+    document.getElementById('strike-count').innerText = strikes;
+    document.getElementById('strike-overlay').style.display = 'flex';
+    if (strikes >= 3) { dismissStrike(); submitExam(true); }
+  }
+
+  function dismissStrike() {
+    document.getElementById('strike-overlay').style.display = 'none';
+    forceEnterFullscreen();
+  }
+
+  function saveStateToLocal() {
+    if (!isExamLive) return;
+    const rollNo = document.getElementById('sRoll').value.trim();
+    if (!rollNo) return;
+    const storageKey = 'digiQ_exam_' + QUIZ_ID + '_' + rollNo;
+    localStorage.setItem(storageKey + '_duration', globalDuration);
+    localStorage.setItem(storageKey + '_answers', JSON.stringify(answers));
+  }
+
+  /* ──────────────────────────────────────────────────────── */
+  /* TIMER                                                     */
+  /* ──────────────────────────────────────────────────────── */
+  function startTimer() {
+    const display = document.getElementById('timer-display');
+    const badge   = document.getElementById('timer-badge');
+
+    timerInt = setInterval(() => {
+      const m = Math.floor(globalDuration / 60);
+      const s = globalDuration % 60;
+      display.textContent = (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+
+      // Color urgency dynamic based on percentage
+      badge.className = 'timer-badge';
+      const totalSec = globalDuration;
+      
+      // 5% time remaining -> Red (danger)
+      if (totalSec <= initialDuration * 0.05) {
+        badge.classList.add('danger');
+      } 
+      // 30% time remaining -> Orange (warning)
+      else if (totalSec <= initialDuration * 0.30) {
+        badge.classList.add('warning');
+      }
+
+      if (--globalDuration < 0) {
+        clearInterval(timerInt);
+        const jitter = Math.floor(Math.random() * 8000); // 0–8s stagger for crash-proofing
+        setTimeout(() => submitExam(true), jitter);
+      } else {
+        if (globalDuration % 2 === 0) saveStateToLocal();
+      }
+    }, 1000);
+  }
+
+  /* ──────────────────────────────────────────────────────── */
+  /* SUBMIT                                                    */
+  /* ──────────────────────────────────────────────────────── */
+  async function submitExam(force = false) {
+    const unanswered = examData.length - Object.keys(answers).length;
+    if (!force) {
+      const msg = unanswered > 0
+        ? `You have <strong>${unanswered} unanswered question(s)</strong>. Are you sure you want to submit your exam?`
+        : 'Are you sure you want to <strong>submit your exam</strong>? This action cannot be undone.';
+      const confirmed = await showConfirm('Submit Exam', msg, '<svg class="svg-icon anim-draw" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Submit Now', 'Continue Exam');
+      if (!confirmed) return;
+    }
+
+    isExamLive = false;
+    clearInterval(timerInt);
+    document.getElementById('exam-ui').style.display = 'none';
+    showLoader('SUBMITTING');
+    if (document.fullscreenElement) document.exitFullscreen();
+    
+    const rollNoStr = document.getElementById('sRoll').value.trim();
+    localStorage.removeItem('digiQ_exam_' + QUIZ_ID + '_' + rollNoStr + '_duration');
+    localStorage.removeItem('digiQ_exam_' + QUIZ_ID + '_' + rollNoStr + '_answers');
+
+    const payload = {
+      name:          document.getElementById('sName').value,
+      rollNo:        document.getElementById('sRoll').value,
+      email:         document.getElementById('sEmail').value,
+      quizId:        QUIZ_ID,
+      userAnswers:   answers,
+      forceSubmitted: force
+    };
+
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loader').style.display = 'none';
+
+        if (res.alreadySubmitted) {
+          showModal('Submitted Already', 'Our records indicate that you have already submitted this exam. Multiple submissions are not allowed.', 'warning');
+          document.getElementById('exam-ui').style.display = 'none';
+          return;
+        }
+
+        const isEssayQuiz = res.isEssayQuiz || examData.some(q => String(q.type || '').toUpperCase() === 'ESSAY');
+        if (isEssayQuiz) {
+          showModal('Quiz Submitted Successfully! <svg class="svg-icon anim-draw" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>',
+                    'Your descriptive essay answers have been submitted successfully.<br><br><svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> <strong>You will receive an email with your detailed results and feedback once your instructor has graded your submission.</strong>',
+                    'success');
+          return;
+        }
+
+        const passed = res.passed;
+        const perc   = parseFloat(res.perc);
+
+        // Populate result card
+        document.getElementById('r-emoji').innerHTML  = passed ? '<svg class="svg-icon anim-bounce" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10M5 4h14v4a7 7 0 01-14 0V4z"></path></svg>' : '<svg class="svg-icon anim-float" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"></path></svg>';
+        document.getElementById('r-score').innerText  = `${res.score} / ${res.total}`;
+
+        const statusEl = document.getElementById('r-status');
+        statusEl.innerText = passed ? 'PASSED ✓' : 'FAILED';
+        statusEl.className = 'result-status ' + (passed ? 'passed' : 'failed');
+
+        // Perc bar
+        const fill = document.getElementById('r-perc-fill');
+        fill.className = 'result-perc-fill ' + (passed ? 'passed' : 'failed');
+        setTimeout(() => { fill.style.width = Math.min(perc, 100) + '%'; }, 100);
+
+        // Message
+        const msgEl = document.getElementById('r-msg');
+        if (passed && examSendCert) {
+          msgEl.innerHTML = `<svg class="svg-icon anim-float" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg> Congratulations! Your certificate has been emailed instantly.`;
+        } else if (passed) {
+          msgEl.innerHTML = `<svg class="svg-icon anim-draw" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg> Well done! Your results have been emailed.`;
+        } else {
+          msgEl.innerHTML = `<svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg> Your score: <strong>${perc}%</strong>. Keep practicing!`;
+        }
+
+        // Show result
+        document.getElementById('result-ui').style.display = 'flex';
+        if (typeof pushScreen === 'function') pushScreen('result');
+
+        // Confetti for pass
+        if (passed) launchConfetti();
+      })
+      .withFailureHandler(err => {
+        document.getElementById('loader').style.display = 'none';
+        showModal('Submission Error', 'Failed to submit exam.<br><strong>Please contact your instructor immediately.</strong><br><small style="color:#94a3b8">Details: ' + err.message + '</small>', 'error');
+        document.getElementById('exam-ui').style.display = 'block';
+        isExamLive = true;
+      })
+      .submitExam(payload);
+  }
+
+  /* ──────────────────────────────────────────────────────── */
+  /* CONFETTI                                                  */
+  /* ──────────────────────────────────────────────────────── */
+  function launchConfetti() {
+    const colors = ['#4f46e5','#10b981','#f59e0b','#06b6d4','#ec4899','#8b5cf6'];
+    for (let i = 0; i < 80; i++) {
+      setTimeout(() => {
+        const p = document.createElement('div');
+        p.className = 'confetti-particle';
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+        p.style.width  = (6 + Math.random() * 8) + 'px';
+        p.style.height = (6 + Math.random() * 8) + 'px';
+        p.style.animationDuration = (2 + Math.random() * 3) + 's';
+        p.style.animationDelay   = (Math.random() * 0.5) + 's';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 5500);
+      }, i * 30);
+    }
+  }
+
+  /* ──────────────────────────────────────────────────────── */
+  /* SESSION INACTIVITY MONITOR (10 MINUTES ON REFRESH)       */
+  /* ──────────────────────────────────────────────────────── */
+  const INACTIVITY_LIMIT_MS = 10 * 60 * 1000;
+  
+  function updateLastActivity() {
+    localStorage.setItem('digiQ_lastActivity', Date.now().toString());
+  }
+
+  function checkSessionTimeout() {
+    const lastActivity = localStorage.getItem('digiQ_lastActivity');
+    if (lastActivity) {
+      const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
+      if (timeSinceLastActivity > INACTIVITY_LIMIT_MS) {
+        localStorage.removeItem('digiQ_lastActivity');
+        showToast('Session expired due to inactivity! Log in again.', 'error');
+        setTimeout(() => {
+          window.location.reload(); // Reloading without state essentially forces re-login flow if needed
+        }, 2000);
+      }
+    }
+    updateLastActivity();
+  }
+
+  // Check on page load (refresh)
+  window.addEventListener('load', () => {
+    checkSessionTimeout();
+  });
+
+  // Track activity to reset the timer
+  ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'].forEach(evt => {
+    document.addEventListener(evt, () => {
+      // Throttle localStorage updates to max once per second
+      if (!window.activityThrottle) {
+        window.activityThrottle = true;
+        updateLastActivity();
+        setTimeout(() => { window.activityThrottle = false; }, 1000);
+      }
+    }, { passive: true });
+  });
+
+  // --- HISTORY API ---
+  function pushScreen(screenId) {
+    history.pushState({ screen: screenId }, '', '#' + screenId);
+  }
+  window.addEventListener('popstate', (e) => {
+    if (e.state && e.state.screen) {
+      document.getElementById('auth-portal').style.display = 'none';
+      document.getElementById('ready-overlay').style.display = 'none';
+      document.getElementById('exam-ui').style.display = 'none';
+      if(document.getElementById('student-dashboard')) document.getElementById('student-dashboard').style.display = 'none';
+      if(document.getElementById('result-ui')) document.getElementById('result-ui').style.display = 'none';
+      
+      const s = e.state.screen;
+      if (s === 'auth') document.getElementById('auth-portal').style.display = 'flex';
+      if (s === 'ready') document.getElementById('ready-overlay').style.display = 'flex';
+      if (s === 'dashboard') {
+        if(document.getElementById('student-dashboard')) document.getElementById('student-dashboard').style.display = 'block';
+      }
+      if (s === 'exam') {
+        document.getElementById('exam-ui').style.display = 'block';
+        document.getElementById('sticky-header').style.display = 'flex';
+      }
+      if (s === 'result' && document.getElementById('result-ui')) document.getElementById('result-ui').style.display = 'flex';
+    }
+  });
+
+  setTimeout(() => { if (document.getElementById('auth-portal').style.display !== 'none') pushScreen('auth'); }, 500);
+
+  /* ──────────────────────────────────────────────────────── */
+  /* STUDENT PORTAL LOGIC                                      */
+  /* ──────────────────────────────────────────────────────── */
+
+  function toggleLoginMethod(method) {
+    if (method === 'pwd') {
+      document.getElementById('login-pwd-section').style.display = 'block';
+      document.getElementById('login-otp-section').style.display = 'none';
+      document.getElementById('btn-login-pwd').style.background = '#fff';
+      document.getElementById('btn-login-pwd').style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+      document.getElementById('btn-login-pwd').style.color = 'var(--primary)';
+      
+      document.getElementById('btn-login-otp').style.background = 'transparent';
+      document.getElementById('btn-login-otp').style.boxShadow = 'none';
+      document.getElementById('btn-login-otp').style.color = 'var(--text-muted)';
+    } else {
+      document.getElementById('login-pwd-section').style.display = 'none';
+      document.getElementById('login-otp-section').style.display = 'block';
+      
+      document.getElementById('btn-login-otp').style.background = '#fff';
+      document.getElementById('btn-login-otp').style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+      document.getElementById('btn-login-otp').style.color = 'var(--primary)';
+      
+      document.getElementById('btn-login-pwd').style.background = 'transparent';
+      document.getElementById('btn-login-pwd').style.boxShadow = 'none';
+      document.getElementById('btn-login-pwd').style.color = 'var(--text-muted)';
+    }
+  }
+
+  function enterAssessmentFromDashboard(qId) {
+    QUIZ_ID = qId;
+    const rollNo = document.getElementById('sRollPwd').value.trim() || document.getElementById('sRoll').value.trim();
+    const email = document.getElementById('sEmailPwd').value.trim() || document.getElementById('sEmail').value.trim();
+    const password = document.getElementById('sPassword').value.trim();
+
+    if (!rollNo || !email || !password) {
+      window.location.href = '?q=' + qId;
+      return;
+    }
+
+    document.getElementById('student-dashboard').style.display = 'none';
+    document.getElementById('loader').style.display = 'flex';
+
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loader').style.display = 'none';
+        if (res.success) {
+          examData       = res.exam;
+          globalDuration = parseInt(res.duration) * 60;
+          initialDuration = globalDuration;
+          config         = res.config;
+          geofenceConfig = res.geofence;
+          
+          rollNoStr = res.student.rollNo;
+          studentEmailStr = res.student.email;
+          
+          document.getElementById('student-name-display').innerText = res.student.name;
+          document.getElementById('student-name-display').style.display = 'block';
+          
+          const storageKey = 'digiQ_exam_' + QUIZ_ID + '_' + rollNoStr;
+          const savedDuration = localStorage.getItem(storageKey + '_duration');
+          const savedAnswers = localStorage.getItem(storageKey + '_answers');
+          if (savedDuration && !isNaN(savedDuration)) {
+            const pDur = parseInt(savedDuration, 10);
+            if (pDur > 0 && pDur < globalDuration) globalDuration = pDur;
+          }
+          if (savedAnswers) {
+            try { answers = JSON.parse(savedAnswers); } catch(e){}
+          }
+
+          if (!examData || examData.length === 0) {
+            _cModalShow('No Questions Found', 'No questions were found for this exam.');
+            document.getElementById('student-dashboard').style.display = 'flex';
+            return;
+          }
+
+          if (res.geofence && res.geofence.enable) {
+            checkGeofenceAndInit(res.geofence);
+          } else {
+            document.getElementById('auth-portal').style.display = 'none';
+            document.getElementById('ready-overlay').style.display = 'flex';
+            if (typeof pushScreen === 'function') pushScreen('ready');
+          }
+        } else {
+          _cModalShow('Access Denied', res.message);
+          document.getElementById('student-dashboard').style.display = 'flex';
+        }
+      })
+      .withFailureHandler(err => {
+        document.getElementById('loader').style.display = 'none';
+        _cModalShow('Connection Error', err.message);
+        document.getElementById('student-dashboard').style.display = 'flex';
+      })
+      .verifyPasswordAndBuildExam(rollNo, email, password, QUIZ_ID);
+  }
+
+  function loginWithPassword() {
+    const rollNo = document.getElementById('sRollPwd').value.trim();
+    const email = document.getElementById('sEmailPwd').value.trim();
+    const password = document.getElementById('sPassword').value.trim();
+
+    if (!rollNo || !email || !password) {
+      _cModalShow('Missing Info', 'Please enter your Roll Number, Email, and Password.');
+      return;
+    }
+
+    document.getElementById('loader').style.display = 'flex';
+
+    if (QUIZ_ID) {
+      // Direct login to a quiz via password
+      google.script.run
+        .withSuccessHandler(res => {
+          document.getElementById('loader').style.display = 'none';
+          if (res.success) {
+            examData       = res.exam;
+            globalDuration = parseInt(res.duration) * 60;
+            initialDuration = globalDuration;
+            config         = res.config;
+            geofenceConfig = res.geofence;
+            
+            rollNoStr = res.student.rollNo;
+            studentEmailStr = res.student.email;
+            
+            document.getElementById('student-name-display').innerText = res.student.name;
+            document.getElementById('student-name-display').style.display = 'block';
+            
+            // AUTO-RESUME RESTORE
+            const storageKey = 'digiQ_exam_' + QUIZ_ID + '_' + rollNoStr;
+            const savedDuration = localStorage.getItem(storageKey + '_duration');
+            const savedAnswers = localStorage.getItem(storageKey + '_answers');
+            if (savedDuration && !isNaN(savedDuration)) {
+              const pDur = parseInt(savedDuration, 10);
+              if (pDur > 0 && pDur < globalDuration) globalDuration = pDur;
+            }
+            if (savedAnswers) {
+              try { answers = JSON.parse(savedAnswers); } catch(e){}
+            }
+
+            if (!examData || examData.length === 0) {
+              _cModalShow('No Questions Found', 'No questions were found for this exam.');
+              return;
+            }
+
+            if (res.geofence && res.geofence.enable) {
+              checkGeofenceAndInit(res.geofence);
+            } else {
+              document.getElementById('auth-portal').style.display = 'none';
+              pushScreen('ready');
+              document.getElementById('ready-overlay').style.display = 'flex';
+            }
+          } else {
+            _cModalShow('Login Failed', res.message);
+          }
+        })
+        .withFailureHandler(err => {
+          document.getElementById('loader').style.display = 'none';
+          _cModalShow('Connection Error', err.message);
+        })
+        .verifyPasswordAndBuildExam(rollNo, email, password, QUIZ_ID);
+    } else {
+      // Regular login to student dashboard
+      google.script.run
+        .withSuccessHandler(res => {
+          document.getElementById('loader').style.display = 'none';
+          if (res.success) {
+            rollNoStr = res.student.rollNo;
+            studentEmailStr = res.student.email;
+            document.getElementById('sd-student-name').innerText = res.student.name;
+            const program = res.student.program || '';
+            const semester = res.student.semester || '';
+            const sdDetails = document.getElementById('sd-student-details');
+            if (sdDetails) {
+               let detailsHtml = `<div style="margin-bottom:4px;"><i class="ti ti-mail" style="margin-right:6px;"></i>${res.student.email}</div>`;
+               if (program || semester) {
+                 detailsHtml += `<div><i class="ti ti-school" style="margin-right:6px;"></i>${program ? program : ''}${program && semester ? ' | ' : ''}${semester ? 'Semester ' + semester : ''}</div>`;
+               }
+               sdDetails.innerHTML = detailsHtml;
+            }
+            document.getElementById('auth-portal').style.display = 'none';
+            document.getElementById('student-dashboard').style.display = 'block';
+            pushScreen('dashboard');
+            setTimeout(updateStudentSidebarNotch, 50);
+            loadStudentDashboard();
+          } else {
+            _cModalShow('Login Failed', res.message);
+          }
+        })
+        .withFailureHandler(err => {
+          document.getElementById('loader').style.display = 'none';
+          _cModalShow('Connection Error', err.message);
+        })
+        .loginStudentPassword(rollNo, email, password);
+    }
+  }
+
+  function switchStudentTab(tabId, el) {
+    document.getElementById('tab-sd-live').style.display = 'none';
+    document.getElementById('tab-sd-past').style.display = 'none';
+    if (document.getElementById('tab-sd-' + tabId)) {
+      document.getElementById('tab-sd-' + tabId).style.display = 'block';
+    }
+
+    document.querySelectorAll('#sd-sidebarNav .nav-link').forEach(link => link.classList.remove('active'));
+    if (el && el.classList.contains('nav-link')) {
+      el.classList.add('active');
+    } else {
+      let matchingLink = document.getElementById('sd-nav-' + tabId);
+      if (matchingLink) matchingLink.classList.add('active');
+    }
+
+    document.querySelectorAll('#sd-mobileTabBar .sd-mobile-item').forEach(link => link.classList.remove('active'));
+    let mobItem = document.getElementById('sd-mtab-' + tabId);
+    if (mobItem) mobItem.classList.add('active');
+
+    setTimeout(updateStudentSidebarNotch, 50);
+  }
+
+  function updateStudentSidebarNotch() {
+    const nav = document.getElementById('sd-sidebarNav');
+    if (!nav) return;
+    const activeLink = nav.querySelector('.nav-link.active');
+    if (!activeLink) return;
+    
+    let index = 0;
+    const links = Array.from(nav.querySelectorAll('.nav-link:not([style*="display: none"]):not(.nav-link-danger)'));
+    for (let i = 0; i < links.length; i++) {
+      if (links[i] === activeLink) {
+        index = i;
+        break;
+      }
+    }
+    
+    const topRelative = (index * 40) - nav.scrollTop;
+    const notchEl = document.getElementById('sdSidebarNotch');
+    if (notchEl) {
+      notchEl.style.transform = `translateY(${topRelative}px)`;
+    }
+  }
+
+  function loadStudentDashboard() {
+    google.script.run
+      .withSuccessHandler(data => {
+        const liveGrid = document.getElementById('sd-live-grid');
+        const pastGrid = document.getElementById('sd-past-grid');
+        liveGrid.innerHTML = '';
+        pastGrid.innerHTML = '';
+        
+        if (!data.success) {
+          liveGrid.innerHTML = `<div style="color:var(--danger); grid-column: 1 / -1;">Error: ${data.message}</div>`;
+          return;
+        }
+        
+        if (data.activeTests && data.activeTests.length > 0) {
+          data.activeTests.forEach(q => {
+            liveGrid.innerHTML += `
+              <div class="sd-card">
+                <div class="sd-card-tag sd-tag-live">LIVE</div>
+                <div class="sd-card-title">${q.title}</div>
+                <div class="sd-card-meta"><i class="ti ti-clock"></i> ${q.duration || 'N/A'} Mins</div>
+                <button class="sd-btn-start" onclick="enterAssessmentFromDashboard('${q.quizId}')"><i class="ti ti-play"></i> Enter Assessment</button>
+              </div>`;
+          });
+        } else {
+          liveGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem; grid-column: 1 / -1;">No live assessments available at this time.</div>';
+        }
+
+        if (data.pastTests && data.pastTests.length > 0) {
+          data.pastTests.forEach(sub => {
+            const passed = sub.passed === 'Yes' || sub.passed === true;
+            const tagClass = passed ? 'sd-tag-passed' : 'sd-tag-failed';
+            pastGrid.innerHTML += `
+              <div class="sd-card">
+                <div class="sd-card-tag ${tagClass}">${passed ? 'PASSED' : 'FAILED'}</div>
+                <div class="sd-card-title">${sub.title}</div>
+                <div class="sd-card-meta"><i class="ti ti-calendar-check"></i> Submitted: ${new Date(sub.timestamp).toLocaleDateString()}</div>
+                <div class="sd-score-box">
+                  <div class="sd-score-text">${sub.score} / ${sub.total}</div>
+                  <div style="font-size:0.8rem; color:var(--text-dim); font-weight:600;">${sub.perc}%</div>
+                </div>
+              </div>`;
+          });
+        } else {
+          pastGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem; grid-column: 1 / -1;">No past submissions found.</div>';
+        }
+      })
+      .withFailureHandler(err => {
+        document.getElementById('sd-live-grid').innerHTML = '<div style="color:var(--danger); grid-column: 1 / -1;">Failed to load data.</div>';
+        document.getElementById('sd-past-grid').innerHTML = '';
+      })
+      .getStudentDashboardData(studentEmailStr, rollNoStr);
+  }
+
+  function logoutStudent() {
+    window.location.reload();
+  }
+</script>
+</body>
+</html>
