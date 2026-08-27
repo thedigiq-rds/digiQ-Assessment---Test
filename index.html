@@ -2113,7 +2113,8 @@ function callBackend(action, args, onSuccess, onFailure) {
 
 <script>
   const _search = window.location.search;
-  const QUIZ_ID = (new URLSearchParams(_search).get('quizId') || new URLSearchParams(_search).get('id') || _search.substring(1).split('&')[0].split('=')[0] || '');
+  const sp = new URLSearchParams(_search);
+  const QUIZ_ID = (sp.get('quizId') || sp.get('id') || sp.get('q') || _search.substring(1).split('&')[0].split('=')[0] || '').trim();
   let examData = [], config = [], answers = {}, currentIdx = 0, isExamLive = false;
   let timerInt, strikes = 0, globalDuration = 0, initialDuration = 0, examSendCert = true;
   let viewedQuestions = new Set();
