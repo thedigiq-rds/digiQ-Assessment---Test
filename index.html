@@ -712,9 +712,11 @@ function callBackend(action, args, onSuccess, onFailure) {
     }
     @media (min-width: 768px) {
       .tracker-sidebar {
-        position: sticky;
+        position: sticky !important;
         top: 58px;
-        height: calc(100vh - 58px);
+        height: calc(100vh - 58px) !important;
+        width: 260px !important;
+        display: block !important;
       }
     }
     .tracker-title { font-weight: 700; font-size: 0.88rem; color: var(--text-dim); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -1998,7 +2000,7 @@ function callBackend(action, args, onSuccess, onFailure) {
   </div>
 
   <!-- ─── ORANGE THEME MOBILE TAB BAR (Student Quiz) ─── -->
-  <div class="bottom-nav-container" id="studentMobileTabBar">
+  <div class="bottom-nav-container d-md-none" id="studentMobileTabBar">
 
     <!-- Orange gradient background with curved centre cutout -->
     <div class="tab-bar-bg"></div>
@@ -2061,8 +2063,8 @@ function callBackend(action, args, onSuccess, onFailure) {
   </div>
 
   <!-- ─── SECTION DRAWER MODAL ─── -->
-  <div class="section-drawer-overlay" id="section-drawer-overlay" onclick="closeSectionDrawer()"></div>
-  <div class="section-drawer" id="section-drawer">
+  <div class="section-drawer-overlay d-md-none" id="section-drawer-overlay" onclick="closeSectionDrawer()"></div>
+  <div class="section-drawer d-md-none" id="section-drawer">
     <div class="drawer-handle"></div>
     <div class="drawer-legend">
       <div class="legend-item"><div class="legend-dot ld-ans"></div> Answered</div>
