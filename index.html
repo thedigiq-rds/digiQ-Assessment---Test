@@ -68,7 +68,7 @@ function callBackend(action, args, onSuccess, onFailure) {
   fetch(API_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify({ action: action, args: args })
+    body: JSON.stringify({ action: action, args: args, _ts: Date.now() })
   })
   .then(res => res.json())
   .then(data => {
@@ -2347,7 +2347,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     <div class="result-divider"></div>
     <div class="result-msg" id="r-msg"></div>
     <div class="result-college">M.N. College, Visnagar</div>
-    <button class="sd-btn-start" style="margin-top:24px; width:auto; padding: 12px 24px;" onclick="returnToDashboard()">Return to Dashboard</button>
+    <button class="sd-btn-start" style="margin: 24px auto 0; width: fit-content; padding: 12px 24px;" onclick="returnToDashboard()">Return to Dashboard</button>
   </div>
 </div>
 
@@ -3063,6 +3063,14 @@ function callBackend(action, args, onSuccess, onFailure) {
     document.getElementById('exam-ui').style.display = 'none';
     document.getElementById('student-dashboard').style.display = 'block';
     if (typeof pushScreen === 'function') pushScreen('dashboard');
+    if (typeof switchStudentTab === 'function') {
+      const pastNav = document.getElementById('sd-nav-past');
+      if (pastNav) switchStudentTab('past', pastNav);
+    }
+    const lGrid = document.getElementById('sd-live-grid');
+    const pGrid = document.getElementById('sd-past-grid');
+    if (lGrid) lGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem; grid-column: 1 / -1;">Refreshing data...</div>';
+    if (pGrid) pGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem; grid-column: 1 / -1;">Refreshing data...</div>';
     loadStudentDashboard();
   }
 
