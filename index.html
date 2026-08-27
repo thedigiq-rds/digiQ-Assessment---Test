@@ -2002,24 +2002,94 @@ function callBackend(action, args, onSuccess, onFailure) {
   .sd-score-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; margin-top: 16px; text-align: center; }
   .sd-score-text { font-size: 1.4rem; font-weight: 800; color: var(--primary-dk); }
 
-  /* Mobile Tab Bar */
-  .sd-mobile-bar {
-    display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 65px;
-    background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(0,0,0,0.05); box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
-    z-index: 9999; flex-direction: row; justify-content: space-around; align-items: center; padding: 0 10px;
+  /* Mobile Tab Bar - Dynamic Raised Notch */
+  .sd-mobile-bar { display: none; }
+  
+  @media (max-width: 768px) {
+      .sd-mobile-bar {
+          --nav-bg: linear-gradient(to right, #93a5cf 0%, #17104b 40%, #17104b 60%, #93a5cf 100%);
+          --active-btn-bg: radial-gradient(circle at 30% 30%, #3b82f6 0%, #2563eb 60%, #1d4ed8 100%);
+          --text-inactive: #fdfbf7; 
+          --text-active: #ff9800;
+          --active-x: 0px;   
+          --nav-height: 56px;
+          --blue-btn-size: 60px;
+          position: fixed;
+          bottom: 0; left: 0; right: 0;
+          width: 100%;
+          height: var(--nav-height);
+          display: flex !important;
+          flex-direction: row;
+          padding: 0;
+          overflow: visible;
+          z-index: 9998;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      .nav-bg-layer {
+          position: absolute; inset: 0;
+          background: var(--nav-bg);
+          border-top-left-radius: 25px; border-top-right-radius: 25px;
+          box-shadow: 0 -5px 25px rgba(23, 16, 75, 0.25);
+          -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3000' height='100' viewBox='0 0 3000 100'%3E%3Cpath d='M0,0 L1451,0 A14,14 0 0,1 1464.5,10.1 A37,37 0 0,0 1535.5,10.1 A14,14 0 0,1 1549,0 L3000,0 L3000,100 L0,100 Z' fill='black'/%3E%3C/svg%3E");
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='3000' height='100' viewBox='0 0 3000 100'%3E%3Cpath d='M0,0 L1451,0 A14,14 0 0,1 1464.5,10.1 A37,37 0 0,0 1535.5,10.1 A14,14 0 0,1 1549,0 L3000,0 L3000,100 L0,100 Z' fill='black'/%3E%3C/svg%3E");
+          -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+          -webkit-mask-position: calc(var(--active-x) - 1500px) 0px;
+          mask-position: calc(var(--active-x) - 1500px) 0px;
+          transition: -webkit-mask-position 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), mask-position 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          z-index: 0;
+      }
+      .blue-bubble {
+          position: absolute; top: -30px; 
+          left: calc(var(--active-x) - (var(--blue-btn-size) / 2));
+          width: var(--blue-btn-size); height: var(--blue-btn-size);
+          background: var(--active-btn-bg); border-radius: 50%;
+          box-shadow: 0 8px 15px rgba(29, 78, 216, 0.4), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+          transition: left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          z-index: 1; overflow: hidden; 
+      }
+      .nav-item {
+          flex: 1; display: flex; flex-direction: column;
+          justify-content: center; align-items: center;
+          position: relative; z-index: 10; cursor: pointer;
+      }
+      .nav-item .icon {
+          width: 20px; height: 20px; stroke: var(--text-inactive);
+          stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round;
+          position: absolute; top: 10px; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.4));
+      }
+      .nav-item .label {
+          font-size: 9.5px; font-weight: 700; color: var(--text-inactive);
+          position: absolute; bottom: 8px; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          opacity: 1; text-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4);
+      }
+      .nav-item.active .icon {
+          transform: translateY(-20px) scale(1.4); stroke: var(--text-active) !important;
+          filter: drop-shadow(0 2px 5px rgba(255, 152, 0, 0.4)) !important; 
+      }
+      .nav-item.active .label {
+          opacity: 0; transform: translateY(15px); pointer-events: none;
+      }
+      .sifter {
+          position: absolute; width: 2px; height: 2px; border-radius: 0.5px;
+          top: 25px; left: 25px; box-shadow: 0 0 2px rgba(255,255,255,0.8);
+      }
+      .sq-1 { background: #fef08a; animation: roam1 6s infinite ease-in-out alternate; } 
+      .sq-2 { background: #fbcfe8; animation: roam2 8s infinite ease-in-out alternate; } 
+      .sq-3 { background: #bbf7d0; animation: roam3 7s infinite ease-in-out alternate; } 
+      .sq-4 { background: #fed7aa; animation: roam4 9s infinite ease-in-out alternate; } 
+      .sq-5 { background: #e9d5ff; animation: roam5 5s infinite ease-in-out alternate; } 
+
+      @keyframes roam1 { 0% { transform: translate(0px, 0px) scale(0.8); } 33% { transform: translate(-18px, -12px) scale(1.2); } 66% { transform: translate(12px, -18px) scale(0.9); } 100% { transform: translate(-10px, 15px) scale(1.1); } }
+      @keyframes roam2 { 0% { transform: translate(10px, 10px) scale(1); } 33% { transform: translate(18px, -10px) scale(0.8); } 66% { transform: translate(-15px, -15px) scale(1.3); } 100% { transform: translate(-18px, 12px) scale(0.9); } }
+      @keyframes roam3 { 0% { transform: translate(-10px, -5px) scale(1.1); } 33% { transform: translate(10px, 18px) scale(0.9); } 66% { transform: translate(-18px, 10px) scale(1.2); } 100% { transform: translate(18px, -15px) scale(0.8); } }
+      @keyframes roam4 { 0% { transform: translate(-15px, 15px) scale(0.9); } 33% { transform: translate(15px, 5px) scale(1.2); } 66% { transform: translate(5px, -18px) scale(0.8); } 100% { transform: translate(-12px, -12px) scale(1.1); } }
+      @keyframes roam5 { 0% { transform: translate(15px, -15px) scale(1.2); } 33% { transform: translate(-5px, 15px) scale(0.9); } 66% { transform: translate(18px, 12px) scale(1.1); } 100% { transform: translate(-15px, -10px) scale(0.8); } }
   }
-  .sd-mobile-item {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    width: 65px; height: 100%; color: var(--text-muted); text-decoration: none; font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: 0.2s;
-  }
-  .sd-mobile-item i { font-size: 1.4rem; margin-bottom: 4px; transition: transform 0.2s, color 0.2s; }
-  .sd-mobile-item.active { color: var(--primary); }
-  .sd-mobile-item.active i { transform: translateY(-2px); }
 
   @media (max-width: 768px) {
     .sd-sidebar { display: none !important; }
-    .sd-mobile-bar { display: flex !important; }
+    /* .sd-mobile-bar visibility handled by media query above */
     .sd-page-heading { padding: 20px 20px 5px; font-size:1.4rem; }
     .sd-page-desc { padding: 0 20px 15px; }
     .sd-content-area { padding: 0 20px 30px; }
@@ -2074,16 +2144,27 @@ function callBackend(action, args, onSuccess, onFailure) {
       </div>
     </div>
 
-    <!-- Mobile Tab Bar -->
-    <nav class="sd-mobile-bar" id="sd-mobileTabBar">
-      <div class="sd-mobile-item active" id="sd-mtab-live" onclick="switchStudentTab('live')">
-        <i class="ti ti-activity"></i><span>Live</span>
+    <!-- Mobile Tab Bar - Dynamic Raised Notch -->
+    <nav class="sd-mobile-bar" id="sd-mobileTabBar" role="navigation">
+      <div class="nav-bg-layer"></div>
+      <div class="blue-bubble">
+          <div class="sifter sq-1"></div>
+          <div class="sifter sq-2"></div>
+          <div class="sifter sq-3"></div>
+          <div class="sifter sq-4"></div>
+          <div class="sifter sq-5"></div>
       </div>
-      <div class="sd-mobile-item" id="sd-mtab-past" onclick="switchStudentTab('past')">
-        <i class="ti ti-history"></i><span>History</span>
+      <div class="nav-item active" id="sd-mtab-live" onclick="switchStudentTab('live')">
+          <svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          <span class="label">Live</span>
       </div>
-      <div class="sd-mobile-item" onclick="logoutStudent()" style="color:var(--danger);">
-        <i class="ti ti-logout"></i><span>Logout</span>
+      <div class="nav-item" id="sd-mtab-past" onclick="switchStudentTab('past')">
+          <svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span class="label">History</span>
+      </div>
+      <div class="nav-item" id="sd-mtab-logout" onclick="logoutStudent()">
+          <svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          <span class="label">Logout</span>
       </div>
     </nav>
   </div>
@@ -3341,12 +3422,31 @@ function callBackend(action, args, onSuccess, onFailure) {
       if (matchingLink) matchingLink.classList.add('active');
     }
 
-    document.querySelectorAll('#sd-mobileTabBar .sd-mobile-item').forEach(link => link.classList.remove('active'));
+    document.querySelectorAll('#sd-mobileTabBar .nav-item').forEach(link => link.classList.remove('active'));
     let mobItem = document.getElementById('sd-mtab-' + tabId);
     if (mobItem) mobItem.classList.add('active');
 
     setTimeout(updateStudentSidebarNotch, 50);
+    setTimeout(updateStudentMobileNotch, 50);
   }
+
+  function updateStudentMobileNotch() {
+    const bar = document.getElementById('sd-mobileTabBar');
+    if (!bar || window.innerWidth > 768) return;
+    const items = Array.from(bar.querySelectorAll('.nav-item'));
+    const activeItem = bar.querySelector('.nav-item.active');
+    if (!activeItem) return;
+    const index = items.indexOf(activeItem);
+    
+    const itemW = window.innerWidth / items.length;
+    const center = (index * itemW) + (itemW / 2);
+    
+    bar.style.setProperty('--active-x', center + 'px');
+  }
+
+  window.addEventListener('resize', () => {
+    updateStudentMobileNotch();
+  });
 
   function updateStudentSidebarNotch() {
     const nav = document.getElementById('sd-sidebarNav');
