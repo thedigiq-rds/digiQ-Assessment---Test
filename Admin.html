@@ -3306,8 +3306,8 @@ document.addEventListener('focusout', function(e) {
           <div class="panel-title" style="margin-bottom:0;">Registered Students</div>
           <button class="btn-outline" onclick="loadStudentsList()"><i class="ti ti-refresh"></i> Refresh List</button>
         </div>
-        <div style="overflow-x:auto;">
-          <table class="quiz-table" id="studentsTable">
+        <div class="data-table-wrapper">
+          <table class="data-table" id="studentsTable">
             <thead>
               <tr>
                 <th>Name</th>
@@ -3874,8 +3874,8 @@ let mobileTabDefs = [
   { id: 'epb',      icon: 'ti-file-text', label: 'Papers',   action: () => switchTab('epb') },
   { id: 'qbank',    icon: 'ti-database',  label: 'Q-Bank',   action: () => switchTab('qbank') },
   { id: 'reports',  icon: 'ti-chart-line',label: 'Reports',  action: () => switchTab('reports') },
-  { id: 'subadmins',icon: 'ti-users',     label: 'Sub-Admin',action: () => switchTab('subadmins'), masterOnly: true },
   { id: 'students', icon: 'ti-school',    label: 'Students', action: () => switchTab('students'),  masterOnly: true },
+  { id: 'subadmins',icon: 'ti-users',     label: 'Sub-Admin',action: () => switchTab('subadmins'), masterOnly: true },
 ];
 
 function buildMobileTabBar(isMaster) {
@@ -4078,6 +4078,8 @@ const FAB_TAB_META = {
   essays:    { icon: '<i class="ti ti-pencil"></i>',    label: 'Essay Grading'        },
   subadmins: { icon: '<i class="ti ti-users"></i>',     label: 'Sub-Admins'           },
   epb:       { icon: '<i class="ti ti-file-text"></i>',  label: 'Exam Paper Builder'   },
+  students:  { icon: '<i class="ti ti-school"></i>',    label: 'Students'             },
+  qbank:     { icon: '<i class="ti ti-database"></i>',  label: 'Question Bank'        },
 };
 
 function openCreateNewQuizTab(navEl) {
