@@ -65,7 +65,7 @@ window.google.script.run = new Proxy({}, {
 
 function callBackend(action, args, onSuccess, onFailure) {
   const API_URL = "https://script.google.com/macros/s/AKfycbxeUp8zwwEPvzfw3A1TT-oXBacRE-92JZSKF1wLTMANIrXrfGFY1Vv-h9oj3pRIVQJk/exec";
-  fetch(API_URL, {
+  fetch(API_URL + "?_ts=" + Date.now(), {
     method: "POST",
     headers: { "Content-Type": "text/plain" },
     body: JSON.stringify({ action: action, args: args, _ts: Date.now() })
@@ -3526,6 +3526,10 @@ function callBackend(action, args, onSuccess, onFailure) {
         if (!data.success) {
           liveGrid.innerHTML = `<div style="color:var(--danger); grid-column: 1 / -1;">Error: ${data.message}</div>`;
           return;
+        }
+        
+        if (data.debug) {
+          console.log("[DEBUG] getStudentDashboardData:", data.debug);
         }
         
         if (data.activeTests && data.activeTests.length > 0) {
