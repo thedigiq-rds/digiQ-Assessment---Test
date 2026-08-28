@@ -3423,6 +3423,9 @@ function callBackend(action, args, onSuccess, onFailure) {
           if (res.success) {
             rollNoStr = res.student.rollNo;
             studentEmailStr = res.student.email;
+            document.getElementById('sName').value = res.student.name;
+            document.getElementById('sRoll').value = res.student.rollNo;
+            document.getElementById('sEmail').value = res.student.email;
             document.getElementById('sd-student-name').innerText = res.student.name;
             const program = res.student.program || '';
             const semester = res.student.semester || '';
@@ -3529,7 +3532,7 @@ function callBackend(action, args, onSuccess, onFailure) {
         }
         
         if (data.debug) {
-          console.log("[DEBUG] getStudentDashboardData:", data.debug);
+          console.log("[DEBUG] getStudentDashboardData:\n" + JSON.stringify(data.debug, null, 2));
         }
         
         if (data.activeTests && data.activeTests.length > 0) {
