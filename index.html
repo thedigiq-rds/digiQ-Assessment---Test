@@ -3151,9 +3151,9 @@ function callBackend(action, args, onSuccess, onFailure) {
     localStorage.removeItem('digiQ_exam_' + QUIZ_ID + '_' + rollNoStr + '_answers');
 
     const payload = {
-      name:          document.getElementById('sName').value,
-      rollNo:        document.getElementById('sRoll').value,
-      email:         document.getElementById('sEmail').value,
+      name:          document.getElementById('sName').value.trim() || document.getElementById('student-name-display').innerText.trim(),
+      rollNo:        document.getElementById('sRoll').value.trim() || rollNoStr,
+      email:         document.getElementById('sEmail').value.trim() || studentEmailStr,
       quizId:        QUIZ_ID,
       userAnswers:   answers,
       forceSubmitted: force
