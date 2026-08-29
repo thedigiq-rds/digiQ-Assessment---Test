@@ -3689,6 +3689,7 @@ function _restoreAdminSession(res) {
     document.getElementById('nav-subadmins').style.display = 'flex';
     document.getElementById('nav-students').style.display = 'flex';
   } else {
+    document.getElementById('nav-students').style.display = 'flex';
     const spmRole = document.getElementById('spm-role');
     if (spmRole) spmRole.textContent = 'Sub Admin';
     const spmStream = document.getElementById('spm-stream');
@@ -3874,7 +3875,7 @@ let mobileTabDefs = [
   { id: 'epb',      icon: 'ti-file-text', label: 'Papers',   action: () => switchTab('epb') },
   { id: 'qbank',    icon: 'ti-database',  label: 'Q-Bank',   action: () => switchTab('qbank') },
   { id: 'reports',  icon: 'ti-chart-line',label: 'Reports',  action: () => switchTab('reports') },
-  { id: 'students', icon: 'ti-school',    label: 'Students', action: () => switchTab('students'),  masterOnly: true },
+  { id: 'students', icon: 'ti-school',    label: 'Students', action: () => switchTab('students') },
   { id: 'subadmins',icon: 'ti-users',     label: 'Sub-Admin',action: () => switchTab('subadmins'), masterOnly: true },
 ];
 
