@@ -1365,6 +1365,16 @@ function callBackend(action, args, onSuccess, onFailure) {
       box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
     }
 
+    /* Outline / Ghost */
+    .btn-outline {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      background: transparent; border: 1.5px solid var(--main-border);
+      color: var(--text-dim); border-radius: 12px; padding: 12px 20px;
+      font-weight: 500; font-family: var(--font-primary); cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: rgba(99,102,241,0.05); }
+
     /* ── Central Blue FAB ── */
     .center-fab-wrapper {
       position: absolute;
@@ -2134,7 +2144,7 @@ function callBackend(action, args, onSuccess, onFailure) {
         <div id="tab-sd-live" style="display:block;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;">
             <div style="font-size:1.1rem; font-weight:700; color:var(--text-dim);">Live &amp; Upcoming</div>
-            <button class="cert-pill" style="cursor:pointer;" onclick="loadStudentDashboard()"><i class="ti ti-refresh" style="font-size:1rem; margin-right:4px; vertical-align:middle;"></i>Refresh</button>
+            <button class="btn-outline" onclick="loadStudentDashboard()" style="padding:9px 16px;"><i class="ti ti-refresh"></i> Refresh</button>
           </div>
           <div class="sd-grid" id="sd-live-grid">
             <div style="color:var(--text-muted); font-size:0.9rem;">Loading live exams...</div>
