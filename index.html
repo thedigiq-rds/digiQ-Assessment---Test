@@ -3146,14 +3146,14 @@ function callBackend(action, args, onSuccess, onFailure) {
     showLoader('SUBMITTING');
     if (document.fullscreenElement) document.exitFullscreen();
     
-    const rollNoStr = document.getElementById('sRoll').value.trim();
-    localStorage.removeItem('digiQ_exam_' + QUIZ_ID + '_' + rollNoStr + '_duration');
-    localStorage.removeItem('digiQ_exam_' + QUIZ_ID + '_' + rollNoStr + '_answers');
+    const localRollNo = document.getElementById('sRoll').value.trim() || window.rollNoStr;
+    localStorage.removeItem('digiQ_exam_' + QUIZ_ID + '_' + localRollNo + '_duration');
+    localStorage.removeItem('digiQ_exam_' + QUIZ_ID + '_' + localRollNo + '_answers');
 
     const payload = {
       name:          document.getElementById('sName').value.trim() || document.getElementById('student-name-display').innerText.trim(),
-      rollNo:        document.getElementById('sRoll').value.trim() || rollNoStr,
-      email:         document.getElementById('sEmail').value.trim() || studentEmailStr,
+      rollNo:        localRollNo,
+      email:         document.getElementById('sEmail').value.trim() || window.studentEmailStr,
       quizId:        QUIZ_ID,
       userAnswers:   answers,
       forceSubmitted: force
