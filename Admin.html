@@ -7034,9 +7034,19 @@ if (typeof window.switchTab === 'function' && !window._switchTabHooked) {
   };
   window._switchTabHooked = true;
 }
-// Init notch on load
+// Init notch on load and start auto-refresh for manage table
 document.addEventListener('DOMContentLoaded', function() {
   setTimeout(updateSidebarNotch, 100);
+  
+  // Auto-refresh Manage Quiz table every 60 seconds if it's the active tab
+  setInterval(function() {
+    var manageTab = document.getElementById('tab-manage');
+    if (manageTab && manageTab.classList.contains('active')) {
+      if (typeof renderManageTable === 'function' && typeof globalQuizzes !== 'undefined') {
+        renderManageTable(globalQuizzes);
+      }
+    }
+  }, 60000);
 });
 
 
