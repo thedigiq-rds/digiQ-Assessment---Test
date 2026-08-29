@@ -1992,6 +1992,7 @@ function callBackend(action, args, onSuccess, onFailure) {
   .sd-card-tag { align-self: flex-start; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 12px; }
   .sd-tag-live { background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; }
   .sd-tag-closed { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+  .sd-tag-scheduled { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
   .sd-tag-passed { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
   .sd-tag-failed { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
   .sd-tag-submitted { background: #fef08a; color: #b45309; border: 1px solid #fde047; }
@@ -2131,7 +2132,10 @@ function callBackend(action, args, onSuccess, onFailure) {
       <div class="sd-content-area">
         <!-- Live Tab -->
         <div id="tab-sd-live" style="display:block;">
-          <div style="font-size:1.1rem; font-weight:700; color:var(--text-dim); margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;">Live &amp; Upcoming</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;">
+            <div style="font-size:1.1rem; font-weight:700; color:var(--text-dim);">Live &amp; Upcoming</div>
+            <button class="cert-pill" style="cursor:pointer;" onclick="loadStudentDashboard()"><i class="ti ti-refresh" style="font-size:1rem; margin-right:4px; vertical-align:middle;"></i>Refresh</button>
+          </div>
           <div class="sd-grid" id="sd-live-grid">
             <div style="color:var(--text-muted); font-size:0.9rem;">Loading live exams...</div>
           </div>
@@ -3545,11 +3549,23 @@ function callBackend(action, args, onSuccess, onFailure) {
         if (data.activeTests && data.activeTests.length > 0) {
           data.activeTests.forEach(q => {
             const isLive = q.isLive;
+            let tagClass = 'sd-tag-closed';
+            let statusText = q.computedStatus || 'CLOSED';
+            
+            if (statusText === 'Live') tagClass = 'sd-tag-live';
+            else if (statusText === 'Scheduled') tagClass = 'sd-tag-scheduled';
+            else if (statusText === 'Submitted') tagClass = 'sd-tag-submitted';
+            
+            let timeInfo = `<div class="sd-card-meta"><i class="ti ti-clock"></i> ${q.duration || 'N/A'} Mins</div>`;
+            if (statusText === 'Scheduled' && q.startTime) {
+              timeInfo += `<div class="sd-card-meta" style="color:var(--text-dim); font-weight:600;"><i class="ti ti-calendar-event"></i> Starts: ${q.startTime}</div>`;
+            }
+
             liveGrid.innerHTML += `
               <div class="sd-card">
-                <div class="sd-card-tag ${isLive ? 'sd-tag-live' : 'sd-tag-closed'}">${isLive ? 'LIVE' : 'CLOSED'}</div>
+                <div class="sd-card-tag ${tagClass}">${statusText.toUpperCase()}</div>
                 <div class="sd-card-title">${q.title}</div>
-                <div class="sd-card-meta"><i class="ti ti-clock"></i> ${q.duration || 'N/A'} Mins</div>
+                ${timeInfo}
                 <button class="sd-btn-start" ${!isLive ? 'disabled style="background:var(--secondary);cursor:not-allowed;"' : ''} onclick="enterAssessmentFromDashboard('${q.quizId}')"><i class="ti ti-play"></i> Enter Assessment</button>
               </div>`;
           });
