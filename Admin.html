@@ -3302,10 +3302,10 @@ document.addEventListener('focusout', function(e) {
       </div>
 
       <div class="panel" style="margin-top:24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-          <div class="panel-title" style="margin-bottom:0;">Registered Students</div>
-          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-            <select id="filterStdProgram" class="f-select" style="min-width:120px; padding:6px 12px; font-size:0.9rem;" onchange="renderStudentsTable()">
+        <div style="margin-bottom:16px;">
+          <div class="panel-title" style="margin-bottom:12px;">Registered Students</div>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:nowrap; overflow-x:auto; padding-bottom:4px;">
+            <select id="filterStdProgram" class="f-select" style="min-width:140px; width:auto; flex-shrink:0; padding:6px 12px; font-size:0.9rem;" onchange="renderStudentsTable()">
               <option value="ALL">All Programs</option>
               <option value="B.A.">B.A.</option>
               <option value="B.Sc.">B.Sc.</option>
@@ -3313,7 +3313,7 @@ document.addEventListener('focusout', function(e) {
               <option value="M.A.">M.A.</option>
               <option value="M.Sc.">M.Sc.</option>
             </select>
-            <select id="filterStdSemester" class="f-select" style="min-width:120px; padding:6px 12px; font-size:0.9rem;" onchange="renderStudentsTable()">
+            <select id="filterStdSemester" class="f-select" style="min-width:140px; width:auto; flex-shrink:0; padding:6px 12px; font-size:0.9rem;" onchange="renderStudentsTable()">
               <option value="ALL">All Semesters</option>
               <option value="1">Sem 1</option>
               <option value="2">Sem 2</option>
@@ -3324,8 +3324,8 @@ document.addEventListener('focusout', function(e) {
               <option value="7">Sem 7</option>
               <option value="8">Sem 8</option>
             </select>
-            <button class="btn-outline" style="padding:6px 12px; font-size:0.9rem;" onclick="loadStudentsList()"><i class="ti ti-refresh"></i> Refresh</button>
-            <button class="btn-primary-admin" style="padding:6px 12px; font-size:0.9rem; background:var(--teal); border-color:var(--teal);" onclick="exportStudentsExcel()"><i class="ti ti-download"></i> Export Excel</button>
+            <button class="btn-outline" style="padding:6px 12px; font-size:0.9rem; flex-shrink:0; margin-left:auto;" onclick="loadStudentsList()"><i class="ti ti-refresh"></i> Refresh</button>
+            <button class="btn-primary-admin" style="padding:6px 12px; font-size:0.9rem; background:var(--teal); border-color:var(--teal); flex-shrink:0;" onclick="exportStudentsExcel()"><i class="ti ti-download"></i> Export Excel</button>
           </div>
         </div>
         <div class="data-table-wrapper">
@@ -3335,14 +3335,15 @@ document.addEventListener('focusout', function(e) {
                 <th>Name</th>
                 <th>Roll No</th>
                 <th>Email</th>
-                <th>Program/Sem</th>
+                <th>Program</th>
+                <th>Semester</th>
                 <th>Password</th>
                 <th>Created</th>
                 <th style="text-align:right;">Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr><td colspan="7" style="text-align:center; color:#94a3b8;">Click Refresh List to load students.</td></tr>
+              <tr><td colspan="8" style="text-align:center; color:#94a3b8;">Click Refresh List to load students.</td></tr>
             </tbody>
           </table>
         </div>
@@ -7204,7 +7205,7 @@ let globalStudents = [];
 
 function loadStudentsList() {
   const tbody = document.querySelector('#studentsTable tbody');
-  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><span class="spin-sm"></span> Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;"><span class="spin-sm"></span> Loading...</td></tr>';
   
   google.script.run
     .withSuccessHandler(students => {
@@ -7212,7 +7213,7 @@ function loadStudentsList() {
       renderStudentsTable();
     })
     .withFailureHandler(err => {
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Failed to load: ${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:red;">Failed to load: ${err.message}</td></tr>`;
     })
     .getAllStudents();
 }
@@ -7224,14 +7225,16 @@ function renderStudentsTable() {
   
   let filtered = globalStudents;
   if (progFilter !== 'ALL') {
-    filtered = filtered.filter(s => String(s.program).trim() === progFilter);
+    const pFilterNorm = progFilter.replace(/\s+/g, '').toLowerCase();
+    filtered = filtered.filter(s => String(s.program || '').replace(/\s+/g, '').toLowerCase() === pFilterNorm);
   }
   if (semFilter !== 'ALL') {
-    filtered = filtered.filter(s => String(s.semester).trim() === semFilter);
+    const sFilterNorm = String(semFilter).replace(/\D/g, '');
+    filtered = filtered.filter(s => String(s.semester || '').replace(/\D/g, '') === sFilterNorm);
   }
   
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No students found matching criteria.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8;">No students found matching criteria.</td></tr>';
     return;
   }
   
@@ -7242,7 +7245,8 @@ function renderStudentsTable() {
       <td style="font-weight:600; color:var(--text);">${s.fullName}</td>
       <td><span style="background:#eef2ff; color:#4f46e5; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600;">${s.rollNo}</span></td>
       <td>${s.email}<br><small style="color:#94a3b8;">${s.whatsapp || 'No WA'}</small></td>
-      <td>${s.program} - Sem ${s.semester}</td>
+      <td>${s.program}</td>
+      <td>Sem ${s.semester}</td>
       <td style="font-family:monospace;">${s.password || 'N/A'}</td>
       <td style="font-size:0.8rem; color:#64748b;">${d}</td>
       <td style="text-align:right;">
@@ -7258,8 +7262,14 @@ function exportStudentsExcel() {
   const semFilter = document.getElementById('filterStdSemester').value;
   
   let filtered = globalStudents;
-  if (progFilter !== 'ALL') filtered = filtered.filter(s => String(s.program).trim() === progFilter);
-  if (semFilter !== 'ALL') filtered = filtered.filter(s => String(s.semester).trim() === semFilter);
+  if (progFilter !== 'ALL') {
+    const pFilterNorm = progFilter.replace(/\s+/g, '').toLowerCase();
+    filtered = filtered.filter(s => String(s.program || '').replace(/\s+/g, '').toLowerCase() === pFilterNorm);
+  }
+  if (semFilter !== 'ALL') {
+    const sFilterNorm = String(semFilter).replace(/\D/g, '');
+    filtered = filtered.filter(s => String(s.semester || '').replace(/\D/g, '') === sFilterNorm);
+  }
   
   if (!filtered || filtered.length === 0) {
     showToast('No students to export', 'warning');
