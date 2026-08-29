@@ -2633,6 +2633,7 @@ function callBackend(action, args, onSuccess, onFailure) {
             document.getElementById('ready-overlay').style.display = 'flex';
             if (typeof pushScreen === 'function') pushScreen('ready');
           }
+          showToast('Successfully Logged in', 'success');
         } else {
           showModal('Verification Failed', res.message, 'error');
           document.getElementById('auth-portal').style.display = 'flex';
@@ -3410,6 +3411,7 @@ function callBackend(action, args, onSuccess, onFailure) {
               pushScreen('ready');
               document.getElementById('ready-overlay').style.display = 'flex';
             }
+            showToast('Successfully Logged in', 'success');
           } else {
             showToast(res.message, 'error');
           }
@@ -3446,6 +3448,7 @@ function callBackend(action, args, onSuccess, onFailure) {
             pushScreen('dashboard');
             setTimeout(updateStudentSidebarNotch, 50);
             loadStudentDashboard();
+            showToast('Successfully Logged in', 'success');
           } else {
             showToast(res.message, 'error');
           }
@@ -3589,7 +3592,10 @@ function callBackend(action, args, onSuccess, onFailure) {
 
   function logoutStudent() {
     showConfirm('Logout', 'Are you sure you want to log out?', 'Yes, Log Out', 'Cancel').then(confirm => {
-      if(confirm) window.location.reload();
+      if(confirm) {
+        showToast('Successfully Logged out', 'success');
+        setTimeout(() => window.location.reload(), 1500);
+      }
     });
   }
 
@@ -3613,7 +3619,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       .withSuccessHandler(res => {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
-          showToast(res.message, 'success');
+          showToast('Successfully Updated Password', 'success');
           document.getElementById('sd-old-pwd').value = '';
           document.getElementById('sd-new-pwd').value = '';
           document.getElementById('sd-confirm-pwd').value = '';
