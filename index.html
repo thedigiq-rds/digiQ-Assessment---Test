@@ -1375,6 +1375,24 @@ function callBackend(action, args, onSuccess, onFailure) {
     }
     .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: rgba(99,102,241,0.05); }
 
+    /* Admin-style Primary Button (Indigo) */
+    .btn-primary-admin {
+      display: inline-flex; align-items: center; justify-content: center;
+      position: relative; cursor: pointer;
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+      color: white; border: none;
+      border-radius: 12px; padding: 13px 28px;
+      font-weight: 600; font-size: 0.9rem;
+      font-family: var(--font-primary);
+      transition: transform 0.15s, box-shadow 0.2s, opacity 0.2s;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.35); gap: 7px;
+    }
+    .btn-primary-admin:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(99,102,241,0.5);
+    }
+    .btn-primary-admin:disabled { opacity: 0.55; cursor: not-allowed; }
+
     /* ── Central Blue FAB ── */
     .center-fab-wrapper {
       position: absolute;
@@ -2144,7 +2162,9 @@ function callBackend(action, args, onSuccess, onFailure) {
         <div id="tab-sd-live" style="display:block;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;">
             <div style="font-size:1.1rem; font-weight:700; color:var(--text-dim);">Live &amp; Upcoming</div>
-            <button class="btn-outline" onclick="loadStudentDashboard()" style="padding:9px 16px;"><i class="ti ti-refresh"></i> Refresh</button>
+            <button class="btn-primary-admin" onclick="loadStudentDashboard()" style="padding:7px 14px; font-size:0.85rem; border-radius:8px; display:flex; align-items:center; gap:6px;">
+              <i class="ti ti-refresh"></i> Refresh
+            </button>
           </div>
           <div class="sd-grid" id="sd-live-grid">
             <div style="color:var(--text-muted); font-size:0.9rem;">Loading live exams...</div>
