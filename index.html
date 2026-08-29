@@ -1947,7 +1947,7 @@ function callBackend(action, args, onSuccess, onFailure) {
   .sd-brand-sub  { color: var(--teal-lt); font-size: 0.8rem; margin-top: 4px; font-weight: 300; letter-spacing: 0.04em; }
   
   .sd-nav { flex:1; overflow-y:auto; overflow-x:hidden; padding: 0; margin: 0; display:flex; flex-direction:column; list-style: none; position:relative; }
-  .sd-nav-wrapper { flex: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+  .sd-nav-wrapper { flex: 1; position: relative; display: flex; flex-direction: column; }
   
   /* Notch CSS */
   .sd-notch-indicator {
@@ -2545,6 +2545,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     const btn = document.getElementById('reqStudentBtn');
     btn.disabled = true;
     btn.innerHTML = '<span class="inline-spinner"></span>Sending OTP…';
+    showToast('Sending OTP...', 'info', 3000);
 
     google.script.run
       .withSuccessHandler(res => {
@@ -2592,6 +2593,7 @@ function callBackend(action, args, onSuccess, onFailure) {
 
     document.getElementById('auth-portal').style.display = 'none';
     showLoader('GENERATING');
+    showToast('Verifying OTP...', 'info', 3000);
 
     google.script.run
       .withSuccessHandler(res => {
@@ -3298,6 +3300,7 @@ function callBackend(action, args, onSuccess, onFailure) {
 
     document.getElementById('student-dashboard').style.display = 'none';
     document.getElementById('loader').style.display = 'flex';
+    showToast('Loading assessment...', 'info', 3000);
 
     google.script.run
       .withSuccessHandler(res => {
@@ -3358,11 +3361,12 @@ function callBackend(action, args, onSuccess, onFailure) {
     const password = document.getElementById('sPassword').value.trim();
 
     if (!rollNo || !email || !password) {
-      _cModalShow('Missing Info', 'Please enter your Roll Number, Email, and Password.');
+      showToast('Please enter your Roll Number, Email, and Password.', 'error');
       return;
     }
 
     document.getElementById('loader').style.display = 'flex';
+    showToast('Verifying student...', 'info', 3000);
 
     if (QUIZ_ID) {
       // Direct login to a quiz via password
@@ -3407,12 +3411,12 @@ function callBackend(action, args, onSuccess, onFailure) {
               document.getElementById('ready-overlay').style.display = 'flex';
             }
           } else {
-            _cModalShow('Login Failed', res.message);
+            showToast(res.message, 'error');
           }
         })
         .withFailureHandler(err => {
           document.getElementById('loader').style.display = 'none';
-          _cModalShow('Connection Error', err.message);
+          showToast(err.message, 'error');
         })
         .verifyPasswordAndBuildExam(rollNo, email, password, QUIZ_ID);
     } else {
@@ -3443,12 +3447,12 @@ function callBackend(action, args, onSuccess, onFailure) {
             setTimeout(updateStudentSidebarNotch, 50);
             loadStudentDashboard();
           } else {
-            _cModalShow('Login Failed', res.message);
+            showToast(res.message, 'error');
           }
         })
         .withFailureHandler(err => {
           document.getElementById('loader').style.display = 'none';
-          _cModalShow('Connection Error', err.message);
+          showToast(err.message, 'error');
         })
         .loginStudentPassword(rollNo, email, password);
     }
@@ -3584,7 +3588,9 @@ function callBackend(action, args, onSuccess, onFailure) {
   }
 
   function logoutStudent() {
-    window.location.reload();
+    showConfirm('Logout', 'Are you sure you want to log out?', 'Yes, Log Out', 'Cancel').then(confirm => {
+      if(confirm) window.location.reload();
+    });
   }
 
   function submitPasswordChange() {
@@ -3593,30 +3599,31 @@ function callBackend(action, args, onSuccess, onFailure) {
     const confirmPwd = document.getElementById('sd-confirm-pwd').value;
 
     if (!oldPwd || !newPwd || !confirmPwd) {
-      _cModalShow('Error', 'Please fill in all fields.');
+      showToast('Please fill in all fields.', 'warning');
       return;
     }
     if (newPwd !== confirmPwd) {
-      _cModalShow('Error', 'New passwords do not match.');
+      showToast('New passwords do not match.', 'error');
       return;
     }
 
     document.getElementById('loader').style.display = 'flex';
+    showToast('Changing password...', 'info');
     google.script.run
       .withSuccessHandler(res => {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
-          _cModalShow('Success', res.message);
+          showToast(res.message, 'success');
           document.getElementById('sd-old-pwd').value = '';
           document.getElementById('sd-new-pwd').value = '';
           document.getElementById('sd-confirm-pwd').value = '';
         } else {
-          _cModalShow('Error', res.message);
+          showToast(res.message, 'error');
         }
       })
       .withFailureHandler(err => {
         document.getElementById('loader').style.display = 'none';
-        _cModalShow('Error', err.message);
+        showToast(err.message, 'error');
       })
       .changeStudentPassword(rollNoStr, studentEmailStr, oldPwd, newPwd);
   }
