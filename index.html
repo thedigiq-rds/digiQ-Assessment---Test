@@ -2822,6 +2822,8 @@ function callBackend(action, args, onSuccess, onFailure) {
 
   function initExamEnvironment() {
     try {
+      currentIdx = 0;
+      if (typeof viewedQuestions !== 'undefined' && viewedQuestions.clear) viewedQuestions.clear();
       document.getElementById('loader').style.display = 'none';
       document.addEventListener('contextmenu', e => e.preventDefault());
       document.addEventListener('copy',  e => e.preventDefault());
