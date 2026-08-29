@@ -3366,6 +3366,10 @@ function callBackend(action, args, onSuccess, onFailure) {
           rollNoStr = res.student.rollNo;
           studentEmailStr = res.student.email;
           
+          document.getElementById('sName').value = res.student.name;
+          document.getElementById('sRoll').value = res.student.rollNo;
+          document.getElementById('sEmail').value = res.student.email;
+          
           document.getElementById('student-name-display').innerText = res.student.name;
           document.getElementById('student-name-display').style.display = 'block';
           
@@ -3433,6 +3437,10 @@ function callBackend(action, args, onSuccess, onFailure) {
             
             rollNoStr = res.student.rollNo;
             studentEmailStr = res.student.email;
+            
+            document.getElementById('sName').value = res.student.name;
+            document.getElementById('sRoll').value = res.student.rollNo;
+            document.getElementById('sEmail').value = res.student.email;
             
             document.getElementById('student-name-display').innerText = res.student.name;
             document.getElementById('student-name-display').style.display = 'block';
