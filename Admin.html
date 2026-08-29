@@ -3302,9 +3302,31 @@ document.addEventListener('focusout', function(e) {
       </div>
 
       <div class="panel" style="margin-top:24px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
           <div class="panel-title" style="margin-bottom:0;">Registered Students</div>
-          <button class="btn-outline" onclick="loadStudentsList()"><i class="ti ti-refresh"></i> Refresh List</button>
+          <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+            <select id="filterStdProgram" class="f-select" style="min-width:120px; padding:6px 12px; font-size:0.9rem;" onchange="renderStudentsTable()">
+              <option value="ALL">All Programs</option>
+              <option value="B.A.">B.A.</option>
+              <option value="B.Sc.">B.Sc.</option>
+              <option value="B.Com.">B.Com.</option>
+              <option value="M.A.">M.A.</option>
+              <option value="M.Sc.">M.Sc.</option>
+            </select>
+            <select id="filterStdSemester" class="f-select" style="min-width:120px; padding:6px 12px; font-size:0.9rem;" onchange="renderStudentsTable()">
+              <option value="ALL">All Semesters</option>
+              <option value="1">Sem 1</option>
+              <option value="2">Sem 2</option>
+              <option value="3">Sem 3</option>
+              <option value="4">Sem 4</option>
+              <option value="5">Sem 5</option>
+              <option value="6">Sem 6</option>
+              <option value="7">Sem 7</option>
+              <option value="8">Sem 8</option>
+            </select>
+            <button class="btn-outline" style="padding:6px 12px; font-size:0.9rem;" onclick="loadStudentsList()"><i class="ti ti-refresh"></i> Refresh</button>
+            <button class="btn-primary-admin" style="padding:6px 12px; font-size:0.9rem; background:var(--teal); border-color:var(--teal);" onclick="exportStudentsExcel()"><i class="ti ti-download"></i> Export Excel</button>
+          </div>
         </div>
         <div class="data-table-wrapper">
           <table class="data-table" id="studentsTable">
@@ -7178,38 +7200,88 @@ function uploadStudentsCSV() {
   reader.readAsText(file);
 }
 
+let globalStudents = [];
+
 function loadStudentsList() {
   const tbody = document.querySelector('#studentsTable tbody');
   tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;"><span class="spin-sm"></span> Loading...</td></tr>';
   
   google.script.run
     .withSuccessHandler(students => {
-      if (!students || students.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No students found.</td></tr>';
-        return;
-      }
-      
-      let html = '';
-      students.forEach(s => {
-        const d = s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'N/A';
-        html += `<tr>
-          <td style="font-weight:600; color:var(--text);">${s.fullName}</td>
-          <td><span style="background:#eef2ff; color:#4f46e5; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600;">${s.rollNo}</span></td>
-          <td>${s.email}<br><small style="color:#94a3b8;">${s.whatsapp || 'No WA'}</small></td>
-          <td>${s.program} - Sem ${s.semester}</td>
-          <td style="font-family:monospace;">${s.password || 'N/A'}</td>
-          <td style="font-size:0.8rem; color:#64748b;">${d}</td>
-          <td style="text-align:right;">
-            <button class="btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="deleteStudent('${s.rollNo}')"><i class="ti ti-trash"></i></button>
-          </td>
-        </tr>`;
-      });
-      tbody.innerHTML = html;
+      globalStudents = students || [];
+      renderStudentsTable();
     })
     .withFailureHandler(err => {
       tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:red;">Failed to load: ${err.message}</td></tr>`;
     })
     .getAllStudents();
+}
+
+function renderStudentsTable() {
+  const tbody = document.querySelector('#studentsTable tbody');
+  const progFilter = document.getElementById('filterStdProgram').value;
+  const semFilter = document.getElementById('filterStdSemester').value;
+  
+  let filtered = globalStudents;
+  if (progFilter !== 'ALL') {
+    filtered = filtered.filter(s => String(s.program).trim() === progFilter);
+  }
+  if (semFilter !== 'ALL') {
+    filtered = filtered.filter(s => String(s.semester).trim() === semFilter);
+  }
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">No students found matching criteria.</td></tr>';
+    return;
+  }
+  
+  let html = '';
+  filtered.forEach(s => {
+    const d = s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'N/A';
+    html += `<tr>
+      <td style="font-weight:600; color:var(--text);">${s.fullName}</td>
+      <td><span style="background:#eef2ff; color:#4f46e5; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600;">${s.rollNo}</span></td>
+      <td>${s.email}<br><small style="color:#94a3b8;">${s.whatsapp || 'No WA'}</small></td>
+      <td>${s.program} - Sem ${s.semester}</td>
+      <td style="font-family:monospace;">${s.password || 'N/A'}</td>
+      <td style="font-size:0.8rem; color:#64748b;">${d}</td>
+      <td style="text-align:right;">
+        <button class="btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="deleteStudent('${s.rollNo}')"><i class="ti ti-trash"></i></button>
+      </td>
+    </tr>`;
+  });
+  tbody.innerHTML = html;
+}
+
+function exportStudentsExcel() {
+  const progFilter = document.getElementById('filterStdProgram').value;
+  const semFilter = document.getElementById('filterStdSemester').value;
+  
+  let filtered = globalStudents;
+  if (progFilter !== 'ALL') filtered = filtered.filter(s => String(s.program).trim() === progFilter);
+  if (semFilter !== 'ALL') filtered = filtered.filter(s => String(s.semester).trim() === semFilter);
+  
+  if (!filtered || filtered.length === 0) {
+    showToast('No students to export', 'warning');
+    return;
+  }
+  
+  const rows = filtered.map(s => ({
+    'Full Name': s.fullName,
+    'Roll No': s.rollNo,
+    'Email': s.email,
+    'WhatsApp': s.whatsapp || '',
+    'Program': s.program,
+    'Semester': s.semester,
+    'Password': s.password,
+    'Created At': s.createdAt ? new Date(s.createdAt).toLocaleString() : ''
+  }));
+  
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Students');
+  XLSX.writeFile(wb, `Students_Export_${Date.now()}.xlsx`);
+  showToast('Excel report downloaded!', 'success');
 }
 
 function deleteStudent(rollNo) {
