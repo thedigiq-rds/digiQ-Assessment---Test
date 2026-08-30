@@ -2016,7 +2016,10 @@ document.addEventListener('focusout', function(e) {
         </div>
         <div class="f-group" style="text-align:left; margin-bottom:4px;">
           <label class="f-label">Password</label>
-          <input type="password" id="loginPassword" class="f-input" placeholder="Enter password" autocomplete="off" onkeyup="if(event.key==='Enter'||event.keyCode===13) verifyAdminLogin()">
+          <div style="position:relative;">
+            <input type="password" id="loginPassword" class="f-input" placeholder="Enter password" autocomplete="off" style="padding-right:36px;" onkeyup="if(event.key==='Enter'||event.keyCode===13) verifyAdminLogin()">
+            <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('loginPassword', this)"></i>
+          </div>
         </div>
         <div style="text-align:right; margin-bottom:15px;">
           <a href="#" onclick="showForgotPasswordEmailStep(); return false;" style="font-size:0.8rem; color:var(--primary); text-decoration:none; font-weight:500;">Forgot Password?</a>
@@ -2061,11 +2064,17 @@ document.addEventListener('focusout', function(e) {
         <div style="margin-bottom:15px; font-size:0.9rem; color:var(--text-dim); text-align:left;">OTP verified. Set a new password for your account.</div>
         <div class="f-group" style="text-align:left;">
           <label class="f-label">New Password</label>
-          <input type="password" id="resetNewPassword" class="f-input" placeholder="Enter new password" autocomplete="new-password">
+          <div style="position:relative;">
+            <input type="password" id="resetNewPassword" class="f-input" placeholder="Enter new password" style="padding-right:36px;" autocomplete="new-password">
+            <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('resetNewPassword', this)"></i>
+          </div>
         </div>
         <div class="f-group" style="text-align:left;">
           <label class="f-label">Confirm Password</label>
-          <input type="password" id="resetConfirmPassword" class="f-input" placeholder="Confirm new password" autocomplete="new-password">
+          <div style="position:relative;">
+            <input type="password" id="resetConfirmPassword" class="f-input" placeholder="Confirm new password" style="padding-right:36px;" autocomplete="new-password">
+            <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('resetConfirmPassword', this)"></i>
+          </div>
         </div>
         <button class="btn-sage" onclick="submitResetPassword()" style="justify-content:center; text-align:center;">
           <i class="ti ti-key"></i> Reset Password
@@ -3500,6 +3509,19 @@ function showToast(msg, type = 'info', ms = 3500) {
 /* ════════════════════════════════════════
    ADMIN CENTRE DIALOGUE MODAL SYSTEM
 ════════════════════════════════════════ */
+function togglePasswordVisibility(inputId, iconEl) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  if (input.type === 'password') {
+    input.type = 'text';
+    iconEl.classList.remove('ti-eye');
+    iconEl.classList.add('ti-eye-off');
+  } else {
+    input.type = 'password';
+    iconEl.classList.remove('ti-eye-off');
+    iconEl.classList.add('ti-eye');
+  }
+}
 let _aCMResolve = null;
 const _aCMTypes = {
   success: { icon:'<i class="ti ti-circle-check"></i>', okCls:'',              label:'OK'      },
@@ -5571,11 +5593,17 @@ function submitChangePassword() {
     <div class="acm-body" style="padding: 20px;" id="changePasswordFormBody">
       <div class="f-group" style="margin-bottom:15px;">
         <label class="f-label">New Password</label>
-        <input type="password" id="newPassword" class="f-input" placeholder="Enter new password" autocomplete="new-password">
+        <div style="position:relative;">
+          <input type="password" id="newPassword" class="f-input" placeholder="Enter new password" style="padding-right:36px;" autocomplete="new-password">
+          <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('newPassword', this)"></i>
+        </div>
       </div>
       <div class="f-group">
         <label class="f-label">Confirm Password</label>
-        <input type="password" id="confirmPassword" class="f-input" placeholder="Confirm new password" autocomplete="new-password">
+        <div style="position:relative;">
+          <input type="password" id="confirmPassword" class="f-input" placeholder="Confirm new password" style="padding-right:36px;" autocomplete="new-password">
+          <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('confirmPassword', this)"></i>
+        </div>
       </div>
     </div>
     <div class="acm-body" style="padding: 20px; display:none; text-align:center;" id="changePasswordSuccessBody">
