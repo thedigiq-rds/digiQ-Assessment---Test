@@ -2647,6 +2647,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       .withSuccessHandler(res => {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
+          window.loginMethodStr = 'otp';
           examData       = res.exam;
           config         = res.config;
           globalDuration = parseInt(res.duration) * 60;
@@ -3156,7 +3157,8 @@ function callBackend(action, args, onSuccess, onFailure) {
       email:         document.getElementById('sEmail').value.trim() || window.studentEmailStr,
       quizId:        QUIZ_ID,
       userAnswers:   answers,
-      forceSubmitted: force
+      forceSubmitted: force,
+      loginMethod:   window.loginMethodStr || 'otp'
     };
 
     google.script.run
@@ -3357,6 +3359,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       .withSuccessHandler(res => {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
+          window.loginMethodStr = 'password';
           examData       = res.exam;
           globalDuration = parseInt(res.duration) * 60;
           initialDuration = globalDuration;
@@ -3485,6 +3488,7 @@ function callBackend(action, args, onSuccess, onFailure) {
         .withSuccessHandler(res => {
           document.getElementById('loader').style.display = 'none';
           if (res.success) {
+            window.loginMethodStr = 'password';
             rollNoStr = res.student.rollNo;
             studentEmailStr = res.student.email;
             document.getElementById('sName').value = res.student.name;
@@ -3641,6 +3645,14 @@ function callBackend(action, args, onSuccess, onFailure) {
               tagClass = 'sd-tag-submitted';
             }
             
+            const isEligibleForCert = (sub.sendCert || sub.certDocId) && passed;
+            let certBtnHTML = '';
+            if (isEligibleForCert) {
+              certBtnHTML = `<button class="sd-btn-start btn-download" style="margin-top:10px; font-size:0.85rem;" onclick="downloadCert(this, '${sub.certDocId}', '${(data.studentName || '').replace(/'/g, "\\'")}', '${rollNoStr}', ${sub.score}, ${sub.total}, ${sub.perc}, '${sub.timestamp}')"><i class="ti ti-download"></i> Download Certificate</button>`;
+            } else if (sub.passed !== 'N/A' && sub.passed !== 'Submitted' && sub.passed !== 'Pending') {
+              certBtnHTML = `<span style="color:var(--text-muted); font-size:0.85rem; display:block; margin-top:8px;">No Certificate</span>`;
+            }
+            
             pastGrid.innerHTML += `
               <div class="sd-card">
                 <div class="sd-card-tag ${tagClass}">${tagText}</div>
@@ -3650,6 +3662,7 @@ function callBackend(action, args, onSuccess, onFailure) {
                   <div class="sd-score-text">${sub.score} / ${sub.total}</div>
                   <div style="font-size:0.8rem; color:var(--text-dim); font-weight:600;">${sub.perc}%</div>
                 </div>
+                ${certBtnHTML}
               </div>`;
           });
         } else {
@@ -3705,6 +3718,51 @@ function callBackend(action, args, onSuccess, onFailure) {
         showToast(err.message, 'error');
       })
       .changeStudentPassword(rollNoStr, studentEmailStr, oldPwd, newPwd);
+  }
+
+  function downloadCert(btnEl, certDocId, name, rollNo, score, total, perc, timestampStr) {
+    const originalText = btnEl.innerHTML;
+    btnEl.innerHTML = '<i class="ti ti-loader anim-spin"></i> Generating...';
+    btnEl.disabled = true;
+
+    google.script.run
+      .withSuccessHandler(res => {
+        btnEl.innerHTML = originalText;
+        btnEl.disabled = false;
+        
+        if (!res.success) {
+          showModal('Error', 'Could not generate certificate: ' + res.error, 'error');
+          return;
+        }
+        
+        try {
+          const binaryString = window.atob(res.data);
+          const binaryLen = binaryString.length;
+          const bytes = new Uint8Array(binaryLen);
+          for (let i = 0; i < binaryLen; i++) {
+             const ascii = binaryString.charCodeAt(i);
+             bytes[i] = ascii;
+          }
+          const blob = new Blob([bytes], { type: 'application/pdf' });
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = res.fileName;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+        } catch (e) {
+          showModal('Error', 'Failed to process certificate file.', 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        btnEl.innerHTML = originalText;
+        btnEl.disabled = false;
+        showModal('Server Error', 'Failed to generate certificate: ' + err.message, 'error');
+      })
+      .generateCertificateForDownload(certDocId, name, rollNo, score, total, perc, timestampStr);
   }
 </script>
 </body>
