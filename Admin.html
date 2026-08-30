@@ -2391,7 +2391,7 @@ document.addEventListener('focusout', function(e) {
             </div>
             <div id="cert-doc-panel" class="cert-doc-inner" style="display:none; margin-top:12px; flex-direction:column; align-items:stretch; gap:6px;">
               <label class="f-label" style="color:var(--primary-dk); margin-bottom:2px;">Google Doc Template ID</label>
-              <input type="text" id="cqCertDocId" class="f-input" style="padding:10px 14px; width:100%;" placeholder="Paste the Doc ID from the URL (e.g. 1BxiM…Zq)" autocomplete="off">
+              <input type="text" id="cqCertDocId" class="f-input" style="padding:10px 14px; width:100%;" placeholder="Paste the Doc ID from the URL (e.g. 1BxiM…Zq)" autocomplete="off" onblur="cleanCertDocId()">
               <div class="cert-doc-hint"><i class="ti ti-file-text"></i> Find ID in your Google Doc URL: docs.google.com/document/d/<strong>[ID here]</strong>/edit · Use {{name}}, {{rollNo}}, {{score}}, {{percentage}}, {{date}} as placeholders.</div>
             </div>
           </div>
@@ -5096,6 +5096,29 @@ function setCertMode(enabled) {
     if (btnYes) { btnYes.classList.remove('active-yes','active-no'); }
     if (panel) panel.classList.remove('open');
     const docInput = document.getElementById('cqCertDocId'); if (docInput) docInput.value = '';
+  }
+}
+
+function cleanCertDocId() {
+  const input = document.getElementById('cqCertDocId');
+  if (!input || !input.value) return;
+  let val = input.value.trim();
+  
+  // Look for standard Google Doc/Slide ID format in a URL
+  const urlMatch = val.match(/\/d\/([a-zA-Z0-9-_]+)/);
+  if (urlMatch && urlMatch[1]) {
+    val = urlMatch[1];
+  } else {
+    // Fallback: Just look for a 25+ character ID anywhere
+    const idMatch = val.match(/[a-zA-Z0-9-_]{25,}/);
+    if (idMatch) {
+      val = idMatch[0];
+    }
+  }
+  
+  if (val !== input.value.trim()) {
+    input.value = val;
+    showToast('Extracted Template ID from URL', 'success');
   }
 }
 
