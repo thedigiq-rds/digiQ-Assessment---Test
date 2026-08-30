@@ -1910,7 +1910,10 @@ document.addEventListener('focusout', function(e) {
     // We don't apply it to textareas to prevent messing up questions/paragraphs
     // We also only apply to .f-input to ensure we target our specific form elements
     if (e.target.classList.contains('f-input')) {
-      e.target.value = toTitleCase(e.target.value);
+      // Exempt the certificate ID field from capitalization (Drive IDs are case-sensitive)
+      if (e.target.id !== 'cqCertDocId') {
+        e.target.value = toTitleCase(e.target.value);
+      }
     }
   }
 });
