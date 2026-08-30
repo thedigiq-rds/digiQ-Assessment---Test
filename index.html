@@ -1912,6 +1912,9 @@ function callBackend(action, args, onSuccess, onFailure) {
           <div class="form-group">
             <label class="form-label">Password</label>
             <input type="password" id="sPassword" class="form-control" autocapitalize="none" autocorrect="off" placeholder="••••••••" onkeyup="if(event.key==='Enter'||event.keyCode===13) loginWithPassword()">
+            <div style="text-align: right; margin-top: 8px;">
+              <a href="#" onclick="showStudentForgotPasswordEmailStep(); return false;" style="color:var(--primary); font-size:0.85rem; font-weight:500; text-decoration:none;">Forgot Password?</a>
+            </div>
           </div>
           <button id="loginPwdBtn" class="btn-primary-auth" onclick="loginWithPassword()">
             <svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg> Login to Portal
@@ -3115,6 +3118,12 @@ function callBackend(action, args, onSuccess, onFailure) {
   function returnToDashboard() {
     document.getElementById('result-ui').style.display = 'none';
     document.getElementById('exam-ui').style.display = 'none';
+    
+    if (window.isGuestUser) {
+      location.reload();
+      return;
+    }
+    
     document.getElementById('student-dashboard').style.display = 'block';
     if (typeof pushScreen === 'function') pushScreen('dashboard');
     if (typeof switchStudentTab === 'function') {
@@ -3164,6 +3173,8 @@ function callBackend(action, args, onSuccess, onFailure) {
     google.script.run
       .withSuccessHandler(res => {
         document.getElementById('loader').style.display = 'none';
+        
+        window.isGuestUser = res.isGuest;
 
         if (res.alreadySubmitted) {
           showModal('Submitted Already', 'Our records indicate that you have already submitted this exam. Multiple submissions are not allowed.', 'warning');
@@ -3521,6 +3532,83 @@ function callBackend(action, args, onSuccess, onFailure) {
         })
         .loginStudentPassword(rollNo, email, password);
     }
+  }
+
+  function showStudentLoginStep() {
+    document.getElementById('step-1').style.display = 'block';
+    document.getElementById('step-2').style.display = 'none';
+    document.getElementById('step-forgot-email').style.display = 'none';
+    document.getElementById('step-forgot-reset').style.display = 'none';
+    document.getElementById('step-forgot-success').style.display = 'none';
+    document.getElementById('auth-error').style.display = 'none';
+  }
+
+  function showStudentForgotPasswordEmailStep() {
+    document.getElementById('step-1').style.display = 'none';
+    document.getElementById('step-2').style.display = 'none';
+    document.getElementById('step-forgot-email').style.display = 'block';
+    document.getElementById('step-forgot-reset').style.display = 'none';
+    document.getElementById('step-forgot-success').style.display = 'none';
+    document.getElementById('auth-error').style.display = 'none';
+  }
+
+  function requestStudentForgotPasswordOTP() {
+    const email = document.getElementById('sForgotEmail').value.trim();
+    if (!email) {
+      showToast('Please enter your email.', 'warning');
+      return;
+    }
+    
+    showLoader('SENDING OTP');
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loader').style.display = 'none';
+        if (res.success) {
+          showToast(res.message, 'success');
+          document.getElementById('step-forgot-email').style.display = 'none';
+          document.getElementById('step-forgot-reset').style.display = 'block';
+        } else {
+          showToast(res.message, 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        document.getElementById('loader').style.display = 'none';
+        showToast('Failed to send OTP: ' + err.message, 'error');
+      })
+      .studentForgotPassword(email);
+  }
+
+  function studentResetPasswordAction() {
+    const email = document.getElementById('sForgotEmail').value.trim();
+    const otp = document.getElementById('sForgotOTP').value.trim();
+    const newPass = document.getElementById('sForgotNewPassword').value.trim();
+    
+    if (!otp || !newPass) {
+      showToast('Please enter OTP and new password.', 'warning');
+      return;
+    }
+    
+    showLoader('RESETTING PASSWORD');
+    google.script.run
+      .withSuccessHandler(res => {
+        document.getElementById('loader').style.display = 'none';
+        if (res.success) {
+          showToast(res.message, 'success');
+          document.getElementById('step-forgot-reset').style.display = 'none';
+          document.getElementById('step-forgot-success').style.display = 'block';
+          
+          document.getElementById('sForgotEmail').value = '';
+          document.getElementById('sForgotOTP').value = '';
+          document.getElementById('sForgotNewPassword').value = '';
+        } else {
+          showToast(res.message, 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        document.getElementById('loader').style.display = 'none';
+        showToast('Failed to reset password: ' + err.message, 'error');
+      })
+      .studentResetPassword(email, otp, newPass);
   }
 
   function switchStudentTab(tabId, el) {
