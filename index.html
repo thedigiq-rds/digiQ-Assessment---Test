@@ -2219,7 +2219,7 @@ function callBackend(action, args, onSuccess, onFailure) {
         <div id="tab-sd-live" style="display:block;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
             <div>
-              <div style="font-size:1.4rem; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px;"><i class="ti ti-activity"></i> Live Assessment</div>
+              <div style="font-size:1.4rem; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px;"><i class="ti ti-activity"></i> Live Exams</div>
               <div style="color:var(--text-muted); font-size:0.9rem; margin-top:4px;">Real-time active assessments</div>
             </div>
             <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(4px); padding:8px 16px; border-radius:12px; display:flex; align-items:center; gap:16px; border:1px solid var(--main-border); box-shadow:0 2px 6px rgba(0,0,0,0.04);">
@@ -2493,12 +2493,15 @@ function callBackend(action, args, onSuccess, onFailure) {
   function showToast(msg, type = 'info', ms = 5000) {
     const icons = { success:'<svg class="svg-icon anim-draw" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>', error:'<svg class="svg-icon anim-shake" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>', warning:'<svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v2m0 4v.01M5.07 19H19a2 2 0 001.75-2.75L13.75 4a2 2 0 00-3.5 0L3.25 16.25a2 2 0 001.75 2.75z"></path></svg>', info:'<svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>' };
     const c = document.getElementById('toast-container');
-    if (!c) return;
+    if (!c) return null;
     const t = document.createElement('div');
     t.className = `toast-item ${type}`;
     t.innerHTML = `<span class="toast-icon">${icons[type]||'<svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>'}</span><span>${msg}</span>`;
     c.appendChild(t);
-    setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 340); }, ms);
+    if (ms > 0) {
+      setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 340); }, ms);
+    }
+    return t;
   }
 
   function showModal(title, msg, type = 'info', autoCloseMs = 0) {
@@ -3739,10 +3742,22 @@ function callBackend(action, args, onSuccess, onFailure) {
     }, 60000);
   }
 
+  let activeRefreshToast = null;
   function loadStudentDashboard() {
     startSdAutoRefresh();
+    if (activeRefreshToast) {
+      activeRefreshToast.classList.add('hide');
+      setTimeout(() => activeRefreshToast && activeRefreshToast.remove(), 340);
+    }
+    activeRefreshToast = showToast("Refreshing Data...", "info", 0);
     google.script.run
       .withSuccessHandler(data => {
+        if (activeRefreshToast) {
+          activeRefreshToast.classList.add('hide');
+          setTimeout(() => activeRefreshToast && activeRefreshToast.remove(), 340);
+          activeRefreshToast = null;
+        }
+        showToast("Updated", "success", 3000);
         const liveGrid = document.getElementById('sd-live-grid');
         const pastGrid = document.getElementById('sd-past-grid');
         liveGrid.innerHTML = '';
