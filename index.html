@@ -1911,7 +1911,10 @@ function callBackend(action, args, onSuccess, onFailure) {
           </div>
           <div class="form-group">
             <label class="form-label">Password</label>
-            <input type="password" id="sPassword" class="form-control" autocapitalize="none" autocorrect="off" placeholder="••••••••" onkeyup="if(event.key==='Enter'||event.keyCode===13) loginWithPassword()">
+            <div style="position:relative;">
+              <input type="password" id="sPassword" class="form-control" autocapitalize="none" autocorrect="off" placeholder="••••••••" style="padding-right:36px;" onkeyup="if(event.key==='Enter'||event.keyCode===13) loginWithPassword()">
+              <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sPassword', this)"></i>
+            </div>
             <div style="text-align: right; margin-top: 8px;">
               <a href="#" onclick="showStudentForgotPasswordEmailStep(); return false;" style="color:var(--primary); font-size:0.85rem; font-weight:500; text-decoration:none;">Forgot Password?</a>
             </div>
@@ -1979,7 +1982,10 @@ function callBackend(action, args, onSuccess, onFailure) {
         </div>
         <div class="form-group" style="text-align:left;">
           <label class="form-label">New Password</label>
-          <input type="password" id="sForgotNewPassword" class="form-control" placeholder="Enter new password">
+          <div style="position:relative;">
+            <input type="password" id="sForgotNewPassword" class="form-control" placeholder="Enter new password" style="padding-right:36px;">
+            <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sForgotNewPassword', this)"></i>
+          </div>
         </div>
         <button class="btn-primary-auth" onclick="studentResetPasswordAction()">
           <svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Reset Password
@@ -2250,15 +2256,24 @@ function callBackend(action, args, onSuccess, onFailure) {
           <div style="max-width:400px; background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
             <div style="margin-bottom:15px;">
               <label class="form-label">Current Password</label>
-              <input type="password" id="sd-old-pwd" class="form-control" placeholder="Enter current password">
+              <div style="position:relative;">
+                <input type="password" id="sd-old-pwd" class="form-control" placeholder="Enter current password" style="padding-right:36px;">
+                <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sd-old-pwd', this)"></i>
+              </div>
             </div>
             <div style="margin-bottom:15px;">
               <label class="form-label">New Password</label>
-              <input type="password" id="sd-new-pwd" class="form-control" placeholder="Enter new password">
+              <div style="position:relative;">
+                <input type="password" id="sd-new-pwd" class="form-control" placeholder="Enter new password" style="padding-right:36px;">
+                <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sd-new-pwd', this)"></i>
+              </div>
             </div>
             <div style="margin-bottom:20px;">
               <label class="form-label">Confirm New Password</label>
-              <input type="password" id="sd-confirm-pwd" class="form-control" placeholder="Confirm new password">
+              <div style="position:relative;">
+                <input type="password" id="sd-confirm-pwd" class="form-control" placeholder="Confirm new password" style="padding-right:36px;">
+                <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sd-confirm-pwd', this)"></i>
+              </div>
             </div>
             <button class="btn-primary-auth" style="width:100%;" onclick="submitPasswordChange()">Update Password</button>
           </div>
@@ -2480,6 +2495,19 @@ function callBackend(action, args, onSuccess, onFailure) {
   /* ══════════════════════════════════════════════════
      CUSTOM CENTRE DIALOGUE MODAL SYSTEM
   ══════════════════════════════════════════════════ */
+  function togglePasswordVisibility(inputId, iconEl) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      iconEl.classList.remove('ti-eye');
+      iconEl.classList.add('ti-eye-off');
+    } else {
+      input.type = 'password';
+      iconEl.classList.remove('ti-eye-off');
+      iconEl.classList.add('ti-eye');
+    }
+  }
   let _cModalResolve = null;
   const _cModalTypeMap = {
     success: { icon:'<svg class="svg-icon anim-draw" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>', label:'OK',   okClass:'success-ok' },
