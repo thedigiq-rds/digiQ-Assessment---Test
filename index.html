@@ -1955,6 +1955,49 @@ function callBackend(action, args, onSuccess, onFailure) {
         </button>
       </div>
 
+      <!-- Step 3: Student Forgot Password Email -->
+      <div id="step-forgot-email" style="display:none; text-align:center; margin-top: 20px;">
+        <div style="margin-bottom:15px; font-size:0.9rem; color:#64748b; text-align:left;">Enter your registered email address to receive an OTP for password reset.</div>
+        <div class="form-group" style="text-align:left;">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="sForgotEmail" class="form-control" placeholder="your@email.com" autocomplete="off">
+        </div>
+        <button class="btn-primary-auth" onclick="requestStudentForgotPasswordOTP()">
+          <svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg> Send OTP
+        </button>
+        <div style="text-align:center; margin-top: 15px;">
+          <a href="#" onclick="showStudentLoginStep(); return false;" style="font-size:0.85rem; color:#64748b; text-decoration:none;">Back to Login</a>
+        </div>
+      </div>
+
+      <!-- Step 4: Student Forgot Password OTP and Reset -->
+      <div id="step-forgot-reset" style="display:none; text-align:center; margin-top: 20px;">
+        <div style="margin-bottom:15px; font-size:0.9rem; color:#64748b; text-align:left;">An OTP has been sent to your email. Enter it below along with your new password.</div>
+        <div class="form-group" style="text-align:left;">
+          <label class="form-label">Secure OTP</label>
+          <input type="text" id="sForgotOTP" class="form-control" placeholder="Enter 6-digit OTP" autocomplete="off" maxlength="6" style="text-align:center; font-size:1.2rem; letter-spacing:4px;">
+        </div>
+        <div class="form-group" style="text-align:left;">
+          <label class="form-label">New Password</label>
+          <input type="password" id="sForgotNewPassword" class="form-control" placeholder="Enter new password">
+        </div>
+        <button class="btn-primary-auth" onclick="studentResetPasswordAction()">
+          <svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Reset Password
+        </button>
+        <div style="text-align:center; margin-top: 15px;">
+          <a href="#" onclick="showStudentForgotPasswordEmailStep(); return false;" style="font-size:0.85rem; color:#64748b; text-decoration:none;">Change Email</a>
+        </div>
+      </div>
+      
+      <!-- Step 5: Forgot Password Success -->
+      <div id="step-forgot-success" style="display:none; text-align:center; margin-top: 20px;">
+        <div style="font-size: 3rem; color: #10b981; margin-bottom: 10px;"><svg class="svg-icon" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg></div>
+        <h3 style="font-size: 1.2rem; color: #1e293b; margin-bottom: 5px;">Password Reset Successfully</h3>
+        <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 20px;">Your student password has been changed.</p>
+        <button class="btn-primary-auth" onclick="showStudentLoginStep()">Login to Portal</button>
+      </div>
+
+
       <div class="developer-credit" style="margin-top: 18px; margin-bottom: 6px;">
         Developed By <span>Dr. Rajendra Suthar</span>
       </div>
