@@ -6,6 +6,17 @@
 <!-- CLOUDFLARE PAGES MIGRATION: GOOGLE APPS SCRIPT API MOCK -->
 <!-- ========================================================================= -->
 <script>
+
+function formatStandardDate(dateInput) {
+  if (!dateInput) return 'N/A';
+  const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
+  if (isNaN(d.getTime())) return 'N/A';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 window.APP_BRAND = {
   name: "digiQ",
   tagline: "Let Insights Emerge!!!",
@@ -3854,7 +3865,7 @@ function callBackend(action, args, onSuccess, onFailure) {
               <div class="sd-card">
                 <div class="sd-card-tag ${tagClass}">${tagText}</div>
                 <div class="sd-card-title">${sub.title}</div>
-                <div class="sd-card-meta"><i class="ti ti-calendar-check"></i> Submitted: ${new Date(sub.timestamp).toLocaleDateString()}</div>
+                <div class="sd-card-meta"><i class="ti ti-calendar-check"></i> Submitted: ${formatStandardDate(sub.timestamp)}</div>
                 <div class="sd-score-box">
                   <div class="sd-score-text">${sub.score} / ${sub.total}</div>
                   <div style="font-size:0.8rem; color:var(--text-dim); font-weight:600;">${sub.perc}%</div>
