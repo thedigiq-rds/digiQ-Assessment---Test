@@ -84,11 +84,14 @@ function callBackend(action, args, onSuccess, onFailure) {
   .then(res => res.json())
   .then(data => {
     if (data.success && onSuccess) onSuccess(data.result);
-    else if (!data.success && onFailure) onFailure(data.error);
-    else if (!data.success) console.error(data.error);
+    else if (!data.success && onFailure) {
+      const errMsg = data.error || data.message || "Unknown error occurred on server.";
+      onFailure(new Error(errMsg));
+    }
+    else if (!data.success) console.error(data.error || data.message);
   })
   .catch(err => {
-    if (onFailure) onFailure(err);
+    if (onFailure) onFailure(err instanceof Error ? err : new Error(String(err)));
     else console.error(err);
   });
 }
