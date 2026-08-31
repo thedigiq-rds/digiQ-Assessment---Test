@@ -15,6 +15,17 @@
 <!-- CLOUDFLARE PAGES MIGRATION: GOOGLE APPS SCRIPT API MOCK -->
 <!-- ========================================================================= -->
 <script>
+
+function formatStandardDate(dateInput) {
+  if (!dateInput) return 'N/A';
+  const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
+  if (isNaN(d.getTime())) return 'N/A';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 window.APP_BRAND = {
   name: "digiQ",
   tagline: "Let Insights Emerge!!!",
@@ -2065,14 +2076,14 @@ document.addEventListener('focusout', function(e) {
         <div class="f-group" style="text-align:left;">
           <label class="f-label">New Password</label>
           <div style="position:relative;">
-            <input type="password" id="resetNewPassword" class="f-input" placeholder="Enter new password" style="padding-right:36px;" autocomplete="new-password">
+            <input type="password" id="resetNewPassword" class="f-input" placeholder="Enter new password" style="padding-right:36px;" autocomplete="new-password" autocapitalize="off">
             <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('resetNewPassword', this)"></i>
           </div>
         </div>
         <div class="f-group" style="text-align:left;">
           <label class="f-label">Confirm Password</label>
           <div style="position:relative;">
-            <input type="password" id="resetConfirmPassword" class="f-input" placeholder="Confirm new password" style="padding-right:36px;" autocomplete="new-password">
+            <input type="password" id="resetConfirmPassword" class="f-input" placeholder="Confirm new password" style="padding-right:36px;" autocomplete="new-password" autocapitalize="off">
             <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('resetConfirmPassword', this)"></i>
           </div>
         </div>
@@ -3336,6 +3347,14 @@ document.addEventListener('focusout', function(e) {
               <option value="7">Sem 7</option>
               <option value="8">Sem 8</option>
             </select>
+            <select id="filterStdSort" class="f-select" style="min-width:140px; width:auto; flex-shrink:0; padding:6px 12px; font-size:0.9rem;" onchange="renderStudentsTable()">
+              <option value="NAME_ASC">Name (A-Z)</option>
+              <option value="NAME_DESC">Name (Z-A)</option>
+              <option value="ROLL_ASC">Roll Number (Smallest-Largest)</option>
+              <option value="ROLL_DESC">Roll Number (Largest-Smallest)</option>
+              <option value="DATE_DESC">Date Created (Newest First)</option>
+              <option value="DATE_ASC">Date Created (Oldest First)</option>
+            </select>
             <button class="btn-outline" style="padding:6px 12px; font-size:0.9rem; flex-shrink:0; margin-left:auto;" onclick="loadStudentsList()"><i class="ti ti-refresh"></i> Refresh</button>
             <button class="btn-primary-admin" style="padding:6px 12px; font-size:0.9rem; background:var(--teal); border-color:var(--teal); flex-shrink:0;" onclick="exportStudentsExcel()"><i class="ti ti-download"></i> Export Excel</button>
           </div>
@@ -4297,7 +4316,7 @@ function renderFilteredReports(data) {
   empty.style.display = 'none';
   tbody.innerHTML = data.map(r => {
     const passed  = r[8] === 'Yes';
-    const dateStr = r[0] ? new Date(r[0]).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '—';
+    const dateStr = r[0] ? formatStandardDate(r[0]) : '—';
     return `<tr>
       <td class="td-muted">${dateStr}</td>
       <td><strong>${toTitleCase(r[2])}</strong></td>
@@ -4439,7 +4458,7 @@ function openAssessModal(groupId) {
   // Header
   document.getElementById('assess-quiz-title').textContent = group.quizTitle;
   const metaEl = document.getElementById('assess-meta-chips');
-  const dateStr = group.submittedAt ? new Date(group.submittedAt).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) : 'N/A';
+  const dateStr = group.submittedAt ? formatStandardDate(group.submittedAt) : 'N/A';
   metaEl.innerHTML = [
     `<span class="assess-meta-chip"><i class="ti ti-user"></i> ${group.studentName}</span>`,
     `<span class="assess-meta-chip"><i class="ti ti-id-badge"></i> Roll: ${group.rollNo}</span>`,
@@ -4645,7 +4664,7 @@ function buildRecentSubmissions() {
   tbody.innerHTML = last10.map(r => {
     const title  = globalQuizzes.find(q => q[0] === r[1])?.[1] || '—';
     const passed = r[8] === 'Yes';
-    const date   = r[0] ? new Date(r[0]).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '—';
+    const date   = r[0] ? formatStandardDate(r[0]) : '—';
     return `<tr>
       <td class="td-muted">${date}</td>
       <td class="td-title" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${title}</td>
@@ -5459,11 +5478,11 @@ function downloadReportPDF() {
   if (!data.length) { showToast('No data to export.', 'warning'); return; }
   doc.setFontSize(18); doc.setTextColor(26,54,93); doc.text('M. N. College, Visnagar', 14, 20);
   doc.setFontSize(11); doc.setTextColor(50,50,50); doc.text('Department of English – Official Assessment Report', 14, 28);
-  doc.setFontSize(9); doc.text('Scope: ' + qTitle, 14, 36); doc.text('Generated: ' + new Date().toLocaleDateString('en-IN'), 14, 42);
+  doc.setFontSize(9); doc.text('Scope: ' + qTitle, 14, 36); doc.text('Generated: ' + formatStandardDate(new Date()), 14, 42);
   doc.autoTable({
     startY: 50,
     head: [['Date','Roll No','Name','Email','Score','%','Status']],
-    body: data.map(r => [r[0] ? new Date(r[0]).toLocaleDateString('en-IN') : '', r[2], r[3], r[4], `${r[5]}/${r[6]}`, `${r[7]}%`, r[8] === 'Yes' ? 'Passed' : 'Fail']),
+    body: data.map(r => [r[0] ? formatStandardDate(r[0]) : '', r[2], r[3], r[4], `${r[5]}/${r[6]}`, `${r[7]}%`, r[8] === 'Yes' ? 'Passed' : 'Fail']),
     theme: 'grid', headStyles: { fillColor: [26,54,93], fontSize: 9 }, bodyStyles: { fontSize: 8 }
   });
   doc.save(`LMS_Report_${Date.now()}.pdf`); showToast('PDF report downloaded!', 'success');
@@ -5594,14 +5613,14 @@ function submitChangePassword() {
       <div class="f-group" style="margin-bottom:15px;">
         <label class="f-label">New Password</label>
         <div style="position:relative;">
-          <input type="password" id="newPassword" class="f-input" placeholder="Enter new password" style="padding-right:36px;" autocomplete="new-password">
+          <input type="password" id="newPassword" class="f-input" placeholder="Enter new password" style="padding-right:36px;" autocomplete="new-password" autocapitalize="off">
           <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('newPassword', this)"></i>
         </div>
       </div>
       <div class="f-group">
         <label class="f-label">Confirm Password</label>
         <div style="position:relative;">
-          <input type="password" id="confirmPassword" class="f-input" placeholder="Confirm new password" style="padding-right:36px;" autocomplete="new-password">
+          <input type="password" id="confirmPassword" class="f-input" placeholder="Confirm new password" style="padding-right:36px;" autocomplete="new-password" autocapitalize="off">
           <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('confirmPassword', this)"></i>
         </div>
       </div>
@@ -6415,6 +6434,35 @@ function renderQbSelectTable() {
     filtered = filtered.filter(q => q.QuestionType === typeFilter);
   }
   
+  
+  const sortFilter = document.getElementById('filterStdSort') ? document.getElementById('filterStdSort').value : 'DATE_DESC';
+  
+  filtered.sort((a, b) => {
+    if (sortFilter === 'NAME_ASC') {
+      return (a.fullName || '').localeCompare(b.fullName || '');
+    } else if (sortFilter === 'NAME_DESC') {
+      return (b.fullName || '').localeCompare(a.fullName || '');
+    } else if (sortFilter === 'ROLL_ASC') {
+      const numA = parseInt(a.rollNo, 10);
+      const numB = parseInt(b.rollNo, 10);
+      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return String(a.rollNo || '').localeCompare(String(b.rollNo || ''), undefined, {numeric: true});
+    } else if (sortFilter === 'ROLL_DESC') {
+      const numA = parseInt(a.rollNo, 10);
+      const numB = parseInt(b.rollNo, 10);
+      if (!isNaN(numA) && !isNaN(numB)) return numB - numA;
+      return String(b.rollNo || '').localeCompare(String(a.rollNo || ''), undefined, {numeric: true});
+    } else if (sortFilter === 'DATE_ASC') {
+      const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tA - tB;
+    } else {
+      const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tB - tA;
+    }
+  });
+
   if (filtered.length === 0) {
     tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:20px; color:#94a3b8;">No questions found matching criteria.</td></tr>`;
     return;
@@ -7004,7 +7052,7 @@ function epbRenderPapersTable(data) {
   data.slice().reverse().forEach(function(row) {
     var tr = document.createElement('tr');
     var dateStr = '—';
-    try { var d = new Date(row.timestamp); if (!isNaN(d)) dateStr = d.toLocaleDateString('en-IN') + ' ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); } catch(e){}
+    try { var d = new Date(row.timestamp); if (!isNaN(d)) dateStr = formatStandardDate(d) + ' ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); } catch(e){}
     tr.innerHTML = '<td>' + dateStr + '</td><td style="font-weight:600; color:#0f172a;">' + (row.creator||'—') + '</td>' +
       '<td><div style="font-weight:500;">' + (row.program||'—') + '</div><div style="font-size:0.72rem; color:#64748b;">Sem ' + (row.semester||'—') + '</div></td>' +
       '<td><span style="background:#eef2ff; color:#4f46e5; font-size:0.72rem; font-weight:600; padding:3px 8px; border-radius:12px; border:1px solid #c7d2fe;">' + (row.paperCode||'—') + '</span></td>' +
@@ -7287,6 +7335,35 @@ function renderStudentsTable() {
     filtered = filtered.filter(s => String(s.semester || '').replace(/\D/g, '') === sFilterNorm);
   }
   
+  
+  const sortFilter = document.getElementById('filterStdSort') ? document.getElementById('filterStdSort').value : 'DATE_DESC';
+  
+  filtered.sort((a, b) => {
+    if (sortFilter === 'NAME_ASC') {
+      return (a.fullName || '').localeCompare(b.fullName || '');
+    } else if (sortFilter === 'NAME_DESC') {
+      return (b.fullName || '').localeCompare(a.fullName || '');
+    } else if (sortFilter === 'ROLL_ASC') {
+      const numA = parseInt(a.rollNo, 10);
+      const numB = parseInt(b.rollNo, 10);
+      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return String(a.rollNo || '').localeCompare(String(b.rollNo || ''), undefined, {numeric: true});
+    } else if (sortFilter === 'ROLL_DESC') {
+      const numA = parseInt(a.rollNo, 10);
+      const numB = parseInt(b.rollNo, 10);
+      if (!isNaN(numA) && !isNaN(numB)) return numB - numA;
+      return String(b.rollNo || '').localeCompare(String(a.rollNo || ''), undefined, {numeric: true});
+    } else if (sortFilter === 'DATE_ASC') {
+      const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tA - tB;
+    } else {
+      const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return tB - tA;
+    }
+  });
+
   if (filtered.length === 0) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8;">No students found matching criteria.</td></tr>';
     return;
@@ -7294,7 +7371,7 @@ function renderStudentsTable() {
   
   let html = '';
   filtered.forEach(s => {
-    const d = s.createdAt ? new Date(s.createdAt).toLocaleDateString() : 'N/A';
+    const d = s.createdAt ? formatStandardDate(s.createdAt) : 'N/A';
     html += `<tr>
       <td style="font-weight:600; color:var(--text);">${s.fullName}</td>
       <td><span style="background:#eef2ff; color:#4f46e5; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600;">${s.rollNo}</span></td>
