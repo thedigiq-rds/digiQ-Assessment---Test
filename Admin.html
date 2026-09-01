@@ -2224,7 +2224,6 @@ document.addEventListener('focusout', function(e) {
             <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
         <div>
           <div class="page-heading"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
-          <div class="page-desc" style="margin-bottom:0;">Real-time statistics for your managed assessments</div>
         </div>
         <div class="topbar-info" style="background:rgba(255,255,255,0.7); backdrop-filter:blur(4px); padding:8px 16px; border-radius:12px; display:flex; align-items:center; gap:16px; border:1px solid var(--main-border); box-shadow:0 2px 6px rgba(0,0,0,0.04);">
           <div style="font-size:0.85rem;">
@@ -2277,26 +2276,19 @@ document.addEventListener('focusout', function(e) {
     <!-- ══════════ CREATE QUIZ TAB ══════════ -->
     <div id="tab-create" class="tab-content" style="display:none;">
       <div class="page-heading"><i class="ti ti-circle-plus"></i> Create New Quiz</div>
-      <div class="page-desc">Configure and deploy a new assessment for students</div>
 
       <!-- Step 1: Assessment Type -->
       <div class="panel" style="margin-bottom:18px; border-left:4px solid var(--primary);">
         <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center;">
           <span>Step 1: Select Assessment Type</span>
-          <span style="color:var(--primary); font-size:0.75rem; background:rgba(99,102,241,0.1); padding:4px 10px; border-radius:12px; font-weight:600;">Required</span>
         </div>
-        <div class="panel-desc" style="margin-bottom:14px;">Choose the predefined format — all fields and templates will adapt accordingly.</div>
         <div style="max-width:480px;">
-          <label class="f-label">Predefined Assessment Type</label>
           <select id="cqAssessmentType" class="f-select" style="padding:12px 16px;" onchange="onAssessmentTypeChange(this.value)">
             <option value="">-- Select Type --</option>
             <option value="MCQ">Multiple Choice Questions (MCQ)</option>
             <option value="SHORT">Short Answer Questions (Auto-Grading)</option>
             <option value="ESSAY">Descriptive Essay Questions (Manual Evaluation)</option>
           </select>
-        </div>
-        <div id="cqTypeSelectPrompt" style="margin-top:14px; padding:14px 18px; background:rgba(99,102,241,0.07); border-left:4px solid var(--primary); border-radius: 12px; color:var(--primary-dk); font-size:0.88rem; line-height:1.5;">
-          <i class="ti ti-hand-click" style="font-size:1.15rem; vertical-align:text-bottom; margin-right:6px;"></i> <strong>Please select a predefined Assessment Type</strong> from the dropdown above to reveal the configuration fields and question bank templates.
         </div>
       </div>
 
@@ -2563,7 +2555,6 @@ document.addEventListener('focusout', function(e) {
     <!-- ══════════ MANAGE QUIZZES TAB ══════════ -->
     <div id="tab-manage" class="tab-content" style="display:none;">
       <div class="page-heading"><i class="ti ti-list-check"></i> Manage Quizzes</div>
-      <div class="page-desc">View, toggle, and delete all your deployed assessments</div>
       <div class="panel">
         <div class="filter-bar">
           <div class="search-wrap f-search" style="margin-bottom:0; position:relative;">
@@ -2605,7 +2596,6 @@ document.addEventListener('focusout', function(e) {
     <!-- ══════════ REPORTS TAB ══════════ -->
     <div id="tab-reports" class="tab-content" style="display:none;">
       <div class="page-heading"><i class="ti ti-chart-line"></i> Analytics &amp; Reports</div>
-      <div class="page-desc">Filter, analyse and export submission data</div>
       <div class="panel" style="margin-bottom:18px;">
         <div style="display:flex; gap:14px; align-items:flex-end; flex-wrap:wrap;">
           <div style="flex:1; min-width:200px; display:flex; flex-direction:column; gap:8px;">
@@ -2660,13 +2650,11 @@ document.addEventListener('focusout', function(e) {
     <!-- ══════════ ESSAY GRADING TAB ══════════ -->
     <div id="tab-essays" class="tab-content" style="display:none;">
       <div class="page-heading"><i class="ti ti-pencil"></i> Essay Grading Dashboard</div>
-      <div class="page-desc">Review and assess descriptive essay submissions</div>
 
       <div class="panel" id="essays-main-view">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:20px;">
           <div>
             <div class="panel-title" style="margin-bottom:2px;">Pending Submissions</div>
-            <div class="panel-desc" style="margin-bottom:0;">Submissions awaiting instructor evaluation</div>
           </div>
           <button class="btn-outline" onclick="loadPendingEssays()" style="padding:9px 16px;"><i class="ti ti-refresh"></i> Refresh</button>
         </div>
@@ -2717,7 +2705,6 @@ document.addEventListener('focusout', function(e) {
       <div class="page-header no-print" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:24px;" id="epb-topbar-main">
         <div>
           <div class="page-heading"><i class="ti ti-file-text"></i> Exam Paper Builder</div>
-          <div class="page-desc" style="margin-bottom:0;">Auto-Scaling Dynamic A4 Engine</div>
         </div>
         <div class="epb-topbar-actions" id="epb-main-btns" style="display:flex; gap:8px;">
           <button onclick="epbPrint()" class="btn-outline">
@@ -2939,7 +2926,6 @@ document.addEventListener('focusout', function(e) {
           <div>
                   <div class="page-header" style="margin-bottom:24px;">
         <div class="page-heading"><i class="ti ti-database"></i> Question Bank</div>
-        <div class="page-desc" style="margin-bottom:0;">Manage, organise and reuse assessment questions.</div>
       </div>
           </div>
           <div style="display:flex; flex-wrap:wrap; gap:10px;">
@@ -3256,7 +3242,6 @@ document.addEventListener('focusout', function(e) {
     <!-- ══════════ STUDENTS TAB ══════════ -->
     <div id="tab-students" class="tab-content" style="display:none;">
       <div class="page-heading"><i class="ti ti-school"></i> Manage Students</div>
-      <div class="page-desc">Create and manage student accounts for the dedicated portal</div>
       
       <div class="grid-2">
         <!-- Single Student Add -->
@@ -3387,7 +3372,6 @@ document.addEventListener('focusout', function(e) {
     <!-- ══════════ SUB-ADMINS TAB ══════════ -->
     <div id="tab-subadmins" class="tab-content" style="display:none;">
       <div class="page-heading"><i class="ti ti-users"></i> Manage Sub-Admins</div>
-      <div class="page-desc">Grant and revoke restricted access to faculty members</div>
       <div class="panel">
         <div class="panel-title">Add New Sub-Admin</div>
         <div class="panel-desc">Sub-admins can only access quizzes matching their assigned streams &amp; semesters</div>
