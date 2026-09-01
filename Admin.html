@@ -2031,7 +2031,7 @@ document.addEventListener('focusout', function(e) {
         <div class="f-group" style="text-align:left; margin-bottom:4px;">
           <label class="f-label">Password</label>
           <div style="position:relative;">
-            <input type="password" id="loginPassword" class="f-input" placeholder="Enter password" autocomplete="off" style="padding-right:36px;" onkeyup="if(event.key==='Enter'||event.keyCode===13) verifyAdminLogin()">
+            <input type="password" id="loginPassword" class="f-input" placeholder="Enter password" autocomplete="off" autocapitalize="off" autocorrect="off" style="padding-right:36px;" onkeyup="if(event.key==='Enter'||event.keyCode===13) verifyAdminLogin()">
             <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('loginPassword', this)"></i>
           </div>
         </div>
