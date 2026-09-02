@@ -1632,6 +1632,10 @@ function callBackend(action, args, onSuccess, onFailure) {
       .login-illus-sub, .login-illus-dots { display: none !important; }
       .login-card { flex: none; padding: 16px 20px 18px !important; min-width: unset !important; }
       .data-table th, .data-table td { padding: 8px 7px; font-size: 0.8rem; }
+      /* Allow table to be wider than viewport — wrapper scrolls horizontally */
+      .data-table { width: auto !important; min-width: 100%; }
+      /* Actions column: never compress below button row width */
+      .data-table td:last-child, .data-table th:last-child { min-width: 140px !important; white-space: nowrap !important; }
       .loader-wrapper { font-size: 1.25em !important; scale: 1.15 !important; height: 80px !important; }
     }
 
@@ -2874,7 +2878,7 @@ document.addEventListener('focusout', function(e) {
         <div class="data-table-wrapper">
           <table class="data-table">
             <thead>
-              <tr><th>Created On</th><th>Title</th><th>Stream</th><th>Semester</th><th>Status</th><th>Actions</th></tr>
+              <tr><th>Created On</th><th>Title</th><th>Stream</th><th>Semester</th><th>Status</th><th style="min-width:140px;">Actions</th></tr>
             </thead>
             <tbody id="quiz-list"></tbody>
           </table>
@@ -4579,7 +4583,7 @@ function renderManageTable(quizzes) {
           </div>
         </div>
       </td>
-      <td style="white-space:nowrap;">
+      <td style="white-space:nowrap; min-width:140px;">
         <div style="display:flex; gap:4px; flex-wrap:nowrap; align-items:center;">
           <button class="btn-xs btn-xs-action" onclick="copyToClipboard('${link}')" title="Copy Link"><i class="ti ti-clipboard"></i></button>
           <button class="btn-xs btn-xs-action" onclick="downloadQuizData('${q[0]}')" title="Download Excel"><svg class="svg-icon" width="1.1em" height="1.1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
@@ -7808,21 +7812,24 @@ function renderStudentsTable() {
     const d = s.createdAt ? formatStandardDate(s.createdAt) : 'N/A';
     // Safely encode student data as a JSON string for the edit handler
     const safeJson = JSON.stringify(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    // Normalize semester display: strip leading "Sem " if already present, then re-prefix
+    const semRaw = String(s.semester || '').trim();
+    const semDisplay = 'Sem ' + semRaw.replace(/^sem\s*/i, '').trim();
     html += `<tr>
       <td style="font-weight:600; color:var(--text);">${s.fullName}</td>
       <td><span style="background:#eef2ff; color:#4f46e5; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600;">${s.rollNo}</span></td>
       <td>${s.email}<br><small style="color:#94a3b8;">${s.whatsapp || 'No WA'}</small></td>
       <td>${s.program}</td>
-      <td>Sem ${s.semester}</td>
+      <td>${semDisplay}</td>
       <td style="font-family:monospace;">${s.password || 'N/A'}</td>
       <td style="font-size:0.8rem; color:#64748b;">${d}</td>
       <td style="text-align:right;">
-        <div class="std-actions-cell">
-          <button class="std-action-btn std-edit-btn" title="Edit Student" onclick="openEditStudent('${safeJson.replace(/"/g, '&quot;')}')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        <div style="display:flex; gap:4px; flex-wrap:nowrap; align-items:center; justify-content:flex-end;">
+          <button class="btn-xs btn-xs-action" title="Edit Student" onclick="openEditStudent('${safeJson.replace(/"/g, '&quot;')}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
-          <button class="std-action-btn std-delete-btn" title="Remove Student" onclick="deleteStudent('${s.rollNo}')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          <button class="btn-xs btn-xs-danger" title="Remove Student" onclick="deleteStudent('${s.rollNo}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
           </button>
         </div>
       </td>
