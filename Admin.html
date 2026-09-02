@@ -739,9 +739,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     .sidebar {
       width: 240px; height: 100vh; flex-shrink: 0;
       background: var(--color-sidebar);
-      border-right: 1px solid var(--color-border);
       display: flex; flex-direction: column;
-      overflow-y: auto;
       transition: width var(--transition-normal);
       z-index: 10;
     }
@@ -835,7 +833,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       font-weight: 500; font-size: 14px;
       cursor: pointer;
       transition: color 0.25s ease, transform 0.38s cubic-bezier(0.34, 1.25, 0.64, 1), font-size 0.25s ease, opacity 0.25s ease;
-      text-decoration: none; margin-bottom: 0;
+      text-decoration: none; margin: 0;
       border: none;
       user-select: none;
       position: relative;
@@ -894,12 +892,12 @@ function callBackend(action, args, onSuccess, onFailure) {
       border: 1px solid var(--color-border);
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      color: var(--color-primary);
+      color: #FFA500;
     }
     .sb-avatar svg {
       width: 18px; height: 18px;
-      stroke: currentColor;
-      stroke-width: 2;
+      stroke: #FFA500 !important;
+      stroke-width: 2.5;
       fill: none;
       stroke-linecap: round;
       stroke-linejoin: round;
@@ -2276,7 +2274,7 @@ document.addEventListener('focusout', function(e) {
   <!-- SIDEBAR -->
   <div class="sidebar" id="adminSidebar">
     <div class="sidebar-brand">
-      <div class="sidebar-brand-college">M. N. College</div>
+      <div class="sidebar-brand-college">M. N. College, Visnagar</div>
       <div class="sidebar-brand-name">digiQ Admin</div>
     </div>
     <div class="nav-wrapper" style="position: relative; flex: 1; display: flex; flex-direction: column;">
@@ -2284,7 +2282,7 @@ document.addEventListener('focusout', function(e) {
       <div class="notch-indicator" id="sidebarNotch">
         <svg width="241" height="100" viewBox="0 0 241 100" preserveAspectRatio="none">
           <path d="M 241 0 C 241 16.5, 227.5 30, 211 30 L 56 30 A 20 20 0 0 0 56 70 L 211 70 C 227.5 70, 241 83.5, 241 100 L 241 0 Z" fill="var(--color-bg-base)"/>
-          <path d="M 241 0 C 241 16.5, 227.5 30, 211 30 L 56 30 A 20 20 0 0 0 56 70 L 211 70 C 227.5 70, 241 83.5, 241 100" fill="none" stroke="var(--color-border)" stroke-width="1.5"/>
+          <path d="M 241 0 C 241 16.5, 227.5 30, 211 30 L 56 30 A 20 20 0 0 0 56 70 L 211 70 C 227.5 70, 241 83.5, 241 100" fill="none" stroke="#FFA500" stroke-width="2.5"/>
         </svg>
       </div>
       <nav class="sidebar-nav" id="sidebarNav" onscroll="updateSidebarNotch()">
