@@ -3570,6 +3570,7 @@ document.addEventListener('focusout', function(e) {
             <div class="f-group" style="margin-bottom:0;">
               <label class="f-label">Program (Stream)</label>
               <select id="stdProgram" class="f-select" onchange="updateStudentSemesterOptions()">
+                <option value="" selected disabled>Select Program</option>
                 <option value="B.A.">B.A.</option>
                 <option value="B.Sc.">B.Sc.</option>
                 <option value="B.Com.">B.Com.</option>
@@ -3579,7 +3580,9 @@ document.addEventListener('focusout', function(e) {
             </div>
             <div class="f-group" style="margin-bottom:0;">
               <label class="f-label">Semester</label>
-              <select id="stdSemester" class="f-select"></select>
+              <select id="stdSemester" class="f-select">
+                <option value="" selected disabled>Select Semester</option>
+              </select>
             </div>
           </div>
           <div class="grid-2" style="margin-bottom:16px;">
@@ -3650,6 +3653,7 @@ document.addEventListener('focusout', function(e) {
               <option value="DATE_ASC">Date Created (Oldest First)</option>
             </select>
             <button class="btn-outline" style="padding:6px 12px; font-size:0.9rem; flex-shrink:0; margin-left:auto;" onclick="loadStudentsList()"><i class="ti ti-refresh"></i> Refresh</button>
+            <button id="btnBulkDeleteStudents" class="btn-primary-admin" style="padding:6px 12px; font-size:0.9rem; background:var(--danger); border-color:var(--danger); flex-shrink:0; display:none;" onclick="bulkDeleteStudents()"><i class="ti ti-trash"></i> Delete Selected</button>
             <button class="btn-primary-admin" style="padding:6px 12px; font-size:0.9rem; background:var(--teal); border-color:var(--teal); flex-shrink:0;" onclick="exportStudentsExcel()"><i class="ti ti-download"></i> Export Excel</button>
           </div>
         </div>
@@ -3657,6 +3661,7 @@ document.addEventListener('focusout', function(e) {
           <table class="data-table" id="studentsTable">
             <thead>
               <tr>
+                <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllStudents" onchange="toggleSelectAllStudents()"></th>
                 <th>Name</th>
                 <th>Roll No</th>
                 <th>Email</th>
@@ -7504,7 +7509,8 @@ function updateStudentSemesterOptions() {
   const stream  = document.getElementById('stdProgram').value;
   const sems    = SEM_MAP_FULL[stream] || ['Sem 1','Sem 2','Sem 3','Sem 4'];
   const semSel  = document.getElementById('stdSemester');
-  semSel.innerHTML = sems.map(s => `<option value="${s}">${s}</option>`).join('');
+  semSel.innerHTML = '<option value="" selected disabled>Select Semester</option>' + 
+                     sems.map(s => `<option value="${s}">${s}</option>`).join('');
 }
 
 function addSingleStudent() { submitStudentForm(); } // backward-compat alias
@@ -7514,7 +7520,9 @@ function submitStudentForm() {
   const roll     = document.getElementById('stdRoll').value.trim();
   const email    = document.getElementById('stdEmail').value.trim();
   const prog     = document.getElementById('stdProgram').value.trim();
-  const sem      = document.getElementById('stdSemester').value.trim();
+  let sem        = document.getElementById('stdSemester').value.trim();
+  // Strip "Sem " prefix for storage so it saves just "1" in DB
+  sem = sem.replace(/^sem\s*/i, '').trim();
   const whatsapp = document.getElementById('stdWhatsApp').value.trim();
   const pwd      = document.getElementById('stdPassword').value.trim();
   const editMode = document.getElementById('stdEditMode').value; // '' = create, 'EDIT' = update
@@ -7812,10 +7820,13 @@ function renderStudentsTable() {
     const d = s.createdAt ? formatStandardDate(s.createdAt) : 'N/A';
     // Safely encode student data as a JSON string for the edit handler
     const safeJson = JSON.stringify(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    // Normalize semester display: strip leading "Sem " if already present, then re-prefix
+    // Normalize semester display: strip leading "Sem " if present to only show "1", "2", etc.
     const semRaw = String(s.semester || '').trim();
-    const semDisplay = 'Sem ' + semRaw.replace(/^sem\s*/i, '').trim();
+    const semDisplay = semRaw.replace(/^sem\s*/i, '').trim();
     html += `<tr>
+      <td style="text-align: center;">
+        <input type="checkbox" class="student-select" data-roll="${s.rollNo}" data-prog="${s.program}" data-sem="${s.semester}" onchange="updateBulkDeleteButton()">
+      </td>
       <td style="font-weight:600; color:var(--text);">${s.fullName}</td>
       <td><span style="background:#eef2ff; color:#4f46e5; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600;">${s.rollNo}</span></td>
       <td>${s.email}<br><small style="color:#94a3b8;">${s.whatsapp || 'No WA'}</small></td>
@@ -7835,7 +7846,60 @@ function renderStudentsTable() {
       </td>
     </tr>`;
   });
+  
   tbody.innerHTML = html;
+  updateBulkDeleteButton(); // Reset button state after re-render
+  document.getElementById('selectAllStudents').checked = false;
+}
+
+function toggleSelectAllStudents() {
+  const isChecked = document.getElementById('selectAllStudents').checked;
+  const checkboxes = document.querySelectorAll('.student-select');
+  checkboxes.forEach(cb => cb.checked = isChecked);
+  updateBulkDeleteButton();
+}
+
+function updateBulkDeleteButton() {
+  const checkboxes = document.querySelectorAll('.student-select:checked');
+  const btn = document.getElementById('btnBulkDeleteStudents');
+  if (checkboxes.length > 0) {
+    btn.style.display = 'inline-flex';
+    btn.innerHTML = `<i class="ti ti-trash"></i> Delete Selected (${checkboxes.length})`;
+  } else {
+    btn.style.display = 'none';
+    document.getElementById('selectAllStudents').checked = false;
+  }
+}
+
+function bulkDeleteStudents() {
+  const checkboxes = document.querySelectorAll('.student-select:checked');
+  if (checkboxes.length === 0) return;
+  
+  const payload = Array.from(checkboxes).map(cb => ({
+    rollNo: cb.getAttribute('data-roll'),
+    program: cb.getAttribute('data-prog'),
+    semester: cb.getAttribute('data-sem')
+  }));
+
+  const msg = `Are you sure you want to permanently delete ${payload.length} selected student(s)?\n\nThis action cannot be undone.`;
+  if (!confirm(msg)) return;
+
+  showLoader(`Deleting ${payload.length} student(s)...`);
+  google.script.run
+    .withSuccessHandler(res => {
+      hideLoader();
+      if (res.success) {
+        showToast(res.message, 'success');
+        loadStudentsList();
+      } else {
+        showToast(res.message, 'error');
+      }
+    })
+    .withFailureHandler(err => {
+      hideLoader();
+      showToast(err.message, 'error');
+    })
+    .adminBulkDeleteStudents(payload);
 }
 
 function exportStudentsExcel() {
@@ -7897,7 +7961,7 @@ function deleteStudent(rollNo, program, semester) {
       hideLoader();
       showToast(err.message, 'error');
     })
-    .adminDeleteStudent({rollNo, program, semester});
+    .adminDeleteStudent(rollNo, program, semester);
 }
 
 // --- Omni Search Logic ---
