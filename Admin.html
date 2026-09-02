@@ -750,8 +750,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     .sidebar.collapsed .sidebar-brand-sub,
     .sidebar.collapsed .nav-link-text,
     .sidebar.collapsed .sb-profile-text,
-    .sidebar.collapsed .sb-chevron,
-    .sidebar.collapsed .notch-indicator {
+    .sidebar.collapsed .sb-chevron {
       display: none;
     }
     
@@ -807,7 +806,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     /* Dynamic Smooth SVG Notch Highlight */
     .notch-indicator {
       position: absolute;
-      top: calc(-1 * var(--fillet-size));
+      top: calc(12px - var(--fillet-size));
       left: 0;
       width: 100%;
       height: calc(var(--item-height) + (var(--fillet-size) * 2));
@@ -868,9 +867,9 @@ function callBackend(action, args, onSuccess, onFailure) {
     }
     .sidebar.collapsed .nav-link.active {
       transform: none;
-      background: rgba(94, 92, 154, 0.08);
-      border-radius: var(--radius-md);
-      margin: 4px 12px;
+      background: transparent;
+      margin: 0;
+      border-radius: 0;
     }
     .sidebar.collapsed .nav-link.active .nav-icon {
       transform: none;
@@ -2280,9 +2279,9 @@ document.addEventListener('focusout', function(e) {
     <div class="nav-wrapper" style="position: relative; flex: 1; display: flex; flex-direction: column;">
       <!-- Animated notch indicator OUTSIDE the scrolling container to prevent clipping -->
       <div class="notch-indicator" id="sidebarNotch">
-        <svg width="241" height="100" viewBox="0 0 241 100" preserveAspectRatio="none">
+        <svg width="100%" height="100%" viewBox="0 0 241 100" preserveAspectRatio="none">
           <path d="M 241 0 C 241 16.5, 227.5 30, 211 30 L 56 30 A 20 20 0 0 0 56 70 L 211 70 C 227.5 70, 241 83.5, 241 100 L 241 0 Z" fill="var(--color-bg-base)"/>
-          <path d="M 241 0 C 241 16.5, 227.5 30, 211 30 L 56 30 A 20 20 0 0 0 56 70 L 211 70 C 227.5 70, 241 83.5, 241 100" fill="none" stroke="#FFA500" stroke-width="2.5"/>
+          <path d="M 241 0 C 241 16.5, 227.5 30, 211 30 L 56 30 A 20 20 0 0 0 56 70 L 211 70 C 227.5 70, 241 83.5, 241 100" fill="none" stroke="#FFA500" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
         </svg>
       </div>
       <nav class="sidebar-nav" id="sidebarNav" onscroll="updateSidebarNotch()">
@@ -7273,8 +7272,8 @@ function epbToggleMobilePreview() {
 // Hook switchTab
 if (typeof window.switchTab === 'function' && !window._switchTabHooked) {
   const origSwitchTab = window.switchTab;
-  window.switchTab = function(tabId) {
-    origSwitchTab(tabId);
+  window.switchTab = function(tabId, navEl, fromPopState) {
+    origSwitchTab(tabId, navEl, fromPopState);
     if (typeof updateSidebarNotch === 'function') {
       setTimeout(updateSidebarNotch, 50);
     }
