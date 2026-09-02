@@ -7330,7 +7330,7 @@ function epbApplyLayout() {
   var totalItems = epbSections.reduce(function(a,s){ return a+s.questions.length; }, 0);
   masterUnit.style.fontSize = totalItems<=5 ? '12px' : totalItems<=10 ? '11px' : '10px';
   var base = masterUnit.outerHTML;
-  var sep = '<hr style="margin:8px 0; border:none; border-top:1px dashed rgba(0,0,0,0.4);">';
+  var sep = '<hr style="margin:12px 0 24px 0; border:none; border-top:1px dashed rgba(0,0,0,0.4);">';
   var final = base;
   if (totalItems<=4) final = base+sep+base+sep+base;
   else if (totalItems<=9) final = base+sep+base;
