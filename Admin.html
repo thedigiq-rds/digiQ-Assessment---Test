@@ -1029,6 +1029,53 @@ function callBackend(action, args, onSuccess, onFailure) {
       background: var(--color-bg-base);
       color: var(--color-text-main);
     }
+    
+    /* ─── TOP BAR DROPDOWNS & BADGES ─── */
+    .tb-dropdown-wrapper { position: relative; display: flex; }
+    .notif-badge {
+      position: absolute; top: -2px; right: -2px;
+      width: 10px; height: 10px; background: var(--color-danger);
+      border-radius: 50%; border: 2px solid var(--color-sidebar);
+      display: block;
+    }
+    .tb-dropdown-menu {
+      position: absolute; top: calc(100% + 14px); right: 0;
+      width: 320px; background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-dropdown);
+      opacity: 0; pointer-events: none; transform: translateY(-10px);
+      transition: all var(--transition-fast);
+      z-index: 100; display: flex; flex-direction: column;
+    }
+    .tb-dropdown-menu.active {
+      opacity: 1; pointer-events: auto; transform: translateY(0);
+    }
+    #helpDropdown { width: 220px; }
+    .tb-dropdown-header {
+      padding: 14px 16px; font-weight: 600; font-size: 0.95rem;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-main); font-family: var(--font-heading);
+    }
+    .tb-dropdown-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 16px; text-decoration: none;
+      color: var(--color-text-main); font-size: 0.85rem;
+      transition: background var(--transition-fast);
+      cursor: pointer;
+    }
+    .tb-dropdown-item:hover { background: var(--color-bg-base); }
+    .tb-dropdown-item i { font-size: 1.1rem; color: var(--color-text-muted); margin-top: 2px; transition: color var(--transition-fast); }
+    .tb-dropdown-item:hover i { color: var(--color-primary); }
+    .tb-notif-content { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+    .tb-notif-title { font-weight: 500; }
+    .tb-notif-time { font-size: 0.75rem; color: var(--color-text-muted); }
+    .tb-dropdown-divider { height: 1px; background: var(--color-border); margin: 4px 0; }
+    .search-shortcut {
+      margin-left: auto; font-size: 0.7rem; color: var(--color-text-muted);
+      background: var(--color-surface); border: 1px solid var(--color-border);
+      padding: 2px 6px; border-radius: 4px; font-weight: 600;
+    }
 
     .page-heading {
       font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700;
@@ -2343,12 +2390,50 @@ document.addEventListener('focusout', function(e) {
         <span class="top-bar-title" id="topBarTitle">Dashboard</span>
       </div>
       <div class="top-bar-right">
-        <div class="search-box">
+        <div class="search-box" style="cursor: text;" onclick="document.getElementById('omniSearchInput').focus()">
           <i class="ti ti-search"></i>
-          <input type="text" placeholder="Search...">
+          <input type="text" placeholder="Search..." id="omniSearchInput">
+          <kbd class="search-shortcut">Ctrl K</kbd>
         </div>
-        <button class="top-bar-icon-btn"><i class="ti ti-bell"></i></button>
-        <button class="top-bar-icon-btn"><i class="ti ti-help"></i></button>
+        
+        <div class="tb-dropdown-wrapper">
+          <button class="top-bar-icon-btn" onclick="toggleTbDropdown('notifDropdown')">
+            <i class="ti ti-bell"></i>
+            <span class="notif-badge"></span>
+          </button>
+          <div class="tb-dropdown-menu" id="notifDropdown">
+            <div class="tb-dropdown-header">Notifications</div>
+            <div class="tb-dropdown-item">
+              <i class="ti ti-pencil"></i>
+              <div class="tb-notif-content">
+                <div class="tb-notif-title">Essay Grading Required</div>
+                <div class="tb-notif-time">Just now</div>
+              </div>
+            </div>
+            <div class="tb-dropdown-item">
+              <i class="ti ti-check"></i>
+              <div class="tb-notif-content">
+                <div class="tb-notif-title">Export Completed</div>
+                <div class="tb-notif-time">2 hours ago</div>
+              </div>
+            </div>
+            <div class="tb-dropdown-divider"></div>
+            <div class="tb-dropdown-item" style="justify-content: center; color: var(--color-primary); font-weight: 500;">
+              Mark all as read
+            </div>
+          </div>
+        </div>
+
+        <div class="tb-dropdown-wrapper">
+          <button class="top-bar-icon-btn" onclick="toggleTbDropdown('helpDropdown')"><i class="ti ti-help"></i></button>
+          <div class="tb-dropdown-menu" id="helpDropdown">
+            <div class="tb-dropdown-header">Help &amp; Support</div>
+            <a href="#" class="tb-dropdown-item"><i class="ti ti-file-text"></i> User Manual (PDF)</a>
+            <a href="mailto:support@digiq.com" class="tb-dropdown-item"><i class="ti ti-mail"></i> Contact Support</a>
+            <div class="tb-dropdown-divider"></div>
+            <a href="#" class="tb-dropdown-item"><i class="ti ti-sparkles"></i> What's New</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -6723,6 +6808,14 @@ function closeSbProfile() {
   if (menu) menu.classList.remove('open');
   if (chevron) chevron.classList.remove('open');
 }
+function toggleTbDropdown(id) {
+  const dropdown = document.getElementById(id);
+  document.querySelectorAll('.tb-dropdown-menu').forEach(el => {
+    if(el.id !== id) el.classList.remove('active');
+  });
+  if (dropdown) dropdown.classList.toggle('active');
+}
+
 document.addEventListener('click', function(e) {
   const btn = document.getElementById('sbProfileBtn');
   const menu = document.getElementById('sbProfileMenu');
@@ -6730,6 +6823,18 @@ document.addEventListener('click', function(e) {
     menu.classList.remove('open');
     const ch = document.getElementById('sbProfileChevron');
     if (ch) ch.classList.remove('open');
+  }
+  
+  if (!e.target.closest('.tb-dropdown-wrapper')) {
+    document.querySelectorAll('.tb-dropdown-menu').forEach(el => el.classList.remove('active'));
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+    e.preventDefault();
+    const searchInput = document.getElementById('omniSearchInput');
+    if (searchInput) searchInput.focus();
   }
 });
 
