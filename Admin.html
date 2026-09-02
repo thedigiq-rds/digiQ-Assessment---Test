@@ -2131,7 +2131,7 @@ document.addEventListener('focusout', function(e) {
 </div>
 
 <!-- Mini Loader -->
-<div id="mini-loader" style="display:none; position:fixed; top:24px; right:24px; background:var(--bg-card); color:#fff; padding:10px 18px; border-radius:12px; z-index:999999; box-shadow:0 8px 24px rgba(0,0,0,0.4); align-items:center; gap:10px; border:1px solid rgba(99,102,241,0.2);">
+<div id="mini-loader" style="display:none; position:fixed; top:24px; right:24px; background:#1e1e1e; color:#fff; padding:10px 18px; border-radius:12px; z-index:999999; box-shadow:0 8px 24px rgba(0,0,0,0.4); align-items:center; gap:10px; border:1px solid rgba(255,255,255,0.1);">
   <span class="spin-sm"></span> <span id="mini-loader-text">Loading...</span>
 </div>
 
@@ -2390,35 +2390,24 @@ document.addEventListener('focusout', function(e) {
         <span class="top-bar-title" id="topBarTitle">Dashboard</span>
       </div>
       <div class="top-bar-right">
-        <div class="search-box" style="cursor: text;" onclick="document.getElementById('omniSearchInput').focus()">
+        <div class="search-box" style="cursor: text; position: relative;" onclick="document.getElementById('omniSearchInput').focus()">
           <i class="ti ti-search"></i>
-          <input type="text" placeholder="Search..." id="omniSearchInput">
-          <kbd class="search-shortcut">Ctrl K</kbd>
+          <input type="text" placeholder="Search..." id="omniSearchInput" oninput="handleOmniSearch(this.value)" autocomplete="off">
+          <div id="omniDropdown" class="tb-dropdown-menu" style="left:0; right:auto; width:100%; top:calc(100% + 8px);"></div>
         </div>
         
         <div class="tb-dropdown-wrapper">
           <button class="top-bar-icon-btn" onclick="toggleTbDropdown('notifDropdown')">
             <i class="ti ti-bell"></i>
-            <span class="notif-badge"></span>
+            <span class="notif-badge" id="notifBadge" style="display: none;"></span>
           </button>
           <div class="tb-dropdown-menu" id="notifDropdown">
             <div class="tb-dropdown-header">Notifications</div>
-            <div class="tb-dropdown-item">
-              <i class="ti ti-pencil"></i>
-              <div class="tb-notif-content">
-                <div class="tb-notif-title">Essay Grading Required</div>
-                <div class="tb-notif-time">Just now</div>
-              </div>
-            </div>
-            <div class="tb-dropdown-item">
-              <i class="ti ti-check"></i>
-              <div class="tb-notif-content">
-                <div class="tb-notif-title">Export Completed</div>
-                <div class="tb-notif-time">2 hours ago</div>
-              </div>
+            <div id="notifList">
+              <!-- Dynamic Notifications -->
             </div>
             <div class="tb-dropdown-divider"></div>
-            <div class="tb-dropdown-item" style="justify-content: center; color: var(--color-primary); font-weight: 500;">
+            <div class="tb-dropdown-item" style="justify-content: center; color: var(--color-primary); font-weight: 500;" onclick="markAllNotificationsRead()">
               Mark all as read
             </div>
           </div>
@@ -2428,7 +2417,7 @@ document.addEventListener('focusout', function(e) {
           <button class="top-bar-icon-btn" onclick="toggleTbDropdown('helpDropdown')"><i class="ti ti-help"></i></button>
           <div class="tb-dropdown-menu" id="helpDropdown">
             <div class="tb-dropdown-header">Help &amp; Support</div>
-            <a href="#" class="tb-dropdown-item"><i class="ti ti-file-text"></i> User Manual (PDF)</a>
+            <a href="digiQ_Manual.pdf" target="_blank" class="tb-dropdown-item"><i class="ti ti-file-text"></i> User Manual (PDF)</a>
             <a href="mailto:support@digiq.com" class="tb-dropdown-item"><i class="ti ti-mail"></i> Contact Support</a>
             <div class="tb-dropdown-divider"></div>
             <a href="#" class="tb-dropdown-item"><i class="ti ti-sparkles"></i> What's New</a>
@@ -7670,6 +7659,130 @@ function deleteStudent(rollNo) {
     })
     .adminDeleteStudent(rollNo);
 }
+
+// --- Omni Search Logic ---
+function handleOmniSearch(query) {
+  const q = query.toLowerCase().trim();
+  const dropdown = document.getElementById('omniDropdown');
+  if (!q) {
+    dropdown.classList.remove('active');
+    return;
+  }
+  
+  let results = [];
+  
+  // Search tabs
+  const tabs = [
+    { id: 'dashboard', name: 'Dashboard', icon: 'ti-layout-dashboard' },
+    { id: 'quizzes', name: 'Create Quiz', icon: 'ti-file-pencil' },
+    { id: 'manage', name: 'Manage Quizzes', icon: 'ti-folders' },
+    { id: 'essays', name: 'Essay Grading', icon: 'ti-writing-sign' },
+    { id: 'students', name: 'Students', icon: 'ti-users' },
+    { id: 'reports', name: 'Reports', icon: 'ti-chart-bar' }
+  ];
+  tabs.forEach(t => {
+    if (t.name.toLowerCase().includes(q)) {
+      results.push(`<div class="tb-dropdown-item" onclick="document.getElementById('omniSearchInput').value=''; document.getElementById('omniDropdown').classList.remove('active'); switchTab('${t.id}')"><i class="ti ${t.icon}"></i> <span>Go to <strong>${t.name}</strong></span></div>`);
+    }
+  });
+
+  // Search Quizzes
+  if (window.globalQuizzes && window.globalQuizzes.length) {
+    window.globalQuizzes.forEach(quiz => {
+      const title = quiz[2] || '';
+      const code = quiz[1] || '';
+      if (title.toLowerCase().includes(q) || code.toLowerCase().includes(q)) {
+        results.push(`<div class="tb-dropdown-item" onclick="document.getElementById('omniSearchInput').value=''; document.getElementById('omniDropdown').classList.remove('active'); switchTab('manage'); document.getElementById('searchManageInput').value='${code}'; filterManageTable();"><i class="ti ti-clipboard-list"></i> <span>Manage: <strong>${title}</strong> (${code})</span></div>`);
+      }
+    });
+  }
+
+  if (results.length > 0) {
+    dropdown.innerHTML = results.slice(0, 8).join('');
+    dropdown.classList.add('active');
+  } else {
+    dropdown.innerHTML = `<div class="tb-dropdown-item" style="color: var(--color-text-muted);">No results found</div>`;
+    dropdown.classList.add('active');
+  }
+}
+
+// Global click to close omni search
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-box')) {
+    const d = document.getElementById('omniDropdown');
+    if (d) d.classList.remove('active');
+  }
+});
+
+// --- Notifications Logic ---
+let appNotifications = [];
+
+function generateMockNotifications() {
+  appNotifications = [
+    { id: 1, type: 'essay', title: 'Essay Grading Required', desc: 'New submission from Victorian Age quiz', time: 'Just now', read: false },
+    { id: 2, type: 'system', title: 'System Update', desc: 'DigiQ v2.1 deployed successfully', time: '2 hours ago', read: false }
+  ];
+  renderNotifications();
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notifList');
+  const badge = document.getElementById('notifBadge');
+  if (!list) return;
+  
+  let unreadCount = appNotifications.filter(n => !n.read).length;
+  if (unreadCount > 0) {
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+
+  if (appNotifications.length === 0) {
+    list.innerHTML = `<div class="tb-dropdown-item" style="color: var(--color-text-muted); justify-content: center;">No new notifications</div>`;
+    return;
+  }
+
+  let html = '';
+  appNotifications.forEach(n => {
+    const icon = n.type === 'essay' ? 'ti-pencil' : 'ti-info-circle';
+    const bg = n.read ? 'transparent' : 'var(--color-bg-base)';
+    html += `
+      <div class="tb-dropdown-item" style="background: ${bg};" onclick="handleNotifClick(${n.id})">
+        <i class="ti ${icon}"></i>
+        <div class="tb-notif-content">
+          <div class="tb-notif-title" style="${n.read ? 'font-weight:400; color:var(--color-text-muted);' : ''}">${n.title}</div>
+          <div class="tb-notif-time">${n.desc} &bull; ${n.time}</div>
+        </div>
+      </div>
+    `;
+  });
+  list.innerHTML = html;
+}
+
+function handleNotifClick(id) {
+  const notif = appNotifications.find(n => n.id === id);
+  if (notif) {
+    notif.read = true;
+    renderNotifications();
+    
+    // Display the matter
+    if (notif.type === 'essay') {
+      showToast('Redirecting to Essays tab...', 'info');
+      switchTab('essays');
+    } else {
+      showToast(notif.desc, 'info');
+    }
+  }
+}
+
+function markAllNotificationsRead() {
+  appNotifications.forEach(n => n.read = true);
+  renderNotifications();
+  showToast('All caught up!', 'success');
+}
+
+// Initialize notifications on load
+setTimeout(generateMockNotifications, 2000);
 </script>
 </body>
 </html>
