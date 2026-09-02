@@ -7330,12 +7330,22 @@ function epbApplyLayout() {
   var totalItems = epbSections.reduce(function(a,s){ return a+s.questions.length; }, 0);
   masterUnit.style.fontSize = totalItems<=5 ? '12px' : totalItems<=10 ? '11px' : '10px';
   var base = masterUnit.outerHTML;
-  var sep = '<hr style="margin:12px 0 24px 0; border:none; border-top:1px dashed rgba(0,0,0,0.4);">';
-  var final = base;
-  if (totalItems<=4) final = base+sep+base+sep+base;
-  else if (totalItems<=9) final = base+sep+base;
+  var sep = '<hr style="margin:12px 0 24px 0; border:none; border-top:1px dashed rgba(0,0,0,0.4); flex-shrink:0;">';
   var preview = document.getElementById('epb-paper-preview');
-  if (preview) preview.innerHTML = '<div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,#6366f1,#8b5cf6,#ec4899);"></div>' + final;
+  if (!preview) return;
+  
+  var topGradient = '<div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,#6366f1,#8b5cf6,#ec4899);"></div>';
+  
+  // Try 3 copies first
+  preview.innerHTML = topGradient + base + sep + base + sep + base;
+  if (preview.scrollHeight > preview.clientHeight + 2) {
+    // If it overflows, try 2 copies
+    preview.innerHTML = topGradient + base + sep + base;
+    if (preview.scrollHeight > preview.clientHeight + 2) {
+      // If still overflowing, settle for 1 copy
+      preview.innerHTML = topGradient + base;
+    }
+  }
 }
 
 function epbPrint() {
