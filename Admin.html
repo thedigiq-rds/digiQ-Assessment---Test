@@ -1396,10 +1396,16 @@ function callBackend(action, args, onSuccess, onFailure) {
       .sidebar          { display: none !important; }
       .sidebar-backdrop { display: none !important; }
       .mobile-top-bar   { display: flex !important; }
-      #dashboard-app    { display: block !important; background: #ffffff !important; }
-      .main-content     { width: 100% !important; margin-left: 0 !important; padding: 14px 12px 90px 12px !important; background: #ffffff !important; }
-
+      #dashboard-app    { display: flex !important; flex-direction: column !important; height: 100vh !important; overflow: hidden !important; background: #ffffff !important; }
+      .main-content     { width: 100% !important; margin-left: 0 !important; padding: 0 !important; display: flex !important; flex-direction: column !important; overflow: hidden !important; flex: 1 !important; background: #ffffff !important; }
+      .main-content-inner { padding: 14px 12px 90px 12px !important; overflow-y: auto !important; flex: 1 !important; }
       
+      .top-bar { padding: 10px 15px !important; background: #FFF4E6 !important; flex-wrap: wrap !important; gap: 10px !important; border-radius: 0 !important; margin: 0 !important; }
+      .top-bar-right { width: 100% !important; justify-content: flex-end !important; margin-top: 5px !important; }
+      .search-box { flex: 1 !important; min-width: 0 !important; }
+      .toggle-sidebar-btn { display: none !important; }
+      .top-bar-title { font-size: 1.1rem !important; }
+
       .mobile-more-menu {
         position: fixed;
         bottom: calc(var(--nav-height, 56px) + 15px);
@@ -1443,10 +1449,10 @@ function callBackend(action, args, onSuccess, onFailure) {
       .more-menu-item svg.icon { width: 20px; height: 20px; fill: none; stroke: currentColor; }
 
       .bottom-nav {
-          --nav-bg: linear-gradient(to right, #93a5cf 0%, #17104b 40%, #17104b 60%, #93a5cf 100%);
-          --active-btn-bg: radial-gradient(circle at 30% 30%, #3b82f6 0%, #2563eb 60%, #1d4ed8 100%);
-          --text-inactive: #fdfbf7; 
-          --text-active: #ff9800;
+          --nav-bg: #FFF4E6;
+          --active-btn-bg: #ffffff;
+          --text-inactive: #000000; 
+          --text-active: #FFA500;
           --active-x: 0px;   
           --nav-height: 56px;
           --blue-btn-size: 60px;
