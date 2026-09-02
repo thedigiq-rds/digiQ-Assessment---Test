@@ -123,6 +123,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       --color-primary-hover: #4B4982;
       --color-bg-base: #F8F9FB; /* Neutral/lavender-grey surface */
       --color-surface: #FFFFFF;
+      --color-sidebar: #F1F5F9; /* Different light color for sidebar & top bar */
       --color-border: #E5E7EB;
       --color-text-main: #111827;
       --color-text-muted: #6B7280;
@@ -737,7 +738,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     /* ─── SIDEBAR ─── */
     .sidebar {
       width: 240px; height: 100vh; flex-shrink: 0;
-      background: var(--color-surface);
+      background: var(--color-sidebar);
       border-right: 1px solid var(--color-border);
       display: flex; flex-direction: column;
       overflow-y: auto;
@@ -751,7 +752,8 @@ function callBackend(action, args, onSuccess, onFailure) {
     .sidebar.collapsed .sidebar-brand-sub,
     .sidebar.collapsed .nav-link-text,
     .sidebar.collapsed .sb-profile-text,
-    .sidebar.collapsed .sb-chevron {
+    .sidebar.collapsed .sb-chevron,
+    .sidebar.collapsed .notch-indicator {
       display: none;
     }
     
@@ -793,33 +795,56 @@ function callBackend(action, args, onSuccess, onFailure) {
       color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em;
     }
 
+    /* ═══════════════════════════════════
+       NOTCH-STYLE SIDEBAR NAV
+    ═══════════════════════════════════ */
     .sidebar-nav {
       padding: 0;
       flex: 1;
+      position: relative;
       list-style: none;
+      z-index: 2;
+    }
+
+    /* Dynamic Smooth SVG Notch Highlight */
+    .notch-indicator {
+      position: absolute;
+      top: calc(-1 * var(--fillet-size));
+      left: 0;
+      width: 100%;
+      height: calc(var(--item-height) + (var(--fillet-size) * 2));
+      pointer-events: none;
+      transition: transform 0.38s cubic-bezier(0.34, 1.25, 0.64, 1);
+      z-index: 1;
+    }
+    .notch-indicator svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      fill: var(--color-bg-base); /* Cut-out showing main canvas */
     }
 
     .nav-link {
-      height: 40px;
+      height: var(--item-height);
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 0 16px;
-      margin: 4px 12px;
-      border-radius: var(--radius-md);
+      gap: 14px;
+      padding: 0 26px;
+      border-radius: 0;
       color: var(--color-text-muted);
       font-weight: 500; font-size: 14px;
       cursor: pointer;
-      transition: all var(--transition-fast);
-      text-decoration: none;
+      transition: color 0.25s ease, transform 0.38s cubic-bezier(0.34, 1.25, 0.64, 1), font-size 0.25s ease, opacity 0.25s ease;
+      text-decoration: none; margin-bottom: 0;
       border: none;
       user-select: none;
+      position: relative;
+      z-index: 2;
       white-space: nowrap;
     }
-    .nav-link .nav-icon { width: 20px; display: flex; justify-content: center; font-size: 1.1rem; flex-shrink: 0; color: var(--color-text-muted); transition: color var(--transition-fast); }
+    .nav-link .nav-icon { width: 20px; display: flex; justify-content: center; font-size: 1.1rem; flex-shrink: 0; color: var(--color-text-muted); transition: color var(--transition-fast), transform 0.2s; }
     
     .nav-link:hover {
-      background: var(--color-bg-base);
       color: var(--color-text-main);
     }
     .nav-link:hover .nav-icon {
@@ -828,12 +853,31 @@ function callBackend(action, args, onSuccess, onFailure) {
 
     .nav-link.active {
       color: var(--color-primary) !important;
-      background: rgba(94, 92, 154, 0.08);
+      background: transparent;
+      box-shadow: none;
+      margin: 0;
+      transform: translateX(24px);
       font-weight: 600;
     }
     .nav-link.active .nav-icon {
       color: var(--color-primary) !important;
+      transform: scale(1.18);
     }
+    
+    .sidebar.collapsed .nav-link {
+      padding: 0;
+      justify-content: center;
+    }
+    .sidebar.collapsed .nav-link.active {
+      transform: none;
+      background: rgba(94, 92, 154, 0.08);
+      border-radius: var(--radius-md);
+      margin: 4px 12px;
+    }
+    .sidebar.collapsed .nav-link.active .nav-icon {
+      transform: none;
+    }
+    
     .sidebar-footer { padding: 12px; border-top: 1px solid var(--color-border); }
     /* ─── REDESIGNED COMPACT SIDEBAR PROFILE ─── */
     .sb-profile-btn {
@@ -915,7 +959,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       justify-content: space-between;
       align-items: center;
       padding: 12px 32px;
-      background: var(--color-surface);
+      background: var(--color-sidebar);
       border-bottom: 1px solid var(--color-border);
       height: 64px;
       flex-shrink: 0;
@@ -2236,7 +2280,13 @@ document.addEventListener('focusout', function(e) {
       <div class="sidebar-brand-name">digiQ Admin</div>
     </div>
     <div class="nav-wrapper" style="position: relative; flex: 1; display: flex; flex-direction: column;">
-      <nav class="sidebar-nav" id="sidebarNav">
+      <!-- Animated notch indicator OUTSIDE the scrolling container to prevent clipping -->
+      <div class="notch-indicator" id="sidebarNotch">
+        <svg width="240" height="100" viewBox="0 0 240 100" preserveAspectRatio="none">
+          <path d="M 240 0 C 240 16.5, 226.5 30, 210 30 L 56 30 A 20 20 0 0 0 56 70 L 210 70 C 226.5 70, 240 83.5, 240 100 L 240 0 Z"/>
+        </svg>
+      </div>
+      <nav class="sidebar-nav" id="sidebarNav" onscroll="updateSidebarNotch()">
         <a class="nav-link active" id="nav-overview"  onclick="switchTab('overview',  this)"><span class="nav-icon"><i class="ti ti-layout-dashboard"></i></span><span class="nav-link-text">Dashboard</span></a>
         <a class="nav-link"        id="nav-create"    onclick="openCreateNewQuizTab(this)"><span class="nav-icon"><i class="ti ti-plus"></i></span><span class="nav-link-text">Create Quiz</span></a>
         <a class="nav-link"        id="nav-manage"    onclick="switchTab('manage',    this)"><span class="nav-icon"><i class="ti ti-list-check"></i></span><span class="nav-link-text">Manage Quizzes</span></a>
