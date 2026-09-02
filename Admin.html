@@ -7342,7 +7342,7 @@ function epbPrint() {
   var el = document.getElementById('epb-paper-preview');
   if (!el) { window.print(); return; }
   var win = window.open('','_blank');
-  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>@import url(\'https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap\'); body{margin:0;font-family:Merriweather,Georgia,serif;} @media print{body{background:white;} @page{size:A4 portrait;margin:0;}}</style></head><body><div style="width:210mm;height:297mm;max-height:297mm;padding:10mm 14mm;box-sizing:border-box;overflow:hidden;">' + el.innerHTML + '</div></body></html>');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>@import url(\'https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap\'); body{margin:0;font-family:Merriweather,Georgia,serif;} @media print{body{background:white;} @page{size:A4 portrait;margin:0;}}</style></head><body><div style="width:210mm;height:297mm;max-height:297mm;padding:10mm 14mm;box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;">' + el.innerHTML + '</div></body></html>');
   win.document.close(); win.focus();
   setTimeout(function(){ win.print(); win.close(); }, 500);
 }
