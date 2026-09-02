@@ -1151,6 +1151,53 @@ function callBackend(action, args, onSuccess, onFailure) {
     .td-title { color: var(--color-text-main); font-weight: 500; }
     .td-muted { color: var(--color-text-muted); }
 
+    /* Student table action icon buttons */
+    .std-actions-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+    .std-action-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .std-action-btn:focus-visible {
+      outline: 2px solid var(--primary, #6366f1);
+      outline-offset: 2px;
+    }
+    /* Edit — neutral/primary colour */
+    .std-edit-btn { color: #6366f1; }
+    .std-edit-btn:hover {
+      background: #eef2ff;
+      border-color: #c7d2fe;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(99,102,241,0.15);
+    }
+    .std-edit-btn:active { transform: translateY(0); box-shadow: none; }
+    /* Delete — semantic red */
+    .std-delete-btn { color: #ef4444; }
+    .std-delete-btn:hover {
+      background: #fef2f2;
+      border-color: #fecaca;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(239,68,68,0.15);
+    }
+    .std-delete-btn:active { transform: translateY(0); box-shadow: none; }
+    @media (max-width: 640px) {
+      .std-action-btn { width: 38px; height: 38px; } /* touch-friendly on mobile */
+    }
+
     /* Empty state */
     .empty-state { text-align: center; padding: 42px 20px; color: var(--text-muted); }
     .empty-icon  { font-size: 2rem; margin-bottom: 8px; }
@@ -1402,23 +1449,35 @@ function callBackend(action, args, onSuccess, onFailure) {
       
       .top-bar { 
         display: flex !important; 
-        flex-wrap: wrap !important; 
+        flex-wrap: nowrap !important;
         align-items: center !important; 
-        padding: 10px 15px !important; 
+        padding: 0 12px !important; 
+        height: 52px !important;
         background: #FFF4E6 !important; 
         border-radius: 0 !important; 
-        margin: 0 !important; 
+        margin: 0 !important;
+        gap: 8px !important;
+        overflow: hidden !important;
       }
-      .top-bar-left { order: 1 !important; flex: 1 1 auto !important; display: flex !important; align-items: center !important; }
-      .top-bar-right { display: contents !important; }
+      .top-bar-left { order: 1 !important; flex: 1 1 auto !important; display: flex !important; align-items: center !important; min-width: 0 !important; }
+      .top-bar-right { order: 2 !important; display: flex !important; align-items: center !important; gap: 6px !important; flex-shrink: 0 !important; }
       .search-box { 
-        order: 4 !important; 
-        flex: 1 1 100% !important; 
-        margin-top: 10px !important; 
+        width: 110px !important;
+        min-width: 0 !important;
+        flex-shrink: 1 !important;
+        flex-grow: 0 !important;
+        margin-top: 0 !important;
+        padding: 5px 8px !important;
+        order: unset !important;
+        border-radius: 20px !important;
+        height: 32px !important;
+        box-sizing: border-box !important;
       }
-      .tb-dropdown-wrapper { order: 2 !important; margin-left: 8px !important; }
+      .search-box input { font-size: 0.8rem !important; }
+      .search-shortcut { display: none !important; }
+      .tb-dropdown-wrapper { order: unset !important; margin-left: 0 !important; }
       .toggle-sidebar-btn { display: none !important; }
-      .top-bar-title { font-size: 1.1rem !important; }
+      .top-bar-title { font-size: 1.05rem !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
       
       .page-heading { display: none !important; }
 
@@ -3476,10 +3535,16 @@ document.addEventListener('focusout', function(e) {
       
       <div class="grid-2">
         <!-- Single Student Add -->
-        <div class="panel" style="margin-bottom:0;">
-          <div class="panel-title">Add New Student</div>
-          <div class="panel-desc">Create a single student account</div>
-          
+        <div class="panel" style="margin-bottom:0;" id="stdFormPanel">
+          <!-- Hidden state for edit mode: stores original key or empty for create -->
+          <input type="hidden" id="stdEditMode" value="">
+          <input type="hidden" id="stdOrigRoll" value="">
+          <input type="hidden" id="stdOrigProgram" value="">
+          <input type="hidden" id="stdOrigSemester" value="">
+
+          <div id="stdFormPanelTitle" class="panel-title">Add New Student</div>
+          <div id="stdFormPanelDesc" class="panel-desc">Create a single student account</div>
+
           <div class="f-group">
             <label class="f-label">Full Name</label>
             <input type="text" id="stdName" class="f-input" placeholder="e.g. John Doe">
@@ -3517,10 +3582,13 @@ document.addEventListener('focusout', function(e) {
             </div>
             <div class="f-group" style="margin-bottom:0;">
               <label class="f-label">Password</label>
-              <input type="text" id="stdPassword" class="f-input" placeholder="Auto-generated if empty">
+              <input type="text" id="stdPassword" class="f-input" placeholder="Leave blank to keep existing">
             </div>
           </div>
-          <button class="btn-primary-admin" onclick="addSingleStudent()" style="width:100%;"><i class="ti ti-user-plus"></i> Create Student Account</button>
+          <div style="display:flex; gap:10px;">
+            <button class="btn-primary-admin" id="stdSubmitBtn" onclick="submitStudentForm()" style="flex:1;"><i class="ti ti-user-plus"></i> Create Student Account</button>
+            <button class="btn-outline" id="stdCancelEditBtn" onclick="cancelStudentEdit()" style="display:none; flex-shrink:0; padding:10px 18px; color:var(--text-muted); border-color:var(--border);"><i class="ti ti-x"></i> Cancel</button>
+          </div>
         </div>
 
         <!-- Bulk Upload -->
@@ -7430,22 +7498,65 @@ function updateStudentSemesterOptions() {
   semSel.innerHTML = sems.map(s => `<option value="${s}">${s}</option>`).join('');
 }
 
-function addSingleStudent() {
-  const name = document.getElementById('stdName').value.trim();
-  const roll = document.getElementById('stdRoll').value.trim();
-  const email = document.getElementById('stdEmail').value.trim();
-  const prog = document.getElementById('stdProgram').value.trim();
-  const sem = document.getElementById('stdSemester').value.trim();
+function addSingleStudent() { submitStudentForm(); } // backward-compat alias
+
+function submitStudentForm() {
+  const name     = document.getElementById('stdName').value.trim();
+  const roll     = document.getElementById('stdRoll').value.trim();
+  const email    = document.getElementById('stdEmail').value.trim();
+  const prog     = document.getElementById('stdProgram').value.trim();
+  const sem      = document.getElementById('stdSemester').value.trim();
   const whatsapp = document.getElementById('stdWhatsApp').value.trim();
-  const pwd = document.getElementById('stdPassword').value.trim();
+  const pwd      = document.getElementById('stdPassword').value.trim();
+  const editMode = document.getElementById('stdEditMode').value; // '' = create, 'EDIT' = update
 
   if (!name || !roll || !email || !prog || !sem) {
     showToast('Name, Roll No, Email, Program, and Semester are required.', 'warning');
     return;
   }
 
-  const payload = { fullName: name, rollNo: roll, email: email, program: prog, semester: sem, whatsapp: whatsapp, password: pwd };
-  
+  // ── EDIT MODE: update existing student ──────────────────────────────────
+  if (editMode === 'EDIT') {
+    const origRoll    = document.getElementById('stdOrigRoll').value;
+    const origProgram = document.getElementById('stdOrigProgram').value;
+    const origSem     = document.getElementById('stdOrigSemester').value;
+
+    const payload = {
+      originalRollNo: origRoll,
+      originalProgram: origProgram,
+      originalSemester: origSem,
+      fullName: name, rollNo: roll, email: email,
+      program: prog, semester: sem,
+      whatsapp: whatsapp, password: pwd
+    };
+
+    showLoader('Updating Student...');
+    google.script.run
+      .withSuccessHandler(res => {
+        hideLoader();
+        if (res.success) {
+          showToast('Student account updated successfully.', 'success');
+          cancelStudentEdit(); // reset form to create mode
+          loadStudentsList();
+        } else {
+          showACModal('Update Failed', res.message);
+        }
+      })
+      .withFailureHandler(err => {
+        hideLoader();
+        showACModal('Connection Error', err.message);
+      })
+      .adminUpdateStudent(payload);
+    return;
+  }
+
+  // ── CREATE MODE: add new student ─────────────────────────────────────────
+  const payload = {
+    fullName: name, rollNo: roll, email: email,
+    program: prog, semester: sem,
+    whatsapp: whatsapp, password: pwd
+  };
+
   showLoader('Creating Student...');
   google.script.run
     .withSuccessHandler(res => {
@@ -7467,6 +7578,81 @@ function addSingleStudent() {
       showACModal('Connection Error', err.message);
     })
     .adminCreateStudent(payload);
+}
+
+function openEditStudent(jsonStr) {
+  let s;
+  try {
+    s = JSON.parse(jsonStr);
+  } catch(e) {
+    showToast('Could not load student data for editing.', 'error');
+    return;
+  }
+
+  // Store edit key in hidden fields
+  document.getElementById('stdEditMode').value    = 'EDIT';
+  document.getElementById('stdOrigRoll').value    = s.rollNo    || '';
+  document.getElementById('stdOrigProgram').value = s.program   || '';
+  document.getElementById('stdOrigSemester').value= s.semester  || '';
+
+  // Pre-fill form fields
+  document.getElementById('stdName').value    = s.fullName || '';
+  document.getElementById('stdRoll').value    = s.rollNo   || '';
+  document.getElementById('stdEmail').value   = s.email    || '';
+  document.getElementById('stdWhatsApp').value= s.whatsapp || '';
+  document.getElementById('stdPassword').value= s.password || '';
+
+  // Set Program select and rebuild semester options
+  const progSel = document.getElementById('stdProgram');
+  progSel.value = s.program || 'B.A.';
+  updateStudentSemesterOptions(); // rebuild semester <option> list
+
+  // Set Semester after options are rebuilt
+  const semSel = document.getElementById('stdSemester');
+  const semVal = String(s.semester || '').trim();
+  // Try exact match first, then numeric match
+  let matched = false;
+  for (let i = 0; i < semSel.options.length; i++) {
+    if (semSel.options[i].value === semVal) { semSel.selectedIndex = i; matched = true; break; }
+  }
+  if (!matched) {
+    const numericSem = semVal.replace(/\D/g, '');
+    for (let i = 0; i < semSel.options.length; i++) {
+      if (semSel.options[i].value.replace(/\D/g, '') === numericSem) { semSel.selectedIndex = i; break; }
+    }
+  }
+
+  // Switch panel UI to Edit Mode
+  document.getElementById('stdFormPanelTitle').textContent = 'Edit Student';
+  document.getElementById('stdFormPanelDesc').textContent  = 'Update the details for this student account.';
+  const submitBtn = document.getElementById('stdSubmitBtn');
+  submitBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:5px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Update Student Account';
+  document.getElementById('stdCancelEditBtn').style.display = 'inline-flex';
+
+  // Scroll the form panel into view
+  document.getElementById('stdFormPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function cancelStudentEdit() {
+  // Reset hidden edit fields
+  document.getElementById('stdEditMode').value     = '';
+  document.getElementById('stdOrigRoll').value     = '';
+  document.getElementById('stdOrigProgram').value  = '';
+  document.getElementById('stdOrigSemester').value = '';
+
+  // Clear form fields
+  document.getElementById('stdName').value     = '';
+  document.getElementById('stdRoll').value     = '';
+  document.getElementById('stdEmail').value    = '';
+  document.getElementById('stdWhatsApp').value = '';
+  document.getElementById('stdPassword').value = '';
+
+  // Restore panel UI to Create Mode
+  document.getElementById('stdFormPanelTitle').textContent = 'Add New Student';
+  document.getElementById('stdFormPanelDesc').textContent  = 'Create a single student account';
+  const submitBtn = document.getElementById('stdSubmitBtn');
+  submitBtn.innerHTML = '<i class="ti ti-user-plus"></i> Create Student Account';
+  document.getElementById('stdCancelEditBtn').style.display = 'none';
 }
 
 function downloadStudentCSVTemplate() {
@@ -7615,6 +7801,8 @@ function renderStudentsTable() {
   let html = '';
   filtered.forEach(s => {
     const d = s.createdAt ? formatStandardDate(s.createdAt) : 'N/A';
+    // Safely encode student data as a JSON string for the edit handler
+    const safeJson = JSON.stringify(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
     html += `<tr>
       <td style="font-weight:600; color:var(--text);">${s.fullName}</td>
       <td><span style="background:#eef2ff; color:#4f46e5; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600;">${s.rollNo}</span></td>
@@ -7624,7 +7812,14 @@ function renderStudentsTable() {
       <td style="font-family:monospace;">${s.password || 'N/A'}</td>
       <td style="font-size:0.8rem; color:#64748b;">${d}</td>
       <td style="text-align:right;">
-        <button class="btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="deleteStudent('${s.rollNo}')"><i class="ti ti-trash"></i></button>
+        <div class="std-actions-cell">
+          <button class="std-action-btn std-edit-btn" title="Edit Student" onclick="openEditStudent('${safeJson.replace(/"/g, '&quot;')}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="std-action-btn std-delete-btn" title="Remove Student" onclick="deleteStudent('${s.rollNo}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+          </button>
+        </div>
       </td>
     </tr>`;
   });
@@ -7668,13 +7863,19 @@ function exportStudentsExcel() {
 }
 
 function deleteStudent(rollNo) {
-  if (!confirm(`Are you sure you want to delete student Roll No: ${rollNo}?`)) return;
+  // Use a styled confirmation modal if available, otherwise fall back to native confirm
+  const msg = `Are you sure you want to permanently delete the student with Roll No: ${rollNo}?\n\nThis action cannot be undone.`;
+  if (!confirm(msg)) return;
   showLoader('Deleting...');
   google.script.run
     .withSuccessHandler(res => {
       hideLoader();
       if (res.success) {
-        showToast('Student deleted', 'success');
+        showToast('Student removed successfully.', 'success');
+        // If currently editing this student, cancel edit mode
+        if (document.getElementById('stdOrigRoll').value.toLowerCase() === String(rollNo).toLowerCase()) {
+          cancelStudentEdit();
+        }
         loadStudentsList();
       } else {
         showToast(res.message, 'error');
