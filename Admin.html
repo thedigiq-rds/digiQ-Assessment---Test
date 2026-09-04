@@ -2152,6 +2152,64 @@ function callBackend(action, args, onSuccess, onFailure) {
       vertical-align: middle;
     }
     .epb-papers-table tr:hover td { background: #f8fafc; }
+    
+    /* ═══════════════════════════════════════════════════════
+       STANDARDIZED INPUT FIELDS (UI Update)
+    ═══════════════════════════════════════════════════════ */
+    .f-input, .f-select, .f-textarea, .epb-input, .epb-select, .f-input-date, .f-select-sm, 
+    input[type="text"], input[type="number"], input[type="email"], input[type="password"], input[type="date"], input[type="search"], textarea, select,
+    .search-box {
+      background: #ffffff !important;
+      border: 1px solid #111111 !important;
+      border-radius: 6px !important;
+      color: #000000 !important;
+      font-weight: 400 !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+    
+    .f-input::placeholder, .epb-input::placeholder, textarea::placeholder, input::placeholder, .search-box input::placeholder {
+      color: #666666 !important;
+      font-weight: 400 !important;
+    }
+    
+    .f-input:focus, .f-select:focus, .f-textarea:focus, .epb-input:focus, .f-input-date:focus, .f-select-sm:focus,
+    input:focus, textarea:focus, select:focus, .search-box:focus-within {
+      border-color: #111111 !important;
+      box-shadow: 0 0 0 1px #111111 !important;
+      outline: none !important;
+    }
+
+    /* Prevent double borders for specific wrappers */
+    .search-box input {
+      border: none !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+    .search-box input:focus {
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       HEADER TO CONTENT GRADIENT TRANSITION
+    ═══════════════════════════════════════════════════════ */
+    .top-bar {
+      border-bottom: none !important;
+      position: relative;
+    }
+    .top-bar::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      height: 25px;
+      background: linear-gradient(to bottom, var(--color-sidebar) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 10;
+    }
   </style>
 
 
@@ -7388,10 +7446,12 @@ function epbRenderPapersTable(data) {
       '<td><div style="font-weight:500;">' + (row.program||'—') + '</div><div style="font-size:0.72rem; color:#64748b;">Sem ' + (row.semester||'—') + '</div></td>' +
       '<td><span style="background:#eef2ff; color:#4f46e5; font-size:0.72rem; font-weight:600; padding:3px 8px; border-radius:12px; border:1px solid #c7d2fe;">' + (row.paperCode||'—') + '</span></td>' +
       '<td style="font-weight:500;">' + (row.paperName||'—') + '</td>' +
-      '<td style="text-align:right; white-space:nowrap;">' +
-        '<button onclick="epbDownloadPaper('+row.id+')" title="Download PDF" style="width:32px;height:32px;border-radius:50%;border:none;background:#f1f5f9;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-right:4px;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></button>' +
-        '<button onclick="epbEditPaper('+row.id+')" title="Edit" style="width:32px;height:32px;border-radius:50%;border:none;background:#f1f5f9;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-right:4px;color:#4f46e5;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>' +
-        '<button onclick="epbDeletePaper('+row.id+')" title="Delete" style="width:32px;height:32px;border-radius:50%;border:none;background:#fff5f5;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:#ef4444;"><svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>' +
+      '<td style="white-space:nowrap; min-width:110px;">' +
+        '<div style="display:flex; gap:4px; flex-wrap:nowrap; align-items:center; justify-content:flex-end;">' +
+          '<button class="btn-xs btn-xs-action" onclick="epbDownloadPaper('+row.id+')" title="Download PDF"><svg class="svg-icon" width="1.1em" height="1.1em" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></button>' +
+          '<button class="btn-xs btn-xs-action" onclick="epbEditPaper('+row.id+')" title="Edit"><i class="ti ti-edit"></i></button>' +
+          '<button class="btn-xs btn-xs-danger" onclick="epbDeletePaper('+row.id+')" title="Delete"><i class="ti ti-trash"></i></button>' +
+        '</div>' +
       '</td>';
     tbody.appendChild(tr);
   });
