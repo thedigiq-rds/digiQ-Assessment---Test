@@ -553,7 +553,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     ═══════════════════════════════════════════════════════ */
     .f-label {
       display: block; font-weight: 600; font-size: 0.77rem;
-      color: var(--text-dim); text-transform: uppercase;
+      color: var(--text-dim); 
       letter-spacing: 0.06em; margin-bottom: 6px;
     }
     .f-input {
@@ -789,7 +789,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     }
     .nav-section {
       padding: 14px 20px 8px; font-size: 0.7rem; font-weight: 700;
-      color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--color-text-muted);  letter-spacing: 0.05em;
     }
 
     /* ═══════════════════════════════════
@@ -1141,7 +1141,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     .data-table { width: 100%; border-collapse: collapse; text-align: left; }
     .data-table thead th {
       background: var(--color-bg-base); color: var(--color-text-muted);
-      font-size: 0.8rem; font-weight: 600; text-transform: uppercase;
+      font-size: 0.8rem; font-weight: 600; 
       letter-spacing: 0.05em; padding: 12px 16px;
       border-bottom: 1px solid var(--color-border); white-space: nowrap;
     }
@@ -1257,10 +1257,10 @@ function callBackend(action, args, onSuccess, onFailure) {
       display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
     }
     .sec-field { flex: 1; min-width: 140px; }
-    .sec-field label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+    .sec-field label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-dim);  letter-spacing: 0.06em; margin-bottom: 5px; }
 
     /* PILL MULTI-SELECT */
-    .pill-group-label { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; display: block; }
+    .pill-group-label { font-size: 0.75rem; font-weight: 700; color: var(--text-dim);  letter-spacing: 0.08em; margin-bottom: 8px; display: block; }
     .pill-group { display: flex; flex-wrap: wrap; gap: 6px; }
     .pill-item {
       display: inline-flex; align-items: center; gap: 5px;
@@ -1685,7 +1685,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       background: var(--main-surface);
     }
     .assess-q-num {
-      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      font-size: 0.72rem; font-weight: 700; 
       letter-spacing: 0.08em; color: var(--primary); margin-bottom: 6px;
     }
     .assess-q-text {
@@ -1835,7 +1835,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       display: flex; align-items: center; justify-content: center;
       font-weight: 700 !important; font-size: 1.1rem !important;
       cursor: pointer; box-shadow: 0 4px 10px rgba(99,102,241,0.2);
-      text-transform: uppercase !important; /* D should be uppercase */
+       /* D should be uppercase */
     }
     .profile-dropdown {
       position: absolute; top: 48px; right: 0;
@@ -2077,7 +2077,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       font-size: 0.68rem;
       font-weight: 600;
       letter-spacing: 0.06em;
-      text-transform: uppercase;
+      
       color: #64748b;
       margin-bottom: 4px;
     }
@@ -2141,7 +2141,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       font-size: 0.72rem;
       font-weight: 600;
       letter-spacing: 0.05em;
-      text-transform: uppercase;
+      
       color: #64748b;
       border-bottom: 1px solid #e2e8f0;
     }
@@ -3037,11 +3037,11 @@ document.addEventListener('focusout', function(e) {
           <div class="assess-modal-body" id="assess-questions-body"></div>
           <div class="assess-total-bar" id="assess-total-bar">
             <div>
-              <div style="font-size:0.75rem; color:var(--primary); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Auto Total</div>
+              <div style="font-size:0.75rem; color:var(--primary); font-weight:600;  letter-spacing:0.05em; margin-bottom:4px;">Auto Total</div>
               <div class="assess-total-info"><span id="assess-total-awarded">0</span> / <span id="assess-total-max">0</span> marks</div>
             </div>
             <div>
-              <div style="font-size:0.75rem; color:var(--text-dim); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Status</div>
+              <div style="font-size:0.75rem; color:var(--text-dim); font-weight:600;  letter-spacing:0.05em; margin-bottom:4px;">Status</div>
               <span id="assess-pass-status" class="assess-status-badge assess-status-fail">—</span>
             </div>
           </div>
@@ -3178,7 +3178,7 @@ document.addEventListener('focusout', function(e) {
               </div>
               <!-- Format toolbar -->
               <div style="display:flex; align-items:center; gap:6px; background:#f8fafc; border:1px solid #e2e8f0; border-radius: 12px; padding:6px 8px; margin-bottom:10px; flex-wrap:wrap;">
-                <span style="font-size:0.65rem; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.04em;">Format Selected:</span>
+                <span style="font-size:0.65rem; font-weight:700; color:#64748b;  letter-spacing:0.04em;">Format Selected:</span>
                 <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold', false, null);" style="width:24px; height:24px; border:1px solid #cbd5e1; border-radius:4px; background:#fff; font-weight:700; font-size:0.75rem; cursor:pointer;" title="Bold">B</button>
                 <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic', false, null);" style="width:24px; height:24px; border:1px solid #cbd5e1; border-radius:4px; background:#fff; font-style:italic; font-size:0.75rem; cursor:pointer;" title="Italic">I</button>
                 <button type="button" onmousedown="event.preventDefault(); document.execCommand('underline', false, null);" style="width:24px; height:24px; border:1px solid #cbd5e1; border-radius:4px; background:#fff; text-decoration:underline; font-size:0.75rem; cursor:pointer;" title="Underline">U</button>
@@ -3207,7 +3207,7 @@ document.addEventListener('focusout', function(e) {
                           <svg width="20" height="20" fill="none" stroke="#000" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
                         </div>
                         <div>
-                          <h2 id="epb-preview-institution" style="font-size:0.85rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#000; margin:0; line-height:1.2;"></h2>
+                          <h2 id="epb-preview-institution" style="font-size:0.85rem; font-weight:700; letter-spacing:0.08em;  color:#000; margin:0; line-height:1.2;"></h2>
                           <div style="font-size:0.62rem; font-family:sans-serif; color:#000; margin-top:2px; display:flex; align-items:center; gap:6px;">
                             <span>Academic Year: <span id="epb-preview-academicyear"></span></span>
                             <span id="epb-preview-date-sep" style="display:none;">&bull;</span>
@@ -3217,11 +3217,11 @@ document.addEventListener('focusout', function(e) {
                       </div>
                       <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
                         <div style="display:flex; align-items:center; gap:4px; font-size:0.68rem; font-family:sans-serif; color:#000;">
-                          <span id="epb-preview-program" style="font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:3px; border:1px solid #000; text-transform:uppercase; display:none;"></span>
-                          <span id="epb-preview-semester-box" style="font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:3px; border:1px solid #000; text-transform:uppercase; display:none;">Sem <span id="epb-preview-semester"></span></span>
-                          <span id="epb-preview-papertype" style="font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:3px; border:1px solid #000; text-transform:uppercase; display:none;"></span>
+                          <span id="epb-preview-program" style="font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:3px; border:1px solid #000;  display:none;"></span>
+                          <span id="epb-preview-semester-box" style="font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:3px; border:1px solid #000;  display:none;">Sem <span id="epb-preview-semester"></span></span>
+                          <span id="epb-preview-papertype" style="font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:3px; border:1px solid #000;  display:none;"></span>
                         </div>
-                        <span style="font-size:0.62rem; font-family:sans-serif; font-weight:700; background:#f1f5f9; color:#000; padding:4px 6px; border-radius:3px; border:1px solid #000; text-transform:uppercase;">Paper Code: <span id="epb-preview-papercode"></span></span>
+                        <span style="font-size:0.62rem; font-family:sans-serif; font-weight:700; background:#f1f5f9; color:#000; padding:4px 6px; border-radius:3px; border:1px solid #000; ">Paper Code: <span id="epb-preview-papercode"></span></span>
                       </div>
                     </div>
                     <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid #000;">
@@ -3229,10 +3229,10 @@ document.addEventListener('focusout', function(e) {
                         <span>Duration: <span id="epb-preview-time"></span></span>
                         <span>Maximum Marks: <span id="epb-preview-marks"></span></span>
                       </div>
-                      <h3 id="epb-preview-title" style="font-size:0.75rem; font-weight:700; color:#000; text-transform:uppercase; letter-spacing:0.05em; text-align:right; margin:0;"></h3>
+                      <h3 id="epb-preview-title" style="font-size:0.75rem; font-weight:700; color:#000;  letter-spacing:0.05em; text-align:right; margin:0;"></h3>
                     </div>
                     <div id="epb-preview-instructions-container" style="display:none; margin:6px 0; padding:6px; background:#f8fafc; border-left:2px solid #000; font-size:0.65rem; font-family:sans-serif; border-radius:0 4px 4px 0;">
-                      <p style="font-weight:700; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 2px 0; color:#000;">Instructions:</p>
+                      <p style="font-weight:700;  letter-spacing:0.05em; margin:0 0 2px 0; color:#000;">Instructions:</p>
                       <p id="epb-preview-instructions" style="white-space:pre-line; color:#000; margin:0;"></p>
                     </div>
                     <div id="epb-preview-sections" style="margin-top:8px; font-size:0.75rem;"></div>
@@ -3294,19 +3294,19 @@ document.addEventListener('focusout', function(e) {
         <!-- Summary Cards -->
         <div style="display:flex; gap:16px; margin-top:20px; flex-wrap:wrap;">
           <div style="flex:1; min-width:140px; background:white; padding:16px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border:1px solid #e2e8f0;">
-            <div style="color:#64748b; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Total Questions</div>
+            <div style="color:#64748b; font-size:0.85rem; font-weight:600; ">Total Questions</div>
             <div id="qb-stat-total" style="font-size:1.5rem; font-weight:700; color:var(--primary-dk); margin-top:4px;">0</div>
           </div>
           <div style="flex:1; min-width:140px; background:white; padding:16px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border:1px solid #e2e8f0;">
-            <div style="color:#64748b; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Active</div>
+            <div style="color:#64748b; font-size:0.85rem; font-weight:600; ">Active</div>
             <div id="qb-stat-active" style="font-size:1.5rem; font-weight:700; color:#22c55e; margin-top:4px;">0</div>
           </div>
           <div style="flex:1; min-width:140px; background:white; padding:16px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border:1px solid #e2e8f0;">
-            <div style="color:#64748b; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Draft</div>
+            <div style="color:#64748b; font-size:0.85rem; font-weight:600; ">Draft</div>
             <div id="qb-stat-draft" style="font-size:1.5rem; font-weight:700; color:#f59e0b; margin-top:4px;">0</div>
           </div>
           <div style="flex:1; min-width:140px; background:white; padding:16px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05); border:1px solid #e2e8f0;">
-            <div style="color:#64748b; font-size:0.85rem; font-weight:600; text-transform:uppercase;">Archived</div>
+            <div style="color:#64748b; font-size:0.85rem; font-weight:600; ">Archived</div>
             <div id="qb-stat-archived" style="font-size:1.5rem; font-weight:700; color:#94a3b8; margin-top:4px;">0</div>
           </div>
         </div>
@@ -4849,7 +4849,7 @@ function openAssessModal(groupId) {
     return `<div class="assess-q-block">
       <div class="assess-q-num">Question ${i + 1} &nbsp;·&nbsp; Max: ${max} marks</div>
       <div class="assess-q-text">${safeQ}</div>
-      <div style="font-size:0.73rem; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-dim); margin-bottom:5px;">Student Answer</div>
+      <div style="font-size:0.73rem; font-weight:600;  letter-spacing:0.05em; color:var(--text-dim); margin-bottom:5px;">Student Answer</div>
       <div class="assess-ans-box">${safeA || '<em style="color:var(--text-muted);">No answer provided.</em>'}</div>
       <div class="assess-inputs-row">
         <div>
@@ -7209,7 +7209,7 @@ function epbRenderEditors() {
 
     if (sec.type === 'essay') {
       sDiv.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">' +
-        '<span style="font-size:0.72rem; font-weight:700; color:#3730a3; text-transform:uppercase;">Section ' + (sIdx+1) + ' (Essay)</span>' +
+        '<span style="font-size:0.72rem; font-weight:700; color:#3730a3; ">Section ' + (sIdx+1) + ' (Essay)</span>' +
         '<div style="display:flex; gap:4px;">' +
         '<button onclick="epbMoveUp(' + sIdx + ')" style="border:none; background:none; color:#64748b; cursor:pointer; font-size:0.75rem;" ' + upDisabled + '>↑</button>' +
         '<button onclick="epbMoveDown(' + sIdx + ')" style="border:none; background:none; color:#64748b; cursor:pointer; font-size:0.75rem;" ' + dnDisabled + '>↓</button>' +
@@ -7221,7 +7221,7 @@ function epbRenderEditors() {
         '<div id="epb-qlist-' + sIdx + '">' + sec.questions.map(function(q,qIdx){ return epbRenderQItem('essay', sIdx, qIdx, q); }).join('') + '</div></div>';
     } else {
       sDiv.innerHTML = '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">' +
-        '<span style="font-size:0.72rem; font-weight:700; color:#065f46; text-transform:uppercase;">Section ' + (sIdx+1) + ' (Multiple Q)</span>' +
+        '<span style="font-size:0.72rem; font-weight:700; color:#065f46; ">Section ' + (sIdx+1) + ' (Multiple Q)</span>' +
         '<div style="display:flex; gap:4px;">' +
         '<button onclick="epbMoveUp(' + sIdx + ')" style="border:none; background:none; color:#64748b; cursor:pointer; font-size:0.75rem;" ' + upDisabled + '>↑</button>' +
         '<button onclick="epbMoveDown(' + sIdx + ')" style="border:none; background:none; color:#64748b; cursor:pointer; font-size:0.75rem;" ' + dnDisabled + '>↓</button>' +
