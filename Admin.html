@@ -2655,7 +2655,7 @@ document.addEventListener('focusout', function(e) {
             <span>Step 2: Assessment Parameters &amp; Security</span>
             <span id="cqTypeTitleBadge" style="background:var(--primary); color:#fff; padding:3px 12px; border-radius:12px; font-size:0.75rem; font-weight:600;">MCQ</span>
           </div>
-          <div class="panel-desc">Configure assessment metadata, duration, certificate options, and campus geofencing</div>
+          
 
           <div style="margin-bottom:16px;">
             <label class="f-label">Title of Assessment</label>
@@ -3609,7 +3609,7 @@ document.addEventListener('focusout', function(e) {
           <input type="hidden" id="stdOrigSemester" value="">
 
           <div id="stdFormPanelTitle" class="panel-title">Add New Student</div>
-          <div id="stdFormPanelDesc" class="panel-desc">Create a single student account</div>
+          <div id="stdFormPanelDesc" class="panel-desc"></div>
 
           <div class="f-group">
             <label class="f-label">Full Name</label>
@@ -3663,11 +3663,11 @@ document.addEventListener('focusout', function(e) {
         <!-- Bulk Upload -->
         <div class="panel" style="margin-bottom:0;">
           <div class="panel-title">Bulk Upload Students (CSV)</div>
-          <div class="panel-desc">Upload multiple students at once. Duplicates will be skipped automatically.</div>
+          
           
           <div class="info-box" style="margin-bottom:16px;">
             <strong>Expected CSV Format:</strong><br>
-            FullName, RollNo, Email, WhatsApp, Program, Semester, Password (Optional)
+            
             <div style="margin-top:8px;">
               <a href="javascript:void(0)" onclick="downloadStudentCSVTemplate()" style="color:var(--primary); font-weight:600; text-decoration:underline; font-size:0.8rem;"><i class="ti ti-download"></i> Download Sample Template</a>
             </div>
@@ -3744,7 +3744,7 @@ document.addEventListener('focusout', function(e) {
       <div class="page-heading"><i class="ti ti-users"></i> Manage Sub-Admins</div>
       <div class="panel">
         <div class="panel-title">Add New Sub-Admin</div>
-        <div class="panel-desc">Sub-admins can only access quizzes matching their assigned streams &amp; semesters</div>
+        
         <div class="grid-2" style="margin-bottom:16px; align-items:start;">
           <div class="f-group" style="margin-bottom:0;">
             <label class="f-label">Full Name</label>
@@ -7712,7 +7712,7 @@ function openEditStudent(jsonStr) {
 
   // Switch panel UI to Edit Mode
   document.getElementById('stdFormPanelTitle').textContent = 'Edit Student';
-  document.getElementById('stdFormPanelDesc').textContent  = 'Update the details for this student account.';
+  document.getElementById('stdFormPanelDesc').textContent  = '';
   const submitBtn = document.getElementById('stdSubmitBtn');
   submitBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:5px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Update Student Account';
   document.getElementById('stdCancelEditBtn').style.display = 'inline-flex';
@@ -7737,7 +7737,7 @@ function cancelStudentEdit() {
 
   // Restore panel UI to Create Mode
   document.getElementById('stdFormPanelTitle').textContent = 'Add New Student';
-  document.getElementById('stdFormPanelDesc').textContent  = 'Create a single student account';
+  document.getElementById('stdFormPanelDesc').textContent  = '';
   const submitBtn = document.getElementById('stdSubmitBtn');
   submitBtn.innerHTML = '<i class="ti ti-user-plus"></i> Create Student Account';
   document.getElementById('stdCancelEditBtn').style.display = 'none';
