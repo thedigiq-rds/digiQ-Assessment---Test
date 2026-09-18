@@ -2487,6 +2487,56 @@ function callBackend(action, args, onSuccess, onFailure) {
       font-weight: 700;
       line-height: 1.25;
     }
+    /* Saturated card variants with a raised, three-dimensional treatment. */
+    .mob-dashboard-group .mob-card::before {
+      content: '';
+      position: absolute;
+      top: 1px;
+      right: 1px;
+      left: 1px;
+      height: 48%;
+      border-radius: 13px 13px 42% 42%;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0));
+      pointer-events: none;
+    }
+    .mob-dashboard-group .mob-card.surface-blue {
+      background: linear-gradient(145deg, #68b5ff 0%, #3478d8 58%, #1f55ae 100%);
+      box-shadow: 0 5px 0 #18448f, 0 12px 18px rgba(31, 85, 174, 0.24);
+    }
+    .mob-dashboard-group .mob-card.surface-purple {
+      background: linear-gradient(145deg, #b38cff 0%, #7c4ed0 58%, #59309e 100%);
+      box-shadow: 0 5px 0 #482482, 0 12px 18px rgba(89, 48, 158, 0.24);
+    }
+    .mob-dashboard-group .mob-card.surface-pink {
+      background: linear-gradient(145deg, #ff8aac 0%, #dc4775 58%, #a92250 100%);
+      box-shadow: 0 5px 0 #8b1c42, 0 12px 18px rgba(169, 34, 80, 0.24);
+    }
+    .mob-dashboard-group .mob-card.surface-mint {
+      background: linear-gradient(145deg, #63dfb1 0%, #22ad81 58%, #0a8061 100%);
+      box-shadow: 0 5px 0 #07664d, 0 12px 18px rgba(10, 128, 97, 0.24);
+    }
+    .mob-dashboard-group .mob-card.surface-peach {
+      background: linear-gradient(145deg, #ffb073 0%, #ed7441 58%, #bd4822 100%);
+      box-shadow: 0 5px 0 #9c3719, 0 12px 18px rgba(189, 72, 34, 0.24);
+    }
+    .mob-dashboard-group .mob-card.surface-teal {
+      background: linear-gradient(145deg, #58ded6 0%, #1ba89f 58%, #0c7774 100%);
+      box-shadow: 0 5px 0 #075e5c, 0 12px 18px rgba(12, 119, 116, 0.24);
+    }
+    .mob-dashboard-group .mob-card[class*="surface-"] .mob-card-icon {
+      position: relative;
+      z-index: 1;
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+    .mob-dashboard-group .mob-card[class*="surface-"] .mob-card-title {
+      position: relative;
+      z-index: 1;
+      color: #ffffff;
+      text-shadow: 0 1px 1px rgba(15, 23, 42, 0.18);
+    }
     
     /* Main Content adjustments */
     .main-content { width: 100% !important; margin: 0; border: none; border-radius: 0; box-shadow: none; background: #fafafc; flex: 1; flex-direction: column; overflow-y: auto; overflow-x: hidden; padding: 0 !important; }
