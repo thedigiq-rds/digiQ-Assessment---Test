@@ -2253,6 +2253,11 @@ function callBackend(action, args, onSuccess, onFailure) {
     .sd-mobile-bar { display: none !important; }
     .sd-sidebar { display: none !important; }
     .sd-header { display: none !important; }
+
+    /* The mobile dashboard is the default student home. Reveal the desktop
+       live-exams panel only after the student opens that mobile section. */
+    .desktop-tab-content { display: none !important; }
+    .mob-page-active .desktop-tab-content { display: block !important; }
     
     /* App Shell */
     .mobile-top-bar { display: flex !important; }
