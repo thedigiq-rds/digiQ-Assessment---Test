@@ -1140,6 +1140,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       font-size: 0.9rem; font-weight: 600; color: var(--color-text-main);
       margin-bottom: 16px;
     }
+    .chart-metric { display: none; }
 
     /* ═══════════════════════════════════════════════════════
        DATA TABLE
@@ -2239,55 +2240,85 @@ function callBackend(action, args, onSuccess, onFailure) {
        data remain unchanged; only their mobile presentation is condensed. */
     .tab-content { min-width: 0; max-width: 100%; }
     #tab-overview .charts-row {
+      position: relative;
+      isolation: isolate;
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-      gap: 12px !important;
+      gap: 16px 14px !important;
       width: 100%;
       margin-bottom: 20px;
+      padding: 18px 12px;
+      overflow: hidden;
+      border-radius: 18px;
+      background: #1e0a55;
     }
+    #tab-overview .charts-row::before,
+    #tab-overview .charts-row::after {
+      content: '';
+      position: absolute;
+      z-index: 0;
+      width: 150px;
+      height: 150px;
+      border: 22px solid rgba(119, 82, 214, 0.2);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    #tab-overview .charts-row::before { top: -104px; left: -48px; }
+    #tab-overview .charts-row::after { right: -94px; bottom: -86px; }
     #tab-overview .chart-box,
     #tab-overview .panel { min-width: 0; max-width: 100%; }
     #tab-overview .chart-box {
       position: relative;
-      isolation: isolate;
+      z-index: 1;
       display: flex;
-      flex-direction: column;
-      min-height: 162px;
-      padding: 13px 12px 12px;
+      min-height: 114px;
+      padding: 14px;
       overflow: hidden;
-      border-radius: 16px;
-      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+      border: 0;
+      border-radius: 11px;
+      box-shadow: 0 7px 14px rgba(5, 2, 20, 0.28);
     }
-    #tab-overview .chart-box::after {
-      content: '';
-      position: absolute;
-      top: -18px;
-      right: -16px;
-      z-index: 0;
-      width: 54px;
-      height: 54px;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.68);
-      transform: rotate(38deg);
-    }
-    #tab-overview .chart-box:nth-child(1) { background: linear-gradient(145deg, #eef8f3, #ffffff); border-color: #b9e3cd; }
-    #tab-overview .chart-box:nth-child(2) { background: linear-gradient(145deg, #eef5ff, #ffffff); border-color: #bed6f7; }
-    #tab-overview .chart-box:nth-child(3) { background: linear-gradient(145deg, #f5f1ff, #ffffff); border-color: #d7c8f7; }
-    #tab-overview .chart-box:nth-child(4) { background: linear-gradient(145deg, #fff4ea, #ffffff); border-color: #f3d1b2; }
-    #tab-overview .chart-label {
+    #tab-overview .chart-box:nth-child(1) { background: linear-gradient(135deg, #96e66d, #3a984c); }
+    #tab-overview .chart-box:nth-child(2) { background: linear-gradient(135deg, #e95c89, #a62252); }
+    #tab-overview .chart-box:nth-child(3) { background: linear-gradient(135deg, #5d9ce9, #2453a8); }
+    #tab-overview .chart-box:nth-child(4) { background: #ffffff; }
+    #tab-overview .chart-copy {
       position: relative;
       z-index: 1;
-      margin-bottom: 7px;
-      color: #1e293b;
-      font-size: 0.78rem;
-      font-weight: 700;
+      align-self: flex-end;
+      max-width: calc(100% - 42px);
+    }
+    #tab-overview .chart-label {
+      margin: 0 0 3px;
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 600;
       line-height: 1.2;
     }
+    #tab-overview .chart-metric {
+      display: block;
+      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+    #tab-overview .chart-box:nth-child(4) .chart-label,
+    #tab-overview .chart-box:nth-child(4) .chart-metric { color: #1f2937; }
     #tab-overview .chart-canvas-wrap {
-      position: relative;
+      position: absolute;
+      top: 10px;
+      right: 9px;
       z-index: 1;
-      width: min(116px, 100%);
-      height: 116px;
-      margin: auto;
+      width: 49px;
+      height: 49px;
+      margin: 0;
+      padding: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      border-radius: 13px 13px 13px 5px;
+      background: #ffffff;
+      box-shadow: 0 4px 8px rgba(15, 23, 42, 0.16);
+      transform: rotate(-10deg);
     }
     #tab-overview .chart-canvas-wrap canvas {
       width: 100% !important;
@@ -2943,10 +2974,10 @@ document.addEventListener('focusout', function(e) {
       </div>
 
       <div class="charts-row">
-        <div class="chart-box"><div class="chart-label">Pass / Fail</div><div class="chart-canvas-wrap"><canvas id="chart-passfail"></canvas></div></div>
-        <div class="chart-box"><div class="chart-label">Quiz Status</div><div class="chart-canvas-wrap"><canvas id="chart-quizstatus"></canvas></div></div>
-        <div class="chart-box"><div class="chart-label">Score Tiers</div><div class="chart-canvas-wrap"><canvas id="chart-scoretier"></canvas></div></div>
-        <div class="chart-box"><div class="chart-label">By Stream</div><div class="chart-canvas-wrap"><canvas id="chart-streamshare"></canvas></div></div>
+        <div class="chart-box"><div class="chart-copy"><div class="chart-label">Pass / Fail</div><div class="chart-metric" id="chart-stat-passfail">—</div></div><div class="chart-canvas-wrap"><canvas id="chart-passfail"></canvas></div></div>
+        <div class="chart-box"><div class="chart-copy"><div class="chart-label">Quiz Status</div><div class="chart-metric" id="chart-stat-quizstatus">—</div></div><div class="chart-canvas-wrap"><canvas id="chart-quizstatus"></canvas></div></div>
+        <div class="chart-box"><div class="chart-copy"><div class="chart-label">Score Tiers</div><div class="chart-metric" id="chart-stat-scoretiers">—</div></div><div class="chart-canvas-wrap"><canvas id="chart-scoretier"></canvas></div></div>
+        <div class="chart-box"><div class="chart-copy"><div class="chart-label">By Stream</div><div class="chart-metric" id="chart-stat-streams">—</div></div><div class="chart-canvas-wrap"><canvas id="chart-streamshare"></canvas></div></div>
       </div>
 
       <div class="panel">
@@ -5659,8 +5690,18 @@ function buildCharts() {
   const open   = globalQuizzes.filter(q => q[9] === 'Open').length;
   const closed  = globalQuizzes.length - open;
 
-  const legendOpts = { labels: { color: '#475569', font: { size: 10, family: 'Inter' }, padding: 8 } };
+  const isCompactMobile = window.matchMedia('(max-width: 768px)').matches;
+  const legendOpts = isCompactMobile
+    ? { display: false }
+    : { labels: { color: '#475569', font: { size: 10, family: 'Inter' }, padding: 8 } };
   const baseOpts   = { plugins: { legend: legendOpts }, cutout: '70%', responsive: true, maintainAspectRatio: false };
+
+  const setChartMetric = (id, value) => {
+    const metric = document.getElementById(id);
+    if (metric) metric.textContent = Number(value || 0).toLocaleString();
+  };
+  setChartMetric('chart-stat-passfail', passed + failed);
+  setChartMetric('chart-stat-quizstatus', open + closed);
 
   if (chartPassFail) chartPassFail.destroy();
   chartPassFail = new Chart(document.getElementById('chart-passfail'), {
@@ -5691,6 +5732,7 @@ function buildCharts() {
   const high = globalResponses.filter(r => (r[7] || 0) >= 70).length;
   const mid  = globalResponses.filter(r => (r[7] || 0) >= 40 && (r[7] || 0) < 70).length;
   const low  = globalResponses.filter(r => (r[7] || 0) < 40).length;
+  setChartMetric('chart-stat-scoretiers', high + mid + low);
   if (chartScoreTier) chartScoreTier.destroy();
   chartScoreTier = new Chart(document.getElementById('chart-scoretier'), {
     type: 'doughnut',
@@ -5708,6 +5750,7 @@ function buildCharts() {
   globalQuizzes.forEach(q => { const s = q[2] || 'Other'; sMap[s] = (sMap[s] || 0) + 1; });
   const sLabels = Object.keys(sMap).length ? Object.keys(sMap) : ['No Data'];
   const sData   = Object.keys(sMap).length ? Object.values(sMap) : [1];
+  setChartMetric('chart-stat-streams', Object.keys(sMap).length);
   if (chartStreamShare) chartStreamShare.destroy();
   chartStreamShare = new Chart(document.getElementById('chart-streamshare'), {
     type: 'doughnut',
