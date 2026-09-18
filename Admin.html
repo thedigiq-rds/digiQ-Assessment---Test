@@ -2210,6 +2210,109 @@ function callBackend(action, args, onSuccess, onFailure) {
       pointer-events: none;
       z-index: 10;
     }
+
+  /* ═════════ MOBILE REDESIGN (ADMIN) ═════════ */
+  .mob-header, #mob-admin-dash, .mob-page-header { display: none; }
+  
+  @media (max-width: 768px) {
+    /* Hide old nav & FAB */
+    .mobile-tab-bar { display: none !important; }
+    .sidebar { display: none !important; }
+    .fab-container { display: none !important; }
+    
+    /* App Shell */
+    .mob-header { display: flex !important; align-items: center; justify-content: space-between; padding: 12px 20px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #f0f0f5; position: sticky; top: 0; z-index: 100; padding-top: env(safe-area-inset-top, 12px); }
+    .mob-header-logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); font-family: 'Poppins', sans-serif; letter-spacing: -0.5px; }
+    .mob-header-actions { display: flex; gap: 12px; align-items: center; }
+    .mob-avatar { width: 38px; height: 38px; border-radius: 50%; background: #f0f1ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; border: 1.5px solid #e0e4ff; }
+    
+    /* Mobile Dashboard */
+    #mob-admin-dash { display: flex !important; flex-direction: column; padding: 20px; background: #fafafc; min-height: 100vh; overflow-y: auto; }
+    .mob-welcome { margin-bottom: 24px; }
+    .mob-welcome-title { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1.25; font-family: 'Poppins', sans-serif; }
+    .mob-welcome-sub { font-size: 0.95rem; color: var(--text-muted); margin-top: 4px; }
+    
+    .mob-section-title { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 8px 0 12px; }
+    
+    /* Modern Rounded Cards */
+    .mob-card { background: #fff; border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.03); margin-bottom: 16px; position: relative; display: flex; flex-direction: column; cursor: pointer; border: 1px solid #f2f2f5; transition: transform 0.15s, box-shadow 0.15s; }
+    .mob-card:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+    .mob-card-icon { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 14px; }
+    .mob-card-icon.blue { background: #eef2ff; color: #4f46e5; }
+    .mob-card-icon.purple { background: #f3e8ff; color: #9333ea; }
+    .mob-card-icon.mint { background: #ecfdf5; color: #10b981; }
+    .mob-card-icon.peach { background: #fff7ed; color: #ea580c; }
+    .mob-card-icon.pink { background: #fdf2f8; color: #db2777; }
+    .mob-card-title { font-size: 1.15rem; font-weight: 700; color: var(--text); margin-bottom: 6px; font-family: 'Poppins', sans-serif; }
+    .mob-card-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
+    .mob-card-arrow { position: absolute; right: 20px; bottom: 20px; color: var(--text-muted); font-size: 1.2rem; }
+    
+    .mob-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    .mob-card-small { padding: 18px; margin-bottom: 0; }
+    .mob-card-small .mob-card-icon { width: 40px; height: 40px; font-size: 1.2rem; border-radius: 12px; margin-bottom: 12px; }
+    .mob-card-small .mob-card-title { font-size: 0.95rem; margin-bottom: 4px; }
+    
+    /* Contextual View Layer */
+    .wrapper { flex-direction: column; }
+    .main-content { display: none; width: 100%; margin: 0; border: none; border-radius: 0; box-shadow: none; background: #fafafc; flex: 1; flex-direction: column; overflow-y: auto; padding: 0 !important; }
+    .mob-page-active .main-content { display: flex !important; }
+    .mob-page-active #mob-admin-dash { display: none !important; }
+    
+    .mob-page-header { display: flex !important; align-items: center; gap: 14px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #f0f0f5; position: sticky; top: 0; z-index: 10; padding-top: env(safe-area-inset-top, 12px); }
+    .mob-back-btn { width: 38px; height: 38px; border-radius: 50%; background: #f5f5f7; display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 1.2rem; cursor: pointer; border: none; transition: background 0.15s; }
+    .mob-back-btn:active { background: #e5e5e8; }
+    .mob-page-title { font-size: 1.2rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text); flex: 1; margin: 0; }
+    
+    /* Hide Desktop page headings on mobile */
+    .page-header { display: none !important; }
+    .content-area { padding: 20px !important; }
+    
+    /* Profile Mobile Screen */
+    .mob-profile-overlay { position: fixed; inset: 0; background: #fafafc; z-index: 9999; display: none; flex-direction: column; padding-top: env(safe-area-inset-top, 0); overflow-y: auto; }
+    .mob-profile-overlay.active { display: flex; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    .mob-profile-header { display: flex; align-items: center; padding: 16px 20px; }
+    .mob-profile-title { flex: 1; text-align: center; font-size: 1.15rem; font-weight: 700; font-family: 'Poppins', sans-serif; margin-right: 38px; }
+    
+    .mob-profile-card { background: #fff; margin: 0 20px 20px; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f2f2f5; }
+    .mob-profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: #eef2ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin-bottom: 12px; }
+    .mob-profile-name { font-size: 1.3rem; font-weight: 700; color: var(--text); font-family: 'Poppins', sans-serif; }
+    .mob-profile-email { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; }
+    
+    .mob-profile-menu { background: #fff; margin: 0 20px 20px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f2f2f5; overflow: hidden; }
+    .mob-profile-item { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-bottom: 1px solid #f5f5f5; color: var(--text); font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .mob-profile-item:active { background: #fafafc; }
+    .mob-profile-item:last-child { border-bottom: none; }
+    .mob-profile-item.danger { color: #ef4444; }
+    .mob-profile-icon { font-size: 1.3rem; color: var(--text-muted); }
+    .mob-profile-item.danger .mob-profile-icon { color: #ef4444; }
+    .mob-profile-arrow { margin-left: auto; color: #d1d5db; }
+    
+    /* ═════════ CFB (Form Builder & Analytics) MOBILE OVERRIDES ═════════ */
+    .cfb-builder-wrap { flex-direction: column; height: auto !important; border: none; background: transparent; }
+    .cfb-builder-sidebar { width: 100%; border-right: none; border-bottom: 1.5px solid var(--main-border); border-radius: 12px 12px 0 0; }
+    .cfb-qt-list { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; padding: 12px; gap: 8px; -webkit-overflow-scrolling: touch; }
+    .cfb-qt-btn { flex-shrink: 0; white-space: nowrap; padding: 8px 14px; }
+    .cfb-canvas { padding: 16px 0; overflow: visible; }
+    
+    .cfb-header { flex-direction: column; align-items: flex-start; margin-bottom: 16px; }
+    .cfb-view-tabs { margin: 0 -20px 16px; padding: 0 20px; border-bottom: 1px solid var(--main-border); -webkit-overflow-scrolling: touch; }
+    .cfb-view-tab { padding: 12px 16px; font-size: 0.9rem; }
+    
+    .cfb-grid, .cfb-analytics-grid { grid-template-columns: 1fr; gap: 16px; }
+    
+    .cfb-q-card { flex-direction: column; padding: 16px; gap: 16px; }
+    .cfb-q-drag { position: absolute; top: 12px; right: 12px; margin: 0; padding: 8px; background: #f8fafc; border-radius: 6px; }
+    .cfb-q-actions { width: 100%; justify-content: space-between; }
+    .cfb-q-required-toggle { margin-left: 0; }
+    
+    .cfb-settings-group { padding: 16px; }
+    .cfb-setting-row { flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px 0; }
+    .cfb-toggle { position: absolute; right: 16px; margin-top: 2px; }
+    .cfb-setting-row { position: relative; } /* Ensure toggle can position absolutely */
+    
+    .cfb-resp-table-wrap { border: none; border-radius: 0; margin: 16px -20px 0; }
+    .cfb-resp-table th, .cfb-resp-table td { padding: 12px 16px; }
+  }
   </style>
 
 
@@ -2465,6 +2568,81 @@ document.addEventListener('focusout', function(e) {
     </div>
   </div>
   <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleAdminSidebar()"></div>
+  
+  <!-- ═════════ MOBILE HEADER (ADMIN) ═════════ -->
+  <div class="mob-header">
+    <div class="mob-header-logo">digiQ Admin</div>
+    <div class="mob-header-actions">
+      <div class="mob-avatar" onclick="openMobAdminProfile()"><i class="ti ti-user"></i></div>
+    </div>
+  </div>
+
+  <!-- ═════════ MOBILE DASHBOARD (ADMIN) ═════════ -->
+  <div id="mob-admin-dash">
+     <div class="mob-welcome">
+       <div class="mob-welcome-title">Hello,<br><span id="mob-admin-name-header">Admin</span> 👋</div>
+       <div class="mob-welcome-sub">Manage exams and view analytics</div>
+     </div>
+     
+     <div class="mob-section-title">Core Operations</div>
+     <div class="mob-card-grid">
+       <div class="mob-card mob-card-small" onclick="mobSwitchAdminTab('assessments', 'Assessments')">
+         <div class="mob-card-icon blue"><i class="ti ti-books"></i></div>
+         <div class="mob-card-title">Assessments</div>
+       </div>
+       <div class="mob-card mob-card-small" onclick="mobSwitchAdminTab('results', 'Results & Analytics')">
+         <div class="mob-card-icon purple"><i class="ti ti-chart-bar"></i></div>
+         <div class="mob-card-title">Results</div>
+       </div>
+       <div class="mob-card mob-card-small" onclick="mobSwitchAdminTab('forms', 'My Forms')">
+         <div class="mob-card-icon pink"><i class="ti ti-clipboard-list"></i></div>
+         <div class="mob-card-title">My Forms</div>
+       </div>
+       <div class="mob-card mob-card-small" onclick="mobSwitchAdminTab('users', 'Users')">
+         <div class="mob-card-icon mint"><i class="ti ti-users"></i></div>
+         <div class="mob-card-title">Users</div>
+       </div>
+     </div>
+
+     <div class="mob-section-title">System Settings</div>
+     <div class="mob-card" onclick="mobSwitchAdminTab('settings', 'Settings')">
+       <div class="mob-card-icon peach" style="width:40px; height:40px; font-size:1.2rem;"><i class="ti ti-settings"></i></div>
+       <div class="mob-card-title" style="font-size:1.05rem;">Global Settings</div>
+       <div class="mob-card-desc">Configure app preferences</div>
+       <div class="mob-card-arrow"><i class="ti ti-arrow-right"></i></div>
+     </div>
+  </div>
+  
+  <!-- ═════════ MOBILE PROFILE OVERLAY ═════════ -->
+  <div class="mob-profile-overlay" id="mob-profile-overlay">
+    <div class="mob-profile-header">
+      <button class="mob-back-btn" onclick="closeMobAdminProfile()"><i class="ti ti-arrow-left"></i></button>
+      <div class="mob-profile-title">Profile</div>
+    </div>
+    
+    <div class="mob-profile-card">
+      <div class="mob-profile-avatar"><i class="ti ti-shield"></i></div>
+      <div class="mob-profile-name" id="mob-admin-profile-name">Admin User</div>
+      <div class="mob-profile-email" id="mob-admin-profile-email">admin@example.com</div>
+    </div>
+    
+    <div class="mob-profile-menu">
+      <div class="mob-profile-item" onclick="openChangePasswordModal(); closeMobAdminProfile();">
+        <i class="ti ti-key mob-profile-icon"></i>
+        Change Password
+        <i class="ti ti-chevron-right mob-profile-arrow"></i>
+      </div>
+      <div class="mob-profile-item" onclick="openStudentFeedbackModal(); closeMobAdminProfile();">
+        <i class="ti ti-message-star mob-profile-icon"></i>
+        App Feedback
+        <i class="ti ti-chevron-right mob-profile-arrow"></i>
+      </div>
+      <div class="mob-profile-item danger" onclick="confirmLogout()">
+        <i class="ti ti-logout mob-profile-icon"></i>
+        Logout
+      </div>
+    </div>
+  </div>
 
   <!-- SIDEBAR -->
   <div class="sidebar" id="adminSidebar">
@@ -2488,6 +2666,7 @@ document.addEventListener('focusout', function(e) {
         <a class="nav-link"        id="nav-epb"       onclick="switchTab('epb',       this)"><span class="nav-icon"><i class="ti ti-file-text"></i></span><span class="nav-link-text">Exam Paper Builder</span></a>
         <a class="nav-link"        id="nav-qbank"     onclick="switchTab('qbank',     this)"><span class="nav-icon"><i class="ti ti-database"></i></span><span class="nav-link-text">Question Bank</span></a>
         <a class="nav-link"        id="nav-reports"   onclick="switchTab('reports',   this)"><span class="nav-icon"><i class="ti ti-chart-line"></i></span><span class="nav-link-text">Analytics &amp; Reports</span></a>
+        <a class="nav-link"        id="nav-forms"     onclick="switchTab('forms',     this)"><span class="nav-icon"><i class="ti ti-forms"></i></span><span class="nav-link-text">Create Form</span></a>
         <a class="nav-link"        id="nav-students"  onclick="switchTab('students',  this)" style="display:none;"><span class="nav-icon"><i class="ti ti-school"></i></span><span class="nav-link-text">Students</span></a>
         <a class="nav-link"        id="nav-subadmins" onclick="switchTab('subadmins', this)" style="display:none;"><span class="nav-icon"><i class="ti ti-users"></i></span><span class="nav-link-text">Sub-Admins</span></a>
       </nav>
@@ -2502,6 +2681,9 @@ document.addEventListener('focusout', function(e) {
         </div>
         <div class="sb-menu-item" onclick="closeSbProfile(); openChangePasswordModal();">
           <i class="ti ti-key"></i> Change Password
+        </div>
+        <div class="sb-menu-item" onclick="closeSbProfile(); openAdminFeedbackModal();">
+          <i class="ti ti-message-star"></i> App Feedback
         </div>
         <div class="sb-menu-item sb-logout" onclick="closeSbProfile(); confirmLogout();">
           <i class="ti ti-logout"></i> Logout
@@ -2529,6 +2711,11 @@ document.addEventListener('focusout', function(e) {
 
   <!-- MAIN CONTENT -->
   <div class="main-content" style="overflow-x:hidden; display: flex; flex-direction: column; padding: 0;">
+    <!-- ═════════ MOBILE CONTEXTUAL HEADER ═════════ -->
+    <div class="mob-page-header">
+      <button class="mob-back-btn" onclick="mobGoBackAdmin()"><i class="ti ti-arrow-left"></i></button>
+      <h2 class="mob-page-title" id="mob-page-title-text">Assessments</h2>
+    </div>
 
     <!-- TOP BAR -->
     <div class="top-bar">
@@ -3796,6 +3983,411 @@ document.addEventListener('focusout', function(e) {
         </div>
       </div>
     </div>
+
+  <!-- ══════════ CREATE FORM TAB ══════════ -->
+  <div id="tab-forms" class="tab-content" style="display:none;">
+  <style>
+  /* ─── CFB: Create Form Builder – Namespaced Styles ─── */
+  .cfb-header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:24px; }
+  .cfb-title  { font-family:'Poppins',sans-serif; font-size:1.5rem; font-weight:700; color:var(--text); display:flex; align-items:center; gap:10px; }
+
+  /* Status pills */
+  .cfb-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:0.73rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .cfb-pill-draft     { background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0; }
+  .cfb-pill-published { background:#dcfce7; color:#16a34a; border:1px solid #bbf7d0; }
+  .cfb-pill-closed    { background:#fee2e2; color:#dc2626; border:1px solid #fecaca; }
+  .cfb-pill-archived  { background:#f3f4f6; color:#9ca3af; border:1px solid #e5e7eb; }
+
+  /* Cards grid */
+  .cfb-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:20px; }
+  .cfb-card {
+    background:#fff; border:1.5px solid var(--main-border); border-radius:16px; padding:20px;
+    display:flex; flex-direction:column; gap:12px; transition:box-shadow 0.2s, border-color 0.2s;
+    cursor:pointer;
+  }
+  .cfb-card:hover { box-shadow:0 8px 24px rgba(99,102,241,0.1); border-color:var(--primary-lt,#818cf8); }
+  .cfb-card-top    { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .cfb-card-title  { font-size:1.05rem; font-weight:700; color:var(--text); line-height:1.3; flex:1; }
+  .cfb-card-desc   { font-size:0.85rem; color:var(--text-muted); line-height:1.5; }
+  .cfb-card-meta   { display:flex; align-items:center; gap:14px; font-size:0.8rem; color:var(--text-muted); flex-wrap:wrap; }
+  .cfb-card-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:4px; }
+  .cfb-btn         { display:inline-flex; align-items:center; gap:5px; padding:7px 14px; border-radius:8px; font-size:0.82rem; font-weight:600; cursor:pointer; border:none; transition:0.18s; }
+  .cfb-btn-primary { background:var(--primary,#6366f1); color:#fff; }
+  .cfb-btn-primary:hover { background:var(--primary-dk,#4f46e5); }
+  .cfb-btn-secondary { background:#f1f5f9; color:var(--text); border:1px solid var(--main-border); }
+  .cfb-btn-secondary:hover { background:#e2e8f0; }
+  .cfb-btn-danger  { background:#fee2e2; color:#dc2626; border:1px solid #fecaca; }
+  .cfb-btn-danger:hover { background:#fecaca; }
+  .cfb-btn-sm { padding:5px 10px; font-size:0.78rem; }
+
+  /* Empty state */
+  .cfb-empty { text-align:center; padding:60px 20px; }
+  .cfb-empty-icon { font-size:3.5rem; color:var(--text-muted); margin-bottom:16px; }
+  .cfb-empty-title { font-size:1.1rem; font-weight:600; color:var(--text); margin-bottom:6px; }
+  .cfb-empty-sub   { font-size:0.9rem; color:var(--text-muted); }
+
+  /* Builder layout */
+  .cfb-builder-wrap { display:flex; gap:0; height:calc(100vh - 160px); overflow:hidden; border:1.5px solid var(--main-border); border-radius:16px; background:#fff; }
+  .cfb-builder-sidebar { width:260px; flex-shrink:0; border-right:1.5px solid var(--main-border); display:flex; flex-direction:column; background:#f8fafc; }
+  .cfb-builder-sidebar-head { padding:16px; border-bottom:1px solid var(--main-border); }
+  .cfb-builder-sidebar-head h4 { font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin:0; }
+  .cfb-qt-list { padding:12px; display:flex; flex-direction:column; gap:6px; overflow-y:auto; flex:1; }
+  .cfb-qt-btn  { display:flex; align-items:center; gap:8px; padding:9px 12px; border-radius:8px; border:1px solid var(--main-border); background:#fff; font-size:0.83rem; font-weight:500; cursor:pointer; transition:0.15s; color:var(--text); text-align:left; }
+  .cfb-qt-btn:hover { border-color:var(--primary-lt,#818cf8); background:#f0f1ff; color:var(--primary,#6366f1); }
+
+  /* Canvas */
+  .cfb-canvas { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:16px; }
+  .cfb-form-meta { background:#f8fafc; border:1.5px solid var(--main-border); border-radius:12px; padding:20px; }
+  .cfb-form-meta input, .cfb-form-meta textarea { width:100%; border:none; background:transparent; font-family:'Poppins',sans-serif; outline:none; }
+  .cfb-form-meta input.cfb-form-title-input { font-size:1.4rem; font-weight:700; color:var(--text); }
+  .cfb-form-meta textarea.cfb-form-desc-input { font-size:0.9rem; color:var(--text-muted); resize:none; margin-top:8px; min-height:40px; }
+  
+  /* Question card */
+  .cfb-q-card { background:#fff; border:1.5px solid var(--main-border); border-radius:12px; padding:18px; display:flex; gap:12px; transition:border-color 0.15s, box-shadow 0.15s; position:relative; }
+  .cfb-q-card:hover { border-color:var(--primary-lt,#818cf8); box-shadow:0 4px 12px rgba(99,102,241,0.07); }
+  .cfb-q-card.selected { border-color:var(--primary,#6366f1); box-shadow:0 0 0 3px rgba(99,102,241,0.12); }
+  .cfb-q-drag { cursor:grab; color:var(--text-muted); padding:4px; flex-shrink:0; margin-top:2px; }
+  .cfb-q-body { flex:1; }
+  .cfb-q-number { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin-bottom:6px; }
+  .cfb-q-text-input { width:100%; border:none; border-bottom:2px solid var(--main-border); padding:6px 0; font-size:0.97rem; font-weight:600; color:var(--text); background:transparent; outline:none; margin-bottom:12px; }
+  .cfb-q-text-input:focus { border-bottom-color:var(--primary,#6366f1); }
+  .cfb-q-actions { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:12px; }
+  .cfb-q-type-badge { font-size:0.72rem; font-weight:600; padding:3px 8px; border-radius:6px; background:#f0f1ff; color:var(--primary,#6366f1); }
+  .cfb-q-required-toggle { display:flex; align-items:center; gap:5px; font-size:0.8rem; color:var(--text-muted); cursor:pointer; margin-left:auto; user-select:none; }
+  .cfb-q-required-toggle input { accent-color:var(--primary,#6366f1); }
+
+  /* Options editor */
+  .cfb-options-list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px; }
+  .cfb-option-row   { display:flex; align-items:center; gap:8px; }
+  .cfb-option-row input { flex:1; border:1px solid var(--main-border); border-radius:6px; padding:6px 10px; font-size:0.85rem; outline:none; transition:border-color 0.15s; }
+  .cfb-option-row input:focus { border-color:var(--primary,#6366f1); }
+  .cfb-option-del { background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:1rem; padding:4px; border-radius:4px; transition:color 0.15s; }
+  .cfb-option-del:hover { color:#dc2626; }
+  .cfb-add-option-btn { background:none; border:1px dashed var(--main-border); border-radius:6px; padding:6px 12px; font-size:0.82rem; color:var(--text-muted); cursor:pointer; width:100%; text-align:left; margin-top:4px; transition:0.15s; }
+  .cfb-add-option-btn:hover { border-color:var(--primary,#6366f1); color:var(--primary,#6366f1); }
+
+  /* Rating preview */
+  .cfb-rating-preview { display:flex; gap:6px; margin-top:8px; }
+  .cfb-star { font-size:1.4rem; color:#e5e7eb; cursor:pointer; transition:color 0.1s; }
+  .cfb-star.lit { color:#f59e0b; }
+
+  /* Linear scale */
+  .cfb-scale-row { display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-muted); margin-top:8px; }
+  .cfb-scale-row input[type=number] { width:60px; border:1px solid var(--main-border); border-radius:6px; padding:4px 8px; font-size:0.85rem; }
+  
+  /* Settings panel */
+  .cfb-settings-wrap { padding:24px; }
+  .cfb-settings-group { background:#fff; border:1.5px solid var(--main-border); border-radius:12px; padding:20px; margin-bottom:20px; }
+  .cfb-settings-group h4 { font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin:0 0 16px; }
+  .cfb-setting-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f1f5f9; gap:12px; }
+  .cfb-setting-row:last-child { border-bottom:none; }
+  .cfb-setting-label { font-size:0.9rem; font-weight:500; color:var(--text); }
+  .cfb-setting-desc  { font-size:0.8rem; color:var(--text-muted); margin-top:2px; }
+  .cfb-toggle { position:relative; width:40px; height:22px; flex-shrink:0; }
+  .cfb-toggle input { opacity:0; width:0; height:0; }
+  .cfb-toggle-slider { position:absolute; inset:0; border-radius:22px; background:#e2e8f0; transition:0.25s; cursor:pointer; }
+  .cfb-toggle-slider::before { content:''; position:absolute; left:3px; top:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:0.25s; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+  .cfb-toggle input:checked + .cfb-toggle-slider { background:var(--primary,#6366f1); }
+  .cfb-toggle input:checked + .cfb-toggle-slider::before { transform:translateX(18px); }
+
+  /* Share panel */
+  .cfb-share-wrap { padding:24px; }
+  .cfb-share-card { background:#fff; border:1.5px solid var(--main-border); border-radius:12px; padding:20px; margin-bottom:20px; }
+  .cfb-share-card h4 { font-size:0.9rem; font-weight:700; color:var(--text); margin:0 0 12px; display:flex; align-items:center; gap:8px; }
+  .cfb-link-box { display:flex; align-items:center; gap:8px; background:#f8fafc; border:1.5px solid var(--main-border); border-radius:8px; padding:10px 14px; font-size:0.85rem; font-family:monospace; color:var(--text-muted); overflow-x:auto; }
+  .cfb-link-copy { flex-shrink:0; }
+  .cfb-qr-placeholder { width:140px; height:140px; background:#f1f5f9; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; color:var(--text-muted); border:1.5px dashed var(--main-border); }
+
+  /* Responses view */
+  .cfb-resp-table-wrap { overflow-x:auto; border-radius:12px; border:1.5px solid var(--main-border); margin-top:16px; }
+  .cfb-resp-table { width:100%; border-collapse:collapse; font-size:0.83rem; }
+  .cfb-resp-table th { background:#f8fafc; padding:10px 14px; text-align:left; font-weight:700; color:var(--text-muted); border-bottom:1px solid var(--main-border); white-space:nowrap; }
+  .cfb-resp-table td { padding:10px 14px; border-bottom:1px solid #f1f5f9; color:var(--text); vertical-align:top; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .cfb-resp-table tr:last-child td { border-bottom:none; }
+  .cfb-resp-table tr:hover td { background:#f8fafc; }
+
+  /* Analytics */
+  .cfb-analytics-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px; margin-top:16px; }
+  .cfb-analytics-card { background:#fff; border:1.5px solid var(--main-border); border-radius:12px; padding:20px; }
+  .cfb-analytics-card h5 { font-size:0.88rem; font-weight:700; color:var(--text); margin:0 0 4px; }
+  .cfb-analytics-card .cfb-q-type-badge { margin-bottom:10px; display:inline-block; }
+  .cfb-stat-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .cfb-stat-label { font-size:0.8rem; color:var(--text-muted); min-width:100px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cfb-stat-bar-wrap { flex:1; background:#f1f5f9; border-radius:99px; height:10px; overflow:hidden; }
+  .cfb-stat-bar { height:100%; border-radius:99px; background:var(--primary,#6366f1); transition:width 0.6s ease; }
+  .cfb-stat-pct  { font-size:0.75rem; font-weight:700; color:var(--text-muted); min-width:34px; text-align:right; }
+  .cfb-avg-display { text-align:center; }
+  .cfb-avg-num { font-size:2.5rem; font-weight:800; color:var(--primary,#6366f1); }
+  .cfb-avg-label { font-size:0.8rem; color:var(--text-muted); }
+  .cfb-text-samples { display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; }
+  .cfb-text-sample { background:#f8fafc; border-radius:6px; padding:6px 10px; font-size:0.82rem; color:var(--text); border-left:3px solid var(--primary-lt,#818cf8); }
+
+  /* Summary stats top row */
+  .cfb-summary-row { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:14px; margin-bottom:24px; }
+  .cfb-summary-card { background:#fff; border:1.5px solid var(--main-border); border-radius:12px; padding:16px; text-align:center; }
+  .cfb-summary-card .cfb-summary-num { font-size:2rem; font-weight:800; color:var(--primary,#6366f1); }
+  .cfb-summary-card .cfb-summary-label { font-size:0.8rem; color:var(--text-muted); }
+
+  /* View-level tabs (Build | Settings | Share | Responses | Analytics) */
+  .cfb-view-tabs { display:flex; gap:0; border-bottom:2px solid var(--main-border); margin-bottom:0; overflow-x:auto; }
+  .cfb-view-tab  { padding:10px 18px; font-size:0.85rem; font-weight:600; color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; white-space:nowrap; transition:0.15s; display:flex; align-items:center; gap:6px; }
+  .cfb-view-tab:hover { color:var(--primary,#6366f1); }
+  .cfb-view-tab.active { color:var(--primary,#6366f1); border-bottom-color:var(--primary,#6366f1); }
+
+  /* Timeline bar */
+  .cfb-timeline-bar { display:flex; align-items:flex-end; gap:4px; height:60px; margin-bottom:4px; }
+  .cfb-timeline-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .cfb-timeline-fill { width:100%; background:var(--primary,#6366f1); border-radius:3px 3px 0 0; min-height:2px; transition:height 0.4s ease; }
+  .cfb-timeline-label { font-size:0.6rem; color:var(--text-muted); writing-mode:vertical-lr; transform:rotate(180deg); white-space:nowrap; }
+
+  @media(max-width:768px) {
+    .cfb-builder-wrap { flex-direction:column; height:auto; }
+    .cfb-builder-sidebar { width:100%; border-right:none; border-bottom:1.5px solid var(--main-border); }
+    .cfb-qt-list { flex-direction:row; flex-wrap:wrap; overflow-y:visible; }
+    .cfb-qt-btn { font-size:0.75rem; padding:6px 10px; }
+  }
+  </style>
+
+  <!-- Header -->
+  <div class="cfb-header">
+    <div class="cfb-title" id="cfb-view-title"><i class="ti ti-forms"></i> Create Form</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;" id="cfb-header-actions">
+      <button class="cfb-btn cfb-btn-primary" onclick="cfbNewForm()"><i class="ti ti-plus"></i> New Form</button>
+    </div>
+  </div>
+
+  <!-- View container — shows either the list or the editor -->
+  <div id="cfb-view-list">
+    <div id="cfb-forms-list-grid" class="cfb-grid">
+      <div class="cfb-empty">
+        <div class="cfb-empty-icon"><i class="ti ti-forms"></i></div>
+        <div class="cfb-empty-title">Loading forms...</div>
+        <div class="cfb-empty-sub">Please wait</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Editor (hidden by default) -->
+  <div id="cfb-view-editor" style="display:none;">
+    <!-- View sub-tabs -->
+    <div class="cfb-view-tabs" id="cfb-sub-tabs">
+      <div class="cfb-view-tab active" data-view="build"     onclick="cfbSwitchView('build')"><i class="ti ti-pencil"></i> Build</div>
+      <div class="cfb-view-tab"        data-view="settings"  onclick="cfbSwitchView('settings')"><i class="ti ti-settings"></i> Settings</div>
+      <div class="cfb-view-tab"        data-view="share"     onclick="cfbSwitchView('share')"><i class="ti ti-share"></i> Share & Publish</div>
+      <div class="cfb-view-tab"        data-view="responses" onclick="cfbSwitchView('responses')"><i class="ti ti-database"></i> Responses</div>
+      <div class="cfb-view-tab"        data-view="analytics" onclick="cfbSwitchView('analytics')"><i class="ti ti-chart-bar"></i> Analytics</div>
+    </div>
+
+    <!-- BUILD VIEW -->
+    <div id="cfb-pane-build" class="cfb-builder-wrap">
+      <!-- Left: Question type palette -->
+      <div class="cfb-builder-sidebar">
+        <div class="cfb-builder-sidebar-head"><h4><i class="ti ti-plus"></i> Add Question</h4></div>
+        <div class="cfb-qt-list">
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('short_answer')"><i class="ti ti-text-size"></i> Short Answer</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('long_answer')"><i class="ti ti-align-left"></i> Long Answer</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('single_choice')"><i class="ti ti-circle-dot"></i> Multiple Choice</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('multiple_choice')"><i class="ti ti-checkbox"></i> Checkboxes</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('dropdown')"><i class="ti ti-chevron-down"></i> Dropdown</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('star_rating')"><i class="ti ti-star"></i> Star Rating</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('linear_scale')"><i class="ti ti-adjustments-horizontal"></i> Linear Scale</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('yes_no')"><i class="ti ti-toggle-right"></i> Yes / No</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('date')"><i class="ti ti-calendar"></i> Date</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('number')"><i class="ti ti-hash"></i> Number</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('email')"><i class="ti ti-mail"></i> Email</button>
+          <button class="cfb-qt-btn" onclick="cfbAddQuestion('section_break')"><i class="ti ti-separator"></i> Section Break</button>
+        </div>
+      </div>
+      <!-- Right: Canvas -->
+      <div class="cfb-canvas" id="cfb-canvas">
+        <!-- Form meta card -->
+        <div class="cfb-form-meta">
+          <input class="cfb-form-title-input" id="cfb-f-title" type="text" placeholder="Form Title" oninput="cfbMarkDirty()">
+          <textarea class="cfb-form-desc-input" id="cfb-f-desc" placeholder="Form description (optional)" oninput="cfbMarkDirty()" rows="2"></textarea>
+        </div>
+        <!-- Questions injected here by cfbRenderCanvas() -->
+        <div id="cfb-questions-container" style="display:flex; flex-direction:column; gap:14px;"></div>
+        <div style="text-align:center; padding:16px 0;">
+          <button class="cfb-btn cfb-btn-secondary" onclick="cfbAddQuestion('short_answer')"><i class="ti ti-plus"></i> Add Question</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS VIEW -->
+    <div id="cfb-pane-settings" style="display:none;">
+      <div class="cfb-settings-wrap">
+        <div class="cfb-settings-group">
+          <h4>Form Settings</h4>
+          <div class="cfb-setting-row">
+            <div>
+              <div class="cfb-setting-label">Category</div>
+              <div class="cfb-setting-desc">Organise your form into a category.</div>
+            </div>
+            <select id="cfb-s-category" class="form-control" style="width:180px; font-size:0.85rem;" onchange="cfbMarkDirty()">
+              <option value="General">General</option>
+              <option value="Feedback">Feedback</option>
+              <option value="Survey">Survey</option>
+              <option value="Assessment">Assessment</option>
+              <option value="Registration">Registration</option>
+              <option value="Event">Event</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="cfb-setting-row">
+            <div>
+              <div class="cfb-setting-label">Collect Respondent Name</div>
+              <div class="cfb-setting-desc">Ask respondents to enter their name.</div>
+            </div>
+            <label class="cfb-toggle"><input type="checkbox" id="cfb-s-collectName" onchange="cfbMarkDirty()"><span class="cfb-toggle-slider"></span></label>
+          </div>
+          <div class="cfb-setting-row">
+            <div>
+              <div class="cfb-setting-label">Collect Email Address</div>
+              <div class="cfb-setting-desc">Ask respondents to enter their email.</div>
+            </div>
+            <label class="cfb-toggle"><input type="checkbox" id="cfb-s-collectEmail" onchange="cfbMarkDirty()"><span class="cfb-toggle-slider"></span></label>
+          </div>
+          <div class="cfb-setting-row">
+            <div>
+              <div class="cfb-setting-label">Collect Roll Number</div>
+              <div class="cfb-setting-desc">Ask respondents to enter their roll number.</div>
+            </div>
+            <label class="cfb-toggle"><input type="checkbox" id="cfb-s-collectRoll" onchange="cfbMarkDirty()"><span class="cfb-toggle-slider"></span></label>
+          </div>
+          <div class="cfb-setting-row">
+            <div>
+              <div class="cfb-setting-label">Allow Multiple Responses</div>
+              <div class="cfb-setting-desc">Allow the same person to submit more than once.</div>
+            </div>
+            <label class="cfb-toggle"><input type="checkbox" id="cfb-s-multipleResp" onchange="cfbMarkDirty()"><span class="cfb-toggle-slider"></span></label>
+          </div>
+          <div class="cfb-setting-row">
+            <div>
+              <div class="cfb-setting-label">Show Confirmation Message</div>
+              <div class="cfb-setting-desc">Message shown after submission.</div>
+            </div>
+            <label class="cfb-toggle"><input type="checkbox" id="cfb-s-showConfirm" onchange="cfbMarkDirty()" checked><span class="cfb-toggle-slider"></span></label>
+          </div>
+          <div class="cfb-setting-row">
+            <div style="flex:1;">
+              <div class="cfb-setting-label">Confirmation Message Text</div>
+              <input type="text" class="form-control" id="cfb-s-confirmMsg" placeholder="Thank you for your response!" style="margin-top:6px; font-size:0.85rem;" oninput="cfbMarkDirty()">
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="cfb-btn cfb-btn-primary" onclick="cfbSaveForm()"><i class="ti ti-device-floppy"></i> Save Settings</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHARE VIEW -->
+    <div id="cfb-pane-share" style="display:none;">
+      <div class="cfb-share-wrap">
+        <div class="cfb-share-card">
+          <h4><i class="ti ti-send"></i> Publish Form</h4>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">Set the form to <strong>Published</strong> to make it accept responses. Set to <strong>Closed</strong> to stop responses.</p>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="cfb-btn cfb-btn-primary" onclick="cfbSetStatus('published')"><i class="ti ti-circle-check"></i> Publish Form</button>
+            <button class="cfb-btn cfb-btn-secondary" onclick="cfbSetStatus('closed')"><i class="ti ti-circle-x"></i> Close Form</button>
+            <button class="cfb-btn cfb-btn-secondary" onclick="cfbSetStatus('draft')"><i class="ti ti-pencil"></i> Revert to Draft</button>
+          </div>
+        </div>
+        <div class="cfb-share-card">
+          <h4><i class="ti ti-link"></i> Share Link</h4>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Share this link with respondents. It works only when the form is <strong>Published</strong>.</p>
+          <div class="cfb-link-box">
+            <span id="cfb-share-link" style="flex:1; word-break:break-all;">—</span>
+            <button class="cfb-btn cfb-btn-secondary cfb-btn-sm cfb-link-copy" onclick="cfbCopyLink()"><i class="ti ti-copy"></i> Copy</button>
+          </div>
+        </div>
+        <div class="cfb-share-card">
+          <h4><i class="ti ti-qrcode"></i> QR Code</h4>
+          <div class="cfb-qr-placeholder" id="cfb-qr-box"><i class="ti ti-qrcode" style="font-size:2rem;"></i><br>QR appears after publish</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESPONSES VIEW -->
+    <div id="cfb-pane-responses" style="display:none; padding:24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+        <div style="font-size:1rem; font-weight:700; color:var(--text);"><i class="ti ti-database"></i> Responses <span id="cfb-resp-count" style="color:var(--primary,#6366f1);"></span></div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="cfb-btn cfb-btn-secondary cfb-btn-sm" onclick="cfbExportCSV()"><i class="ti ti-download"></i> Export CSV</button>
+          <button class="cfb-btn cfb-btn-secondary cfb-btn-sm" onclick="cfbLoadResponses()"><i class="ti ti-refresh"></i> Refresh</button>
+        </div>
+      </div>
+      <div id="cfb-responses-container">
+        <div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-database"></i></div><div class="cfb-empty-title">No responses yet</div></div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS VIEW -->
+    <div id="cfb-pane-analytics" style="display:none; padding:24px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+        <div style="font-size:1rem; font-weight:700; color:var(--text);"><i class="ti ti-chart-bar"></i> Response Analytics</div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <input type="date" id="cfb-filter-from" class="form-control" style="width:140px; font-size:0.8rem;" placeholder="From">
+          <input type="date" id="cfb-filter-to"   class="form-control" style="width:140px; font-size:0.8rem;" placeholder="To">
+          <button class="cfb-btn cfb-btn-primary cfb-btn-sm" onclick="cfbLoadAnalytics()"><i class="ti ti-filter"></i> Analyse</button>
+        </div>
+      </div>
+      <div id="cfb-analytics-container">
+        <div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-chart-bar"></i></div><div class="cfb-empty-title">Click Analyse to load data</div></div>
+      </div>
+    </div>
+  </div>
+  </div><!-- /tab-forms -->
+
+  <!-- ══════════ ADMIN APP FEEDBACK MODAL ══════════ -->
+  <style>
+  .apfb-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(4px); z-index:9999; display:none; align-items:center; justify-content:center; }
+  .apfb-overlay.active { display:flex; }
+  .apfb-card { background:#fff; border-radius:20px; padding:32px; width:100%; max-width:480px; box-shadow:0 24px 60px rgba(0,0,0,0.18); animation:fadeUp 0.3s ease; position:relative; }
+  .apfb-close { position:absolute; top:16px; right:16px; background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--text-muted); }
+  .apfb-title  { font-family:'Poppins',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text); margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+  .apfb-sub    { font-size:0.85rem; color:var(--text-muted); margin-bottom:20px; }
+  .apfb-label  { font-size:0.82rem; font-weight:600; color:var(--text); margin-bottom:5px; display:block; }
+  .apfb-stars  { display:flex; gap:6px; margin-bottom:16px; }
+  .apfb-star   { font-size:1.8rem; color:#e5e7eb; cursor:pointer; transition:color 0.1s; line-height:1; }
+  .apfb-star.lit{ color:#f59e0b; }
+  .apfb-cats   { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+  .apfb-cat    { padding:5px 14px; border-radius:20px; font-size:0.8rem; font-weight:600; cursor:pointer; border:1.5px solid var(--main-border); color:var(--text-muted); transition:0.15s; user-select:none; }
+  .apfb-cat.selected { border-color:var(--primary,#6366f1); background:#f0f1ff; color:var(--primary,#6366f1); }
+  .apfb-textarea { width:100%; border:1.5px solid var(--main-border); border-radius:10px; padding:10px 14px; font-size:0.88rem; font-family:inherit; resize:vertical; min-height:90px; outline:none; transition:border-color 0.15s; box-sizing:border-box; }
+  .apfb-textarea:focus { border-color:var(--primary,#6366f1); }
+  .apfb-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
+  </style>
+
+  <div class="apfb-overlay" id="apfb-overlay">
+    <div class="apfb-card">
+      <button class="apfb-close" onclick="closeAdminFeedbackModal()"><i class="ti ti-x"></i></button>
+      <div class="apfb-title"><i class="ti ti-message-star"></i> App Feedback</div>
+      <div class="apfb-sub">Help us improve digiQ — your feedback goes directly to the developer.</div>
+      <label class="apfb-label">Overall Rating</label>
+      <div class="apfb-stars" id="apfb-stars">
+        <span class="apfb-star" data-v="1" onclick="apfbSetRating(1)">★</span>
+        <span class="apfb-star" data-v="2" onclick="apfbSetRating(2)">★</span>
+        <span class="apfb-star" data-v="3" onclick="apfbSetRating(3)">★</span>
+        <span class="apfb-star" data-v="4" onclick="apfbSetRating(4)">★</span>
+        <span class="apfb-star" data-v="5" onclick="apfbSetRating(5)">★</span>
+      </div>
+      <label class="apfb-label">Category</label>
+      <div class="apfb-cats" id="apfb-cats">
+        <div class="apfb-cat selected" data-cat="General">General</div>
+        <div class="apfb-cat" data-cat="Bug Report">Bug Report</div>
+        <div class="apfb-cat" data-cat="Feature Request">Feature Request</div>
+        <div class="apfb-cat" data-cat="UI Feedback">UI Feedback</div>
+        <div class="apfb-cat" data-cat="Performance">Performance</div>
+      </div>
+      <label class="apfb-label">Your Message</label>
+      <textarea class="apfb-textarea" id="apfb-message" placeholder="Share what's on your mind..." maxlength="2000"></textarea>
+      <div class="apfb-actions">
+        <button class="cfb-btn cfb-btn-secondary" onclick="closeAdminFeedbackModal()">Cancel</button>
+        <button class="cfb-btn cfb-btn-primary" id="apfb-submit-btn" onclick="submitAdminFeedback()"><i class="ti ti-send"></i> Submit Feedback</button>
+      </div>
+    </div>
+  </div>
 
   </div><!-- /main-content -->
 
@@ -8156,8 +8748,726 @@ function markAllNotificationsRead() {
   showToast('All caught up!', 'success');
 }
 
-// Initialize notifications on load
+// ==========================================
+// ADMIN APP FEEDBACK LOGIC
+// ==========================================
+let apfbCurrentRating = 5;
+
+function openAdminFeedbackModal() {
+  document.getElementById('apfb-overlay').classList.add('active');
+  apfbSetRating(5);
+  document.getElementById('apfb-message').value = '';
+  document.querySelectorAll('.apfb-cat').forEach(c => c.classList.remove('selected'));
+  document.querySelector('.apfb-cat[data-cat="General"]').classList.add('selected');
+}
+
+function closeAdminFeedbackModal() {
+  document.getElementById('apfb-overlay').classList.remove('active');
+}
+
+function apfbSetRating(val) {
+  apfbCurrentRating = val;
+  const stars = document.getElementById('apfb-stars').children;
+  for (let i = 0; i < stars.length; i++) {
+    stars[i].classList.toggle('lit', i < val);
+  }
+}
+
+// Category Selection
+document.getElementById('apfb-cats').addEventListener('click', function(e) {
+  if (e.target.classList.contains('apfb-cat')) {
+    document.querySelectorAll('.apfb-cat').forEach(c => c.classList.remove('selected'));
+    e.target.classList.add('selected');
+  }
+});
+
+function submitAdminFeedback() {
+  const msg = document.getElementById('apfb-message').value.trim();
+  if (!msg) { showToast('Please enter a message.', 'error'); return; }
+  
+  const cat = document.querySelector('.apfb-cat.selected').dataset.cat;
+  const btn = document.getElementById('apfb-submit-btn');
+  btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Submitting...';
+  btn.disabled = true;
+
+  google.script.run.withSuccessHandler(res => {
+    btn.innerHTML = '<i class="ti ti-send"></i> Submit Feedback';
+    btn.disabled = false;
+    if (res.success) {
+      showToast('Thank you for your feedback!', 'success');
+      closeAdminFeedbackModal();
+    } else {
+      showToast('Error: ' + res.error, 'error');
+    }
+  }).withFailureHandler(err => {
+    btn.innerHTML = '<i class="ti ti-send"></i> Submit Feedback';
+    btn.disabled = false;
+    showToast('Network error.', 'error');
+  }).submitAppFeedback('Admin', apfbCurrentRating, cat, msg);
+}
+
+
+// ==========================================
+// CREATE FORM BUILDER (CFB) LOGIC
+// ==========================================
+
+let cfbCurrentFormId = null;
+let cfbCurrentForm = null;
+let cfbQuestions = [];
+let cfbIsDirty = false;
+
+// ─── INIT & LIST ───
+
+// Ensure Forms load when tab is switched
+const originalSwitchTab = window.switchTab;
+window.switchTab = function(tabId, el) {
+  if (originalSwitchTab) originalSwitchTab(tabId, el);
+  if (tabId === 'forms') cfbLoadForms();
+};
+
+function cfbLoadForms() {
+  const grid = document.getElementById('cfb-forms-list-grid');
+  grid.innerHTML = '<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-loader ti-spin"></i></div><div class="cfb-empty-title">Loading forms...</div></div>';
+  cfbSwitchToListView();
+
+  google.script.run.withSuccessHandler(res => {
+    if (!res.success) { grid.innerHTML = `<div class="cfb-empty">Error loading forms.</div>`; return; }
+    
+    const forms = res.data;
+    if (forms.length === 0) {
+      grid.innerHTML = `
+        <div class="cfb-empty" style="grid-column: 1/-1;">
+          <div class="cfb-empty-icon"><i class="ti ti-forms"></i></div>
+          <div class="cfb-empty-title">No Forms Found</div>
+          <div class="cfb-empty-sub">Click "New Form" to create one.</div>
+          <button class="cfb-btn cfb-btn-primary" style="margin-top:16px;" onclick="cfbNewForm()">New Form</button>
+        </div>`;
+      return;
+    }
+
+    let html = '';
+    forms.forEach(f => {
+      let pillClass = 'cfb-pill-draft';
+      if (f.status === 'published') pillClass = 'cfb-pill-published';
+      else if (f.status === 'closed') pillClass = 'cfb-pill-closed';
+
+      html += `
+        <div class="cfb-card" onclick="cfbEditForm('${f.id}')">
+          <div class="cfb-card-top">
+            <div class="cfb-card-title">${f.title || 'Untitled Form'}</div>
+            <div class="cfb-pill ${pillClass}">${f.status}</div>
+          </div>
+          <div class="cfb-card-desc">${(f.description || '').substring(0,80)}${f.description && f.description.length > 80 ? '...' : ''}</div>
+          <div class="cfb-card-meta">
+            <span><i class="ti ti-database"></i> ${f.responseCount || 0} Responses</span>
+            <span><i class="ti ti-calendar"></i> ${new Date(f.updatedAt).toLocaleDateString()}</span>
+          </div>
+        </div>`;
+    });
+    grid.innerHTML = html;
+  }).withFailureHandler(err => {
+    grid.innerHTML = `<div class="cfb-empty">Network error.</div>`;
+  }).getForms();
+}
+
+// ─── NAVIGATION ───
+
+function cfbSwitchToListView() {
+  document.getElementById('cfb-view-list').style.display = 'block';
+  document.getElementById('cfb-view-editor').style.display = 'none';
+  document.getElementById('cfb-view-title').innerHTML = '<i class="ti ti-forms"></i> Manage Forms';
+  document.getElementById('cfb-header-actions').innerHTML = `
+    <button class="cfb-btn cfb-btn-primary" onclick="cfbNewForm()"><i class="ti ti-plus"></i> New Form</button>
+  `;
+}
+
+function cfbSwitchToEditorView() {
+  document.getElementById('cfb-view-list').style.display = 'none';
+  document.getElementById('cfb-view-editor').style.display = 'block';
+  document.getElementById('cfb-view-title').innerHTML = '<i class="ti ti-pencil"></i> Edit Form';
+  document.getElementById('cfb-header-actions').innerHTML = `
+    <button class="cfb-btn cfb-btn-secondary" onclick="cfbCloseEditor()"><i class="ti ti-arrow-left"></i> Back</button>
+    <button class="cfb-btn cfb-btn-primary" id="cfb-top-save-btn" onclick="cfbSaveForm()"><i class="ti ti-device-floppy"></i> Save</button>
+  `;
+  cfbSwitchView('build'); // Default tab
+}
+
+function cfbSwitchView(paneId) {
+  document.querySelectorAll('.cfb-view-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.cfb-view-tab[data-view="${paneId}"]`).classList.add('active');
+  
+  document.getElementById('cfb-pane-build').style.display = 'none';
+  document.getElementById('cfb-pane-settings').style.display = 'none';
+  document.getElementById('cfb-pane-share').style.display = 'none';
+  document.getElementById('cfb-pane-responses').style.display = 'none';
+  document.getElementById('cfb-pane-analytics').style.display = 'none';
+  
+  const pane = document.getElementById('cfb-pane-' + paneId);
+  if (pane) pane.style.display = paneId === 'build' ? 'flex' : 'block';
+
+  // Lazy load data for tabs
+  if (paneId === 'responses') cfbLoadResponses();
+  if (paneId === 'analytics') cfbLoadAnalytics();
+}
+
+function cfbCloseEditor() {
+  if (cfbIsDirty) {
+    if (!confirm('You have unsaved changes. Discard?')) return;
+  }
+  cfbCurrentFormId = null;
+  cfbCurrentForm = null;
+  cfbQuestions = [];
+  cfbLoadForms();
+}
+
+function cfbMarkDirty() {
+  cfbIsDirty = true;
+  document.getElementById('cfb-top-save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> Save*';
+}
+
+function cfbClearDirty() {
+  cfbIsDirty = false;
+  document.getElementById('cfb-top-save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> Saved';
+}
+
+// ─── EDITOR CRUD ───
+
+function cfbNewForm() {
+  cfbCurrentFormId = null;
+  cfbCurrentForm = { status: 'draft' };
+  cfbQuestions = [
+    { id: 'q_' + Date.now(), type: 'short_answer', title: 'Untitled Question', required: false }
+  ];
+  document.getElementById('cfb-f-title').value = '';
+  document.getElementById('cfb-f-desc').value = '';
+  
+  // Default settings
+  document.getElementById('cfb-s-category').value = 'General';
+  document.getElementById('cfb-s-collectName').checked = false;
+  document.getElementById('cfb-s-collectEmail').checked = false;
+  document.getElementById('cfb-s-collectRoll').checked = false;
+  document.getElementById('cfb-s-multipleResp').checked = false;
+  document.getElementById('cfb-s-showConfirm').checked = true;
+  document.getElementById('cfb-s-confirmMsg').value = '';
+  
+  cfbSwitchToEditorView();
+  cfbRenderCanvas();
+  cfbClearDirty();
+}
+
+function cfbEditForm(id) {
+  showToast('Loading form...', 'info');
+  google.script.run.withSuccessHandler(res => {
+    if (!res.success) { showToast('Error loading form', 'error'); return; }
+    const f = res.data;
+    cfbCurrentFormId = f.id;
+    cfbCurrentForm = f;
+    cfbQuestions = f.questions || [];
+    
+    document.getElementById('cfb-f-title').value = f.title || '';
+    document.getElementById('cfb-f-desc').value = f.description || '';
+    
+    // Settings
+    const set = f.settings || {};
+    document.getElementById('cfb-s-category').value = set.category || 'General';
+    document.getElementById('cfb-s-collectName').checked = !!set.collectName;
+    document.getElementById('cfb-s-collectEmail').checked = !!set.collectEmail;
+    document.getElementById('cfb-s-collectRoll').checked = !!set.collectRoll;
+    document.getElementById('cfb-s-multipleResp').checked = !!set.allowMultiple;
+    document.getElementById('cfb-s-showConfirm').checked = set.showConfirmation !== false;
+    document.getElementById('cfb-s-confirmMsg').value = set.confirmationMessage || '';
+    
+    // Share link
+    document.getElementById('cfb-share-link').innerText = set.publishedUrl || 'Save and publish to get link';
+    
+    cfbSwitchToEditorView();
+    cfbRenderCanvas();
+    cfbClearDirty();
+  }).withFailureHandler(err => {
+    showToast('Network error.', 'error');
+  }).getFormById(id);
+}
+
+function cfbSaveForm() {
+  const btn = document.getElementById('cfb-top-save-btn');
+  btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Saving...';
+  btn.disabled = true;
+
+  // Sync inputs from DOM to questions array before saving
+  cfbSyncQuestionsFromDOM();
+
+  const title = document.getElementById('cfb-f-title').value.trim() || 'Untitled Form';
+  const desc = document.getElementById('cfb-f-desc').value.trim();
+  
+  const settings = {
+    category: document.getElementById('cfb-s-category').value,
+    collectName: document.getElementById('cfb-s-collectName').checked,
+    collectEmail: document.getElementById('cfb-s-collectEmail').checked,
+    collectRoll: document.getElementById('cfb-s-collectRoll').checked,
+    allowMultiple: document.getElementById('cfb-s-multipleResp').checked,
+    showConfirmation: document.getElementById('cfb-s-showConfirm').checked,
+    confirmationMessage: document.getElementById('cfb-s-confirmMsg').value.trim()
+  };
+
+  const formData = {
+    id: cfbCurrentFormId,
+    title: title,
+    description: desc,
+    settings: settings,
+    questions: cfbQuestions,
+    status: cfbCurrentForm ? cfbCurrentForm.status : 'draft'
+  };
+
+  const action = cfbCurrentFormId ? 'updateForm' : 'createForm';
+  
+  google.script.run.withSuccessHandler(res => {
+    btn.disabled = false;
+    if (res.success) {
+      cfbCurrentFormId = res.id;
+      if (res.publishedUrl) {
+         document.getElementById('cfb-share-link').innerText = res.publishedUrl;
+         if(cfbCurrentForm) cfbCurrentForm.settings = { ...cfbCurrentForm.settings, publishedUrl: res.publishedUrl };
+      }
+      cfbClearDirty();
+      showToast('Form saved!', 'success');
+      // If newly created, update UI
+      if (action === 'createForm' && res.data) {
+         cfbCurrentForm = res.data;
+      }
+    } else {
+      btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save';
+      showToast('Error: ' + res.error, 'error');
+    }
+  }).withFailureHandler(err => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save';
+    showToast('Network error', 'error');
+  })[action](formData);
+}
+
+function cfbSetStatus(newStatus) {
+  if (!cfbCurrentFormId) {
+    showToast('Please save the form first.', 'info');
+    return;
+  }
+  showToast('Updating status...', 'info');
+  google.script.run.withSuccessHandler(res => {
+    if (res.success) {
+      cfbCurrentForm.status = newStatus;
+      showToast('Form status updated to ' + newStatus, 'success');
+    } else {
+      showToast('Error: ' + res.error, 'error');
+    }
+  }).withFailureHandler(err => { showToast('Network error', 'error'); }).setFormStatus(cfbCurrentFormId, newStatus);
+}
+
+function cfbCopyLink() {
+  const link = document.getElementById('cfb-share-link').innerText;
+  if (!link || link.includes('Save and publish')) return;
+  navigator.clipboard.writeText(link).then(() => {
+    showToast('Link copied!', 'success');
+  });
+}
+
+// ─── BUILDER CANVAS ───
+
+function cfbAddQuestion(type) {
+  cfbSyncQuestionsFromDOM();
+  const newQ = {
+    id: 'q_' + Date.now() + Math.floor(Math.random()*1000),
+    type: type,
+    title: '',
+    required: false
+  };
+  
+  if (['single_choice','multiple_choice','dropdown'].includes(type)) {
+    newQ.options = ['Option 1'];
+  } else if (type === 'linear_scale') {
+    newQ.scaleMin = 1;
+    newQ.scaleMax = 5;
+    newQ.labelMin = '';
+    newQ.labelMax = '';
+  }
+  
+  cfbQuestions.push(newQ);
+  cfbRenderCanvas();
+  cfbMarkDirty();
+  
+  // Scroll to bottom
+  const container = document.getElementById('cfb-canvas');
+  setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
+}
+
+// Ensure we grab latest titles before re-rendering or saving
+function cfbSyncQuestionsFromDOM() {
+  document.querySelectorAll('.cfb-q-card').forEach(card => {
+    const idx = parseInt(card.dataset.idx);
+    if (isNaN(idx) || !cfbQuestions[idx]) return;
+    
+    const titleInput = card.querySelector('.cfb-q-text-input');
+    if (titleInput) cfbQuestions[idx].title = titleInput.value;
+    
+    // Sync options if choice type
+    if (['single_choice','multiple_choice','dropdown'].includes(cfbQuestions[idx].type)) {
+      const optInputs = card.querySelectorAll('.cfb-opt-val');
+      const opts = [];
+      optInputs.forEach(inp => { if(inp.value.trim()) opts.push(inp.value.trim()); });
+      if (opts.length > 0) cfbQuestions[idx].options = opts;
+    }
+    // Sync scale
+    if (cfbQuestions[idx].type === 'linear_scale') {
+      const minI = card.querySelector('.cfb-scale-min');
+      const maxI = card.querySelector('.cfb-scale-max');
+      const minL = card.querySelector('.cfb-scale-lmin');
+      const maxL = card.querySelector('.cfb-scale-lmax');
+      if (minI) cfbQuestions[idx].scaleMin = parseInt(minI.value) || 1;
+      if (maxI) cfbQuestions[idx].scaleMax = parseInt(maxI.value) || 5;
+      if (minL) cfbQuestions[idx].labelMin = minL.value;
+      if (maxL) cfbQuestions[idx].labelMax = maxL.value;
+    }
+  });
+}
+
+function cfbRenderCanvas() {
+  const container = document.getElementById('cfb-questions-container');
+  let html = '';
+  
+  cfbQuestions.forEach((q, idx) => {
+    let typeLabel = q.type.replace('_', ' ').toUpperCase();
+    
+    let bodyHtml = '';
+    if (q.type === 'short_answer') {
+      bodyHtml = `<div style="border-bottom:1px dotted var(--main-border); width:60%; height:24px; margin-top:8px; color:var(--text-muted); font-size:0.85rem;">Short answer text</div>`;
+    } else if (q.type === 'long_answer') {
+      bodyHtml = `<div style="border-bottom:1px dotted var(--main-border); width:100%; height:24px; margin-top:8px; color:var(--text-muted); font-size:0.85rem;">Long answer text</div>
+                  <div style="border-bottom:1px dotted var(--main-border); width:100%; height:24px; margin-top:8px;"></div>`;
+    } else if (['single_choice','multiple_choice','dropdown'].includes(q.type)) {
+      let icon = q.type==='multiple_choice' ? 'ti-square' : 'ti-circle';
+      if(q.type==='dropdown') icon = 'ti-list-numbers';
+      
+      let opts = q.options || [''];
+      bodyHtml += `<div class="cfb-options-list">`;
+      opts.forEach((opt, oidx) => {
+        bodyHtml += `
+          <div class="cfb-option-row">
+            <i class="ti ${icon}" style="color:var(--text-muted);"></i>
+            <input type="text" class="cfb-opt-val" value="${escapeHtml(opt)}" placeholder="Option ${oidx+1}" oninput="cfbMarkDirty()">
+            <button class="cfb-option-del" onclick="cfbDelOpt(${idx}, ${oidx})"><i class="ti ti-x"></i></button>
+          </div>`;
+      });
+      bodyHtml += `</div>
+        <button class="cfb-add-option-btn" onclick="cfbAddOpt(${idx})"><i class="ti ti-plus"></i> Add Option</button>`;
+    } else if (q.type === 'star_rating') {
+      bodyHtml = `<div class="cfb-rating-preview"><i class="ti ti-star lit"></i><i class="ti ti-star lit"></i><i class="ti ti-star lit"></i><i class="ti ti-star"></i><i class="ti ti-star"></i></div>`;
+    } else if (q.type === 'linear_scale') {
+      let min = q.scaleMin || 1, max = q.scaleMax || 5;
+      let lMin = q.labelMin || '', lMax = q.labelMax || '';
+      bodyHtml = `
+        <div class="cfb-scale-row">
+          <span>Min:</span> <input type="number" class="cfb-scale-min" value="${min}" min="0" max="1" oninput="cfbMarkDirty()">
+          <span>to Max:</span> <input type="number" class="cfb-scale-max" value="${max}" min="2" max="10" oninput="cfbMarkDirty()">
+        </div>
+        <div class="cfb-scale-row">
+          <span>Label (Min):</span> <input type="text" class="cfb-scale-lmin" value="${escapeHtml(lMin)}" placeholder="e.g. Strongly Disagree" style="flex:1" oninput="cfbMarkDirty()">
+        </div>
+        <div class="cfb-scale-row">
+          <span>Label (Max):</span> <input type="text" class="cfb-scale-lmax" value="${escapeHtml(lMax)}" placeholder="e.g. Strongly Agree" style="flex:1" oninput="cfbMarkDirty()">
+        </div>
+      `;
+    } else if (q.type === 'yes_no') {
+      bodyHtml = `<div class="cfb-rating-preview"><button class="cfb-btn cfb-btn-secondary" disabled>Yes</button> <button class="cfb-btn cfb-btn-secondary" disabled>No</button></div>`;
+    } else if (q.type === 'date') {
+      bodyHtml = `<div style="border-bottom:1px dotted var(--main-border); width:200px; height:24px; margin-top:8px; color:var(--text-muted); font-size:0.85rem;"><i class="ti ti-calendar"></i> Month, Day, Year</div>`;
+    } else if (q.type === 'number') {
+      bodyHtml = `<div style="border-bottom:1px dotted var(--main-border); width:200px; height:24px; margin-top:8px; color:var(--text-muted); font-size:0.85rem;"><i class="ti ti-hash"></i> Number</div>`;
+    } else if (q.type === 'email') {
+      bodyHtml = `<div style="border-bottom:1px dotted var(--main-border); width:60%; height:24px; margin-top:8px; color:var(--text-muted); font-size:0.85rem;"><i class="ti ti-mail"></i> Valid Email Address</div>`;
+    } else if (q.type === 'section_break') {
+      bodyHtml = `<div style="padding:10px; background:#f8fafc; border-radius:6px; text-align:center; font-size:0.8rem; color:var(--text-muted); border:1px dashed var(--main-border);"><i class="ti ti-separator"></i> Next Section starts here</div>`;
+    }
+
+    html += `
+      <div class="cfb-q-card" data-idx="${idx}">
+        <div class="cfb-q-drag"><i class="ti ti-grip-vertical"></i></div>
+        <div class="cfb-q-body">
+          <div class="cfb-q-number">Question ${idx + 1}</div>
+          <input type="text" class="cfb-q-text-input" value="${escapeHtml(q.title)}" placeholder="${q.type==='section_break'?'Section Title':'Question Text'}" oninput="cfbMarkDirty()">
+          ${bodyHtml}
+          
+          <div class="cfb-q-actions">
+            <span class="cfb-q-type-badge">${typeLabel}</span>
+            <button class="cfb-btn cfb-btn-secondary cfb-btn-sm" onclick="cfbMoveQ(${idx}, -1)" title="Move Up" ${idx===0?'disabled':''}><i class="ti ti-arrow-up"></i></button>
+            <button class="cfb-btn cfb-btn-secondary cfb-btn-sm" onclick="cfbMoveQ(${idx}, 1)" title="Move Down" ${idx===cfbQuestions.length-1?'disabled':''}><i class="ti ti-arrow-down"></i></button>
+            <button class="cfb-btn cfb-btn-danger cfb-btn-sm" onclick="cfbDelQ(${idx})" title="Delete"><i class="ti ti-trash"></i></button>
+            
+            ${q.type !== 'section_break' ? `
+            <label class="cfb-q-required-toggle">
+              <input type="checkbox" onchange="cfbToggleReq(${idx}, this.checked)" ${q.required?'checked':''}> Required
+            </label>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  if (cfbQuestions.length === 0) {
+    html = `<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-forms"></i></div><div class="cfb-empty-title">Form is empty</div><div class="cfb-empty-sub">Add questions using the menu on the left.</div></div>`;
+  }
+  
+  container.innerHTML = html;
+}
+
+function cfbAddOpt(qIdx) {
+  cfbSyncQuestionsFromDOM();
+  if(!cfbQuestions[qIdx].options) cfbQuestions[qIdx].options = [];
+  cfbQuestions[qIdx].options.push(`Option ${cfbQuestions[qIdx].options.length + 1}`);
+  cfbRenderCanvas();
+  cfbMarkDirty();
+}
+function cfbDelOpt(qIdx, oIdx) {
+  cfbSyncQuestionsFromDOM();
+  if(cfbQuestions[qIdx].options && cfbQuestions[qIdx].options.length > 1) {
+    cfbQuestions[qIdx].options.splice(oIdx, 1);
+    cfbRenderCanvas();
+    cfbMarkDirty();
+  } else {
+    showToast('At least one option is required.', 'info');
+  }
+}
+function cfbToggleReq(qIdx, isReq) {
+  cfbSyncQuestionsFromDOM();
+  cfbQuestions[qIdx].required = isReq;
+  cfbMarkDirty();
+}
+function cfbMoveQ(idx, dir) {
+  cfbSyncQuestionsFromDOM();
+  if(idx + dir < 0 || idx + dir >= cfbQuestions.length) return;
+  const temp = cfbQuestions[idx];
+  cfbQuestions[idx] = cfbQuestions[idx + dir];
+  cfbQuestions[idx + dir] = temp;
+  cfbRenderCanvas();
+  cfbMarkDirty();
+}
+function cfbDelQ(idx) {
+  cfbSyncQuestionsFromDOM();
+  cfbQuestions.splice(idx, 1);
+  cfbRenderCanvas();
+  cfbMarkDirty();
+}
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/[&<>'"]/g, tag => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+  }[tag]));
+}
+
+// ─── RESPONSES & EXPORT ───
+let cfbCurrentResponses = [];
+
+function cfbLoadResponses() {
+  if (!cfbCurrentFormId) return;
+  const cont = document.getElementById('cfb-responses-container');
+  cont.innerHTML = '<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-loader ti-spin"></i></div><div class="cfb-empty-title">Loading responses...</div></div>';
+  
+  google.script.run.withSuccessHandler(res => {
+    if (!res.success) { cont.innerHTML = `<div class="cfb-empty">Error: ${res.error}</div>`; return; }
+    
+    cfbCurrentResponses = res.data;
+    document.getElementById('cfb-resp-count').innerText = `(${cfbCurrentResponses.length})`;
+    
+    if (cfbCurrentResponses.length === 0) {
+      cont.innerHTML = `<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-database"></i></div><div class="cfb-empty-title">No responses yet.</div></div>`;
+      return;
+    }
+    
+    // Build Table
+    let html = `<div class="cfb-resp-table-wrap"><table class="cfb-resp-table"><thead><tr>`;
+    html += `<th>Timestamp</th>`;
+    // Find union of all keys (questions) from answers
+    let allKeys = new Set();
+    cfbCurrentResponses.forEach(r => {
+      Object.keys(r.answers).forEach(k => allKeys.add(k));
+    });
+    
+    // Try to map question IDs to Titles
+    let keyMap = {};
+    cfbQuestions.forEach(q => { keyMap[q.id] = q.title || q.id; });
+    
+    let columns = Array.from(allKeys);
+    columns.forEach(k => { html += `<th>${keyMap[k] || k}</th>`; });
+    html += `</tr></thead><tbody>`;
+    
+    cfbCurrentResponses.forEach(r => {
+      html += `<tr><td>${new Date(r.timestamp).toLocaleString()}</td>`;
+      columns.forEach(k => {
+        let val = r.answers[k];
+        if (Array.isArray(val)) val = val.join(', ');
+        if (val === undefined || val === null) val = '-';
+        html += `<td title="${escapeHtml(String(val))}">${escapeHtml(String(val))}</td>`;
+      });
+      html += `</tr>`;
+    });
+    html += `</tbody></table></div>`;
+    cont.innerHTML = html;
+  }).withFailureHandler(err => {
+    cont.innerHTML = `<div class="cfb-empty">Network error.</div>`;
+  }).getFormResponses(cfbCurrentFormId);
+}
+
+function cfbExportCSV() {
+  if (!cfbCurrentResponses || cfbCurrentResponses.length === 0) {
+    showToast('No data to export.', 'info');
+    return;
+  }
+  
+  // Headers
+  let allKeys = new Set();
+  cfbCurrentResponses.forEach(r => Object.keys(r.answers).forEach(k => allKeys.add(k)));
+  let keyMap = {};
+  cfbQuestions.forEach(q => { keyMap[q.id] = q.title || q.id; });
+  let columns = Array.from(allKeys);
+  
+  let csv = ['Timestamp', ...columns.map(k => `"${(keyMap[k] || k).replace(/"/g, '""')}"`)].join(',') + '\n';
+  
+  cfbCurrentResponses.forEach(r => {
+    let row = [`"${new Date(r.timestamp).toISOString()}"`];
+    columns.forEach(k => {
+      let val = r.answers[k];
+      if (Array.isArray(val)) val = val.join(', ');
+      val = val === undefined || val === null ? '' : String(val);
+      row.push(`"${val.replace(/"/g, '""')}"`);
+    });
+    csv += row.join(',') + '\n';
+  });
+  
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `form_${cfbCurrentFormId}_responses.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ─── ANALYTICS ───
+
+function cfbLoadAnalytics() {
+  if (!cfbCurrentFormId) return;
+  const cont = document.getElementById('cfb-analytics-container');
+  cont.innerHTML = '<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-loader ti-spin"></i></div><div class="cfb-empty-title">Generating Analytics...</div></div>';
+  
+  const from = document.getElementById('cfb-filter-from').value;
+  const to = document.getElementById('cfb-filter-to').value;
+  
+  google.script.run.withSuccessHandler(res => {
+    if (!res.success) { cont.innerHTML = `<div class="cfb-empty">Error: ${res.error}</div>`; return; }
+    const a = res.data;
+    
+    if (a.totalResponses === 0) {
+      cont.innerHTML = `<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-chart-bar"></i></div><div class="cfb-empty-title">No responses in selected period.</div></div>`;
+      return;
+    }
+    
+    let html = `
+      <div class="cfb-summary-row">
+        <div class="cfb-summary-card">
+          <div class="cfb-summary-num">${a.totalResponses}</div>
+          <div class="cfb-summary-label">Total Responses</div>
+        </div>
+      </div>
+      <div class="cfb-analytics-grid">
+    `;
+    
+    // Map question data to UI blocks
+    cfbQuestions.forEach(q => {
+      if (q.type === 'section_break') return;
+      const data = a.questions[q.id];
+      if (!data) return; // No responses for this specific question
+      
+      let typeLabel = q.type.replace('_', ' ').toUpperCase();
+      
+      html += `<div class="cfb-analytics-card">
+                 <h5>${escapeHtml(q.title)}</h5>
+                 <span class="cfb-q-type-badge">${typeLabel}</span>`;
+      
+      if (['single_choice','multiple_choice','dropdown','yes_no'].includes(q.type)) {
+         // Bar chart implementation in HTML/CSS
+         let totalCounts = Object.values(data.counts || {}).reduce((a,b)=>a+b, 0) || 1;
+         let sorted = Object.entries(data.counts || {}).sort((a,b) => b[1] - a[1]);
+         if(sorted.length === 0) html += `<div class="cfb-stat-row" style="color:var(--text-muted); font-size:0.8rem;">No data</div>`;
+         sorted.forEach(entry => {
+           let pct = Math.round((entry[1] / totalCounts) * 100);
+           html += `
+             <div class="cfb-stat-row">
+               <div class="cfb-stat-label" title="${escapeHtml(entry[0])}">${escapeHtml(entry[0])} (${entry[1]})</div>
+               <div class="cfb-stat-bar-wrap"><div class="cfb-stat-bar" style="width:${pct}%"></div></div>
+               <div class="cfb-stat-pct">${pct}%</div>
+             </div>`;
+         });
+      } else if (['star_rating', 'linear_scale', 'number'].includes(q.type)) {
+         // Average Display
+         let avg = typeof data.average === 'number' ? data.average.toFixed(1) : '-';
+         html += `
+           <div class="cfb-avg-display">
+             <div class="cfb-avg-num">${avg}</div>
+             <div class="cfb-avg-label">Average (Min: ${data.min !== null ? data.min : '-'}, Max: ${data.max !== null ? data.max : '-'})</div>
+           </div>`;
+      } else if (['short_answer', 'long_answer', 'email', 'date'].includes(q.type)) {
+         // Recent texts
+         html += `<div class="cfb-text-samples">`;
+         let texts = data.recentTexts || [];
+         if (texts.length === 0) html += `<div class="cfb-stat-row" style="color:var(--text-muted); font-size:0.8rem;">No text responses</div>`;
+         texts.forEach(txt => {
+           html += `<div class="cfb-text-sample">${escapeHtml(txt)}</div>`;
+         });
+         html += `</div>`;
+      }
+      
+      html += `</div>`;
+    });
+    
+    html += `</div>`;
+    cont.innerHTML = html;
+  }).withFailureHandler(err => {
+    cont.innerHTML = `<div class="cfb-empty">Network error.</div>`;
+  }).getFormAnalytics(cfbCurrentFormId, from || null, to || null);
+}
+
+// ─── END CFB ───
+
 setTimeout(generateMockNotifications, 2000);
+  /* ═════════ MOBILE REDESIGN LOGIC (ADMIN) ═════════ */
+  function openMobAdminProfile() {
+    let nameElem = document.getElementById('sidebarUserName');
+    if (nameElem) document.getElementById('mob-admin-profile-name').innerText = nameElem.innerText;
+    document.getElementById('mob-admin-profile-email').innerText = (activeRole && activeRole.email) ? activeRole.email : 'admin@example.com';
+    document.getElementById('mob-profile-overlay').classList.add('active');
+  }
+
+  function closeMobAdminProfile() {
+    document.getElementById('mob-profile-overlay').classList.remove('active');
+  }
+
+  function mobSwitchAdminTab(tabId, title) {
+    document.getElementById('mob-page-title-text').innerText = title;
+    
+    // Call existing desktop logic to handle content loading
+    let fakeNavElem = document.getElementById('nav-' + tabId);
+    if(fakeNavElem) {
+      switchTab(tabId, fakeNavElem);
+    } else {
+      switchTab(tabId);
+    }
+    
+    // Add mobile page active class to body
+    document.body.classList.add('mob-page-active');
+  }
+
+  function mobGoBackAdmin() {
+    document.body.classList.remove('mob-page-active');
+  }
 </script>
 </body>
 </html>
