@@ -1463,7 +1463,7 @@ function callBackend(action, args, onSuccess, onFailure) {
         align-items: center !important; 
         padding: 0 12px !important; 
         height: 52px !important;
-        background: #FFF4E6 !important; 
+        background: #ffffff !important; 
         border-radius: 0 !important; 
         margin: 0 !important;
         gap: 8px !important;
@@ -2219,6 +2219,8 @@ function callBackend(action, args, onSuccess, onFailure) {
 
   /* ═════════ MOBILE REDESIGN (ADMIN) ═════════ */
   .mob-header-main, .mob-nav-workspace, .mob-page-header, .mob-profile-overlay { display: none; }
+  body.mob-page-active .top-bar,
+  body.mob-page-active .mob-nav-workspace { display: none !important; }
   
   @media (max-width: 768px) {
     /* Hide desktop UI on mobile */
@@ -2245,19 +2247,23 @@ function callBackend(action, args, onSuccess, onFailure) {
     .mob-card:active { transform: scale(0.97); }
     .mob-card-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 14px; }
     
-    .mob-card.bg-blue { background: #EEF5FF; }
-    .mob-card.bg-blue .mob-card-icon { background: rgba(79,70,229,0.1); color: #4f46e5; }
+    .mob-card.surface-blue { background: #EEF5FF; }
+    .mob-card.surface-blue .mob-card-icon { background: rgba(79,70,229,0.1); color: #4f46e5; }
     
-    .mob-card.bg-purple { background: #F3F0FF; }
-    .mob-card.bg-purple .mob-card-icon { background: rgba(147,51,234,0.1); color: #9333ea; }
+    .mob-card.surface-purple { background: #F3F0FF; }
+    .mob-card.surface-purple .mob-card-icon { background: rgba(147,51,234,0.1); color: #9333ea; }
     
-    .mob-card.bg-mint { background: #EEFBF5; }
-    .mob-card.bg-mint .mob-card-icon { background: rgba(16,185,129,0.1); color: #10b981; }
+    .mob-card.surface-mint { background: #EEFBF5; }
+    .mob-card.surface-mint .mob-card-icon { background: rgba(16,185,129,0.1); color: #10b981; }
     
-    .mob-card.bg-peach { background: #FFF4E8; }
-    .mob-card.bg-peach .mob-card-icon { background: rgba(234,88,12,0.1); color: #ea580c; }
+    .mob-card.surface-peach { background: #FFF4E8; }
+    .mob-card.surface-peach .mob-card-icon { background: rgba(234,88,12,0.1); color: #ea580c; }
     
-    .mob-card.bg-pink { background: #FFF0F4; }
+    .mob-card.surface-pink { background: #FFF0F4; }
+    .mob-card.surface-pink .mob-card-icon { background: rgba(225,29,72,0.1); color: #e11d48; }
+
+    .mob-card.surface-teal { background: #F0FDFA; }
+    .mob-card.surface-teal .mob-card-icon { background: rgba(13,148,136,0.1); color: #0d9488; }
     .mob-card.bg-pink .mob-card-icon { background: rgba(219,39,119,0.1); color: #db2777; }
     
     .mob-card.bg-yellow { background: #FFF9E8; }
@@ -2556,9 +2562,9 @@ document.addEventListener('focusout', function(e) {
   <!-- Mobile Title Bar -->
   <div class="mobile-top-bar" id="mobile-top-bar">
     <div class="mobile-title-left">
-      <div class="mobile-college-name">M. N. College, Visnagar</div>
+      <div class="mobile-college-name" style="display: none;"></div>
       <div class="mobile-portal-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-        <i class="ti ti-shield-lock" style="font-size:0.85rem;"></i> digiQ • <span id="mobile-user-name"></span>
+        <i class="ti ti-shield-lock" style="font-size:0.85rem;"></i> digiQ &bull; Admin
       </div>
     </div>
     <div style="position:relative; display:flex; align-items:center; flex-shrink:0;">
@@ -2735,48 +2741,48 @@ document.addEventListener('focusout', function(e) {
            
            <div class="mob-section-title">Core Operations</div>
            <div class="mob-card-grid">
-             <div class="mob-card mob-card-small" onclick="openCreateNewQuizTab()">
-               <div class="mob-card-icon blue"><i class="ti ti-plus"></i></div>
+             <div class="mob-card mob-card-small surface-blue" onclick="openCreateNewQuizTab()">
+               <div class="mob-card-icon"><i class="ti ti-plus"></i></div>
                <div class="mob-card-title">Create Quiz</div>
              </div>
-             <div class="mob-card mob-card-small" onclick="switchTab('manage')">
-               <div class="mob-card-icon purple"><i class="ti ti-list-check"></i></div>
+             <div class="mob-card mob-card-small surface-purple" onclick="switchTab('manage')">
+               <div class="mob-card-icon"><i class="ti ti-list-check"></i></div>
                <div class="mob-card-title">Manage Quizzes</div>
              </div>
-             <div class="mob-card mob-card-small" onclick="switchTab('essays')">
-               <div class="mob-card-icon pink"><i class="ti ti-pencil"></i></div>
+             <div class="mob-card mob-card-small surface-pink" onclick="switchTab('essays')">
+               <div class="mob-card-icon"><i class="ti ti-pencil"></i></div>
                <div class="mob-card-title">Essay Grading</div>
              </div>
-             <div class="mob-card mob-card-small" onclick="switchTab('epb')">
-               <div class="mob-card-icon mint"><i class="ti ti-file-text"></i></div>
+             <div class="mob-card mob-card-small surface-mint" onclick="switchTab('epb')">
+               <div class="mob-card-icon"><i class="ti ti-file-text"></i></div>
                <div class="mob-card-title">Exam Builder</div>
              </div>
-             <div class="mob-card mob-card-small" style="grid-column: span 2;" onclick="switchTab('qbank')">
-               <div class="mob-card-icon peach"><i class="ti ti-database"></i></div>
+             <div class="mob-card mob-card-small surface-peach" style="grid-column: span 2;" onclick="switchTab('qbank')">
+               <div class="mob-card-icon"><i class="ti ti-database"></i></div>
                <div class="mob-card-title">Question Bank</div>
              </div>
            </div>
 
            <div class="mob-section-title">Insights &amp; Forms</div>
            <div class="mob-card-grid">
-             <div class="mob-card mob-card-small" onclick="switchTab('reports')">
-               <div class="mob-card-icon" style="background:#e0f2fe; color:#0284c7;"><i class="ti ti-chart-line"></i></div>
+             <div class="mob-card mob-card-small surface-blue" onclick="switchTab('reports')">
+               <div class="mob-card-icon"><i class="ti ti-chart-line"></i></div>
                <div class="mob-card-title">Analytics</div>
              </div>
-             <div class="mob-card mob-card-small" onclick="switchTab('forms')">
-               <div class="mob-card-icon" style="background:#fef3c7; color:#d97706;"><i class="ti ti-forms"></i></div>
+             <div class="mob-card mob-card-small surface-peach" onclick="switchTab('forms')">
+               <div class="mob-card-icon"><i class="ti ti-forms"></i></div>
                <div class="mob-card-title">Create Form</div>
              </div>
            </div>
 
            <div class="mob-section-title">People &amp; Administration</div>
            <div class="mob-card-grid">
-             <div class="mob-card mob-card-small" id="mob-card-students" style="display:none;" onclick="switchTab('students')">
-               <div class="mob-card-icon" style="background:#ede9fe; color:#7c3aed;"><i class="ti ti-school"></i></div>
+             <div class="mob-card mob-card-small surface-purple" id="mob-card-students" style="display:none;" onclick="switchTab('students')">
+               <div class="mob-card-icon"><i class="ti ti-school"></i></div>
                <div class="mob-card-title">Students</div>
              </div>
-             <div class="mob-card mob-card-small" id="mob-card-subadmins" style="display:none;" onclick="switchTab('subadmins')">
-               <div class="mob-card-icon" style="background:#fee2e2; color:#dc2626;"><i class="ti ti-users"></i></div>
+             <div class="mob-card mob-card-small surface-pink" id="mob-card-subadmins" style="display:none;" onclick="switchTab('subadmins')">
+               <div class="mob-card-icon"><i class="ti ti-users"></i></div>
                <div class="mob-card-title">Sub-Admins</div>
              </div>
            </div>
@@ -4724,7 +4730,7 @@ function _restoreAdminSession(res) {
   }
   const mobAdminCollegeHeader = document.getElementById('mob-admin-college-header');
   if (mobAdminCollegeHeader) {
-    mobAdminCollegeHeader.textContent = (res.role === 'MASTER') ? 'LNM College of Arts & Commerce' : 'Manage your assessment platform';
+    mobAdminCollegeHeader.textContent = 'Manage your assessment platform';
   }
 
   // Populate compact sidebar profile button
