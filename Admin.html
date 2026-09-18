@@ -2212,22 +2212,22 @@ function callBackend(action, args, onSuccess, onFailure) {
     }
 
   /* ═════════ MOBILE REDESIGN (ADMIN) ═════════ */
-  .mob-header, #mob-admin-dash, .mob-page-header, .mob-profile-overlay { display: none; }
+  .mob-header-main, .mob-nav-workspace, .mob-page-header, .mob-profile-overlay { display: none; }
   
   @media (max-width: 768px) {
-    /* Hide old nav & FAB */
-    .mobile-tab-bar { display: none !important; }
+    /* Hide desktop UI on mobile */
     .sidebar { display: none !important; }
     .fab-container { display: none !important; }
+    .page-header { display: none !important; }
     
-    /* App Shell */
-    .mob-header { display: flex !important; align-items: center; justify-content: space-between; padding: 12px 20px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #f0f0f5; position: sticky; top: 0; z-index: 100; padding-top: env(safe-area-inset-top, 12px); }
-    .mob-header-logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); font-family: 'Poppins', sans-serif; letter-spacing: -0.5px; }
+    /* Main mobile header */
+    .mob-header-main { display: flex !important; align-items: center; justify-content: space-between; padding: 12px 20px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #f0f0f5; position: sticky; top: 0; z-index: 100; padding-top: env(safe-area-inset-top, 12px); }
+    .mob-header-logo { display: flex; align-items: center; gap: 8px; font-size: 1.4rem; font-weight: 800; color: var(--primary); font-family: 'Poppins', sans-serif; letter-spacing: -0.5px; }
     .mob-header-actions { display: flex; gap: 12px; align-items: center; }
     .mob-avatar { width: 38px; height: 38px; border-radius: 50%; background: #f0f1ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; border: 1.5px solid #e0e4ff; }
     
-    /* Mobile Dashboard */
-    #mob-admin-dash { display: flex !important; flex-direction: column; padding: 20px; background: #fafafc; min-height: 100vh; overflow-y: auto; }
+    /* Mobile Navigation Workspace (Inside Overview Tab) */
+    .mob-nav-workspace { display: flex !important; flex-direction: column; padding-bottom: 24px; }
     .mob-welcome { margin-bottom: 24px; }
     .mob-welcome-title { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1.25; font-family: 'Poppins', sans-serif; }
     .mob-welcome-sub { font-size: 0.95rem; color: var(--text-muted); margin-top: 4px; }
@@ -2252,19 +2252,14 @@ function callBackend(action, args, onSuccess, onFailure) {
     .mob-card-small .mob-card-icon { width: 40px; height: 40px; font-size: 1.2rem; border-radius: 12px; margin-bottom: 12px; }
     .mob-card-small .mob-card-title { font-size: 0.95rem; margin-bottom: 4px; }
     
-    /* Contextual View Layer */
-    .wrapper { flex-direction: column; }
-    .main-content { display: none; width: 100%; margin: 0; border: none; border-radius: 0; box-shadow: none; background: #fafafc; flex: 1; flex-direction: column; overflow-y: auto; padding: 0 !important; }
-    .mob-page-active .main-content { display: flex !important; }
-    .mob-page-active #mob-admin-dash { display: none !important; }
+    /* Main Content adjustments */
+    .main-content { width: 100% !important; margin: 0; border: none; border-radius: 0; box-shadow: none; background: #fafafc; flex: 1; flex-direction: column; overflow-y: auto; padding: 0 !important; }
     
-    .mob-page-header { display: flex !important; align-items: center; gap: 14px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #f0f0f5; position: sticky; top: 0; z-index: 10; padding-top: env(safe-area-inset-top, 12px); }
+    /* Hide back header by default, manipulated by JS */
     .mob-back-btn { width: 38px; height: 38px; border-radius: 50%; background: #f5f5f7; display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 1.2rem; cursor: pointer; border: none; transition: background 0.15s; }
     .mob-back-btn:active { background: #e5e5e8; }
     .mob-page-title { font-size: 1.2rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text); flex: 1; margin: 0; }
     
-    /* Hide Desktop page headings on mobile */
-    .page-header { display: none !important; }
     .content-area { padding: 20px !important; }
     
     /* Profile Mobile Screen */
@@ -2570,48 +2565,17 @@ document.addEventListener('focusout', function(e) {
   <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleAdminSidebar()"></div>
   
   <!-- ═════════ MOBILE HEADER (ADMIN) ═════════ -->
-  <div class="mob-header">
-    <div class="mob-header-logo">digiQ Admin</div>
+  <div class="mob-header-main" id="mob-header-main">
+    <div class="mob-header-logo">
+      <img src="images/logo.png" alt="" style="height:24px; border-radius:4px; display:inline-block;" onerror="this.style.display='none'">
+      digiQ
+    </div>
     <div class="mob-header-actions">
       <div class="mob-avatar" onclick="openMobAdminProfile()"><i class="ti ti-user"></i></div>
     </div>
   </div>
 
-  <!-- ═════════ MOBILE DASHBOARD (ADMIN) ═════════ -->
-  <div id="mob-admin-dash">
-     <div class="mob-welcome">
-       <div class="mob-welcome-title">Hello,<br><span id="mob-admin-name-header">Admin</span> 👋</div>
-       <div class="mob-welcome-sub">Manage exams and view analytics</div>
-     </div>
-     
-     <div class="mob-section-title">Core Operations</div>
-     <div class="mob-card-grid">
-       <div class="mob-card mob-card-small" onclick="mobSwitchAdminTab('assessments', 'Assessments')">
-         <div class="mob-card-icon blue"><i class="ti ti-books"></i></div>
-         <div class="mob-card-title">Assessments</div>
-       </div>
-       <div class="mob-card mob-card-small" onclick="mobSwitchAdminTab('results', 'Results & Analytics')">
-         <div class="mob-card-icon purple"><i class="ti ti-chart-bar"></i></div>
-         <div class="mob-card-title">Results</div>
-       </div>
-       <div class="mob-card mob-card-small" onclick="mobSwitchAdminTab('forms', 'My Forms')">
-         <div class="mob-card-icon pink"><i class="ti ti-clipboard-list"></i></div>
-         <div class="mob-card-title">My Forms</div>
-       </div>
-       <div class="mob-card mob-card-small" onclick="mobSwitchAdminTab('users', 'Users')">
-         <div class="mob-card-icon mint"><i class="ti ti-users"></i></div>
-         <div class="mob-card-title">Users</div>
-       </div>
-     </div>
-
-     <div class="mob-section-title">System Settings</div>
-     <div class="mob-card" onclick="mobSwitchAdminTab('settings', 'Settings')">
-       <div class="mob-card-icon peach" style="width:40px; height:40px; font-size:1.2rem;"><i class="ti ti-settings"></i></div>
-       <div class="mob-card-title" style="font-size:1.05rem;">Global Settings</div>
-       <div class="mob-card-desc">Configure app preferences</div>
-       <div class="mob-card-arrow"><i class="ti ti-arrow-right"></i></div>
-     </div>
-  </div>
+  <!-- Mobile Navigation Dashboard removed from here and moved into tab-overview -->
   
   <!-- ═════════ MOBILE PROFILE OVERLAY ═════════ -->
   <div class="mob-profile-overlay" id="mob-profile-overlay">
@@ -2712,9 +2676,9 @@ document.addEventListener('focusout', function(e) {
   <!-- MAIN CONTENT -->
   <div class="main-content" style="overflow-x:hidden; display: flex; flex-direction: column; padding: 0;">
     <!-- ═════════ MOBILE CONTEXTUAL HEADER ═════════ -->
-    <div class="mob-page-header">
-      <button class="mob-back-btn" onclick="mobGoBackAdmin()"><i class="ti ti-arrow-left"></i></button>
-      <h2 class="mob-page-title" id="mob-page-title-text">Assessments</h2>
+    <div class="mob-page-header" id="mob-header-back" style="display:none; align-items:center; gap:14px; padding:12px 20px; background:#fff; border-bottom:1px solid #f0f0f5; position:sticky; top:0; z-index:10; padding-top:env(safe-area-inset-top, 12px);">
+      <button class="mob-back-btn" onclick="switchTab('overview')"><i class="ti ti-arrow-left"></i></button>
+      <h2 class="mob-page-title" id="mob-page-title-text">Dashboard</h2>
     </div>
 
     <!-- TOP BAR -->
@@ -2764,6 +2728,65 @@ document.addEventListener('focusout', function(e) {
     <div class="main-content-inner" style="flex: 1; padding: 28px 32px; overflow-y: auto;">
       <!-- ══════════ OVERVIEW TAB ══════════ -->
       <div id="tab-overview" class="tab-content active" style="display:block;">
+        
+        <!-- MOBILE NAVIGATION WORKSPACE (HIDDEN ON DESKTOP) -->
+        <div class="mob-nav-workspace">
+           <div class="mob-welcome">
+             <div class="mob-welcome-title">Hello, <span id="mob-admin-name-header">Admin</span> 👋</div>
+             <div class="mob-welcome-sub" id="mob-admin-college-header">Manage your assessment platform</div>
+           </div>
+           
+           <div class="mob-section-title">Core Operations</div>
+           <div class="mob-card-grid">
+             <div class="mob-card mob-card-small" onclick="openCreateNewQuizTab()">
+               <div class="mob-card-icon blue"><i class="ti ti-plus"></i></div>
+               <div class="mob-card-title">Create Quiz</div>
+             </div>
+             <div class="mob-card mob-card-small" onclick="switchTab('manage')">
+               <div class="mob-card-icon purple"><i class="ti ti-list-check"></i></div>
+               <div class="mob-card-title">Manage Quizzes</div>
+             </div>
+             <div class="mob-card mob-card-small" onclick="switchTab('essays')">
+               <div class="mob-card-icon pink"><i class="ti ti-pencil"></i></div>
+               <div class="mob-card-title">Essay Grading</div>
+             </div>
+             <div class="mob-card mob-card-small" onclick="switchTab('epb')">
+               <div class="mob-card-icon mint"><i class="ti ti-file-text"></i></div>
+               <div class="mob-card-title">Exam Builder</div>
+             </div>
+             <div class="mob-card mob-card-small" style="grid-column: span 2;" onclick="switchTab('qbank')">
+               <div class="mob-card-icon peach"><i class="ti ti-database"></i></div>
+               <div class="mob-card-title">Question Bank</div>
+             </div>
+           </div>
+
+           <div class="mob-section-title">Insights &amp; Forms</div>
+           <div class="mob-card-grid">
+             <div class="mob-card mob-card-small" onclick="switchTab('reports')">
+               <div class="mob-card-icon" style="background:#e0f2fe; color:#0284c7;"><i class="ti ti-chart-line"></i></div>
+               <div class="mob-card-title">Analytics</div>
+             </div>
+             <div class="mob-card mob-card-small" onclick="switchTab('forms')">
+               <div class="mob-card-icon" style="background:#fef3c7; color:#d97706;"><i class="ti ti-forms"></i></div>
+               <div class="mob-card-title">Create Form</div>
+             </div>
+           </div>
+
+           <div class="mob-section-title">People &amp; Administration</div>
+           <div class="mob-card-grid">
+             <div class="mob-card mob-card-small" id="mob-card-students" style="display:none;" onclick="switchTab('students')">
+               <div class="mob-card-icon" style="background:#ede9fe; color:#7c3aed;"><i class="ti ti-school"></i></div>
+               <div class="mob-card-title">Students</div>
+             </div>
+             <div class="mob-card mob-card-small" id="mob-card-subadmins" style="display:none;" onclick="switchTab('subadmins')">
+               <div class="mob-card-icon" style="background:#fee2e2; color:#dc2626;"><i class="ti ti-users"></i></div>
+               <div class="mob-card-title">Sub-Admins</div>
+             </div>
+           </div>
+           
+           <div class="mob-section-title" style="margin-top: 10px;">Live Dashboard</div>
+        </div>
+        <!-- END MOBILE NAVIGATION WORKSPACE -->
             <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
         <div>
           <div class="page-heading"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
@@ -4410,7 +4433,7 @@ document.addEventListener('focusout', function(e) {
 
   <!-- ─── MOBILE BOTTOM TAB BAR — DYNAMIC RAISED NOTCH ─── -->
   <!-- Tab items injected by JS so sub-admin tab is dynamic -->
-  <nav class="mobile-tab-bar bottom-nav" id="mobileTabBar" role="navigation" aria-label="Navigation"></nav>
+  <!-- Tab items injected by JS so sub-admin tab is dynamic -->
 
   <!-- FAB (kept for compatibility but hidden via CSS) -->
   <div id="fab-backdrop" onclick="closeFabMenu()"></div>
@@ -4696,10 +4719,15 @@ function _restoreAdminSession(res) {
   document.getElementById('dashboard-app').style.display   = 'flex';
   
   const displayName = res.name || (res.role === 'MASTER' ? 'Dr. Rajendra Suthar' : 'Admin');
-  const mobileUserName = document.getElementById('mobile-user-name');
-  if (mobileUserName) {
-    mobileUserName.textContent = displayName;
-    mobileUserName.style.display = 'inline';
+  
+  // Mobile UI display updates
+  const mobAdminNameHeader = document.getElementById('mob-admin-name-header');
+  if (mobAdminNameHeader) {
+    mobAdminNameHeader.textContent = displayName;
+  }
+  const mobAdminCollegeHeader = document.getElementById('mob-admin-college-header');
+  if (mobAdminCollegeHeader) {
+    mobAdminCollegeHeader.textContent = (res.role === 'MASTER') ? 'LNM College of Arts & Commerce' : 'Manage your assessment platform';
   }
 
   // Populate compact sidebar profile button
@@ -4741,7 +4769,7 @@ function _restoreAdminSession(res) {
     allowedStreams.forEach(s => { SEM_MAP_FULL[s] = allowedSems; });
     updateSemesterOptions();
   }
-  buildMobileTabBar(isMaster);
+  // Obsolete bottom tab bar initialization removed
   setMobileTabActive('overview');
   loadDashboard(); startAutoRefresh();
   if (typeof renderGeoPresetOptions === 'function') renderGeoPresetOptions('');
@@ -4897,192 +4925,7 @@ async function confirmLogout(skipConfirm = false) {
   }, 1000);
 }
 
-/* ════════════════════════════════════════
-   MOBILE TAB BAR — DYNAMIC RAISED NOTCH
-════════════════════════════════════════ */
-let mobileTabDefs = [
-  { id: 'overview', icon: 'ti-chart-bar', label: 'Dashboard', action: () => switchTab('overview') },
-  { id: 'create',   icon: 'ti-plus',      label: 'Create',   action: () => openCreateNewQuizTab() },
-  { id: 'manage',   icon: 'ti-folder',    label: 'Manage',   action: () => switchTab('manage') },
-  { id: 'essays',   icon: 'ti-pencil',    label: 'Essays',   action: () => switchTab('essays') },
-  { id: 'epb',      icon: 'ti-file-text', label: 'Papers',   action: () => switchTab('epb') },
-  { id: 'qbank',    icon: 'ti-database',  label: 'Q-Bank',   action: () => switchTab('qbank') },
-  { id: 'reports',  icon: 'ti-chart-line',label: 'Reports',  action: () => switchTab('reports') },
-  { id: 'students', icon: 'ti-school',    label: 'Students', action: () => switchTab('students') },
-  { id: 'subadmins',icon: 'ti-users',     label: 'Sub-Admin',action: () => switchTab('subadmins'), masterOnly: true },
-];
-
-function buildMobileTabBar(isMaster) {
-  const bar = document.getElementById("mobileTabBar");
-  if (!bar) return;
-  const allTabs = mobileTabDefs.filter(t => !t.masterOnly || isMaster);
-  
-  // Decide how many visible tabs vs more
-  const MAX_VISIBLE = 4;
-  let visibleTabs = allTabs;
-  let moreTabs = [];
-  
-  if (allTabs.length > MAX_VISIBLE) {
-    visibleTabs = allTabs.slice(0, MAX_VISIBLE);
-    moreTabs = allTabs.slice(MAX_VISIBLE);
-    visibleTabs.push({
-      id: 'more',
-      icon: 'ti-dots-circle-horizontal',
-      label: 'More',
-      action: () => toggleMobileMoreMenu()
-    });
-  }
-
-  // Custom SVG Icons mapping based on tab id
-  const getIcon = (id) => {
-    switch(id) {
-      case "overview": return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`;
-      case "create": return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`;
-      case "manage": return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>`;
-      case "essays": return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>`;
-      case "qbank": return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path></svg>`;
-      case "reports": return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>`;
-      case "subadmins": return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`;
-      case "students": return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>`;
-      case "epb": return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>`;
-      case "more": return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.5"></circle><circle cx="19" cy="12" r="1.5"></circle><circle cx="5" cy="12" r="1.5"></circle></svg>`;
-      default: return `<svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle></svg>`;
-    }
-  };
-
-  bar.innerHTML = `
-    <!-- True Transparent Mask Layer -->
-    <div class="nav-bg-layer"></div>
-    
-    <!-- Moving Blue Bubble -->
-    <div class="blue-bubble">
-        <div class="sifter sq-1"></div>
-        <div class="sifter sq-2"></div>
-        <div class="sifter sq-3"></div>
-        <div class="sifter sq-4"></div>
-        <div class="sifter sq-5"></div>
-    </div>
-    
-    ${visibleTabs.map((t, i) => `
-      <div class="nav-item" id="mtab-${t.id}" onclick="mobileTabClick('${t.id}')">
-          ${getIcon(t.id)}
-          <span class="label">${t.label}</span>
-      </div>
-    `).join("")}
-  `;
-  window._mobileVisibleTabs = visibleTabs;
-  window._mobileMoreTabs = moreTabs;
-  
-  // Build the more menu
-  let moreMenu = document.getElementById("mobileMoreMenu");
-  if (!moreMenu) {
-    moreMenu = document.createElement("div");
-    moreMenu.id = "mobileMoreMenu";
-    moreMenu.className = "mobile-more-menu";
-    document.body.appendChild(moreMenu);
-  }
-  
-  if (moreTabs.length > 0) {
-    moreMenu.innerHTML = moreTabs.map((t) => `
-      <div class="more-menu-item" id="mmtab-${t.id}" onclick="mobileMoreTabClick('${t.id}')">
-          ${getIcon(t.id)}
-          <span>${t.label}</span>
-      </div>
-    `).join("");
-  }
-  
-  // Show it if we are on mobile
-  if (window.innerWidth <= 768) {
-      bar.style.display = "flex";
-  }
-}
-
-function toggleMobileMoreMenu() {
-  const moreMenu = document.getElementById("mobileMoreMenu");
-  if (!moreMenu) return;
-  moreMenu.classList.toggle("open");
-  
-  if (moreMenu.classList.contains("open")) {
-    setTimeout(() => {
-      document.addEventListener("click", function closeMoreMenu(e) {
-        if (!moreMenu.contains(e.target) && !e.target.closest('#mtab-more')) {
-          moreMenu.classList.remove("open");
-          document.removeEventListener("click", closeMoreMenu);
-        }
-      });
-    }, 10);
-  }
-}
-
-function mobileMoreTabClick(tabId) {
-  const moreMenu = document.getElementById("mobileMoreMenu");
-  if (moreMenu) moreMenu.classList.remove("open");
-  
-  if (tabId === 'create') openCreateNewQuizTab();
-  else switchTab(tabId);
-  setMobileTabActive(tabId);
-}
-
-function mobileTabClick(tabId) {
-  if (tabId === 'more') {
-    toggleMobileMoreMenu();
-    return;
-  }
-  
-  const moreMenu = document.getElementById("mobileMoreMenu");
-  if (moreMenu) moreMenu.classList.remove("open");
-
-  if (tabId === 'create') openCreateNewQuizTab();
-  else switchTab(tabId);
-  setMobileTabActive(tabId);
-}
-
-function setMobileTabActive(tabId) {
-  const bar = document.getElementById("mobileTabBar");
-  if (!bar || !window._mobileVisibleTabs) return;
-
-  // Determine if it's in visible or more
-  let targetVisId = tabId;
-  let inMore = false;
-  if (window._mobileMoreTabs && window._mobileMoreTabs.find(t => t.id === tabId)) {
-    targetVisId = 'more';
-    inMore = true;
-  }
-
-  // Always mark the classes immediately for visible tabs
-  window._mobileVisibleTabs.forEach(t => {
-    const btn = document.getElementById("mtab-" + t.id);
-    if (btn) btn.classList.toggle("active", t.id === targetVisId);
-  });
-
-  // Mark classes for more menu items
-  if (window._mobileMoreTabs) {
-    window._mobileMoreTabs.forEach(t => {
-      const mbtn = document.getElementById("mmtab-" + t.id);
-      if (mbtn) mbtn.classList.toggle("active", t.id === tabId);
-    });
-  }
-
-  // Defer the pixel calculation until the bar is actually rendered & has a real width
-  function applyPosition() {
-    const barWidth = bar.offsetWidth;
-    if (!barWidth) {
-      // Bar not yet visible — retry on next paint
-      requestAnimationFrame(applyPosition);
-      return;
-    }
-    const idx = window._mobileVisibleTabs.findIndex(t => t.id === targetVisId);
-    const count = window._mobileVisibleTabs.length;
-    if (idx >= 0) {
-      const tabWidth = barWidth / count;
-      const activeX  = (idx * tabWidth) + (tabWidth / 2);
-      document.documentElement.style.setProperty("--active-x", `${activeX}px`);
-      // Also set it on the bar element itself for specificity
-      bar.style.setProperty("--active-x", `${activeX}px`);
-    }
-  }
-  requestAnimationFrame(applyPosition);
-}
+/* Obsolete mobile tab bar scripts removed */
 
 function toggleProfileDropdown() {
   const dd = document.getElementById('profileDropdown');
@@ -5140,7 +4983,37 @@ function switchTab(tabId, navEl, fromPopState = false) {
   document.querySelectorAll('.fab-item-label:not(.logout-item)').forEach(el => el.classList.remove('active-item'));
   const activeFabLabel = document.getElementById('fab-label-' + tabId);
   if (activeFabLabel) activeFabLabel.classList.add('active-item');
-  setMobileTabActive(tabId);
+  
+  // Mobile UI Sync
+  const mobMainHeader = document.getElementById('mob-header-main');
+  const mobBackHeader = document.getElementById('mob-header-back');
+  const mobPageTitle = document.getElementById('mob-page-title-text');
+  
+  if (mobMainHeader && mobBackHeader) {
+    if (window.innerWidth <= 768) {
+      if (tabId === 'overview') {
+        mobMainHeader.style.display = 'flex';
+        mobBackHeader.style.display = 'none';
+      } else {
+        mobMainHeader.style.display = 'none';
+        mobBackHeader.style.display = 'flex';
+        let title = "Dashboard";
+        if (dLink) {
+          title = dLink.innerText.trim();
+        } else {
+          switch(tabId) {
+            case 'create': title = "Create Quiz"; break;
+            case 'epb': title = "Exam Builder"; break;
+            case 'qbank': title = "Question Bank"; break;
+            case 'forms': title = "Create Form"; break;
+            default: title = "Dashboard";
+          }
+        }
+        if (mobPageTitle) mobPageTitle.innerText = title;
+      }
+    }
+  }
+
   if (tabId === 'essays') { loadPendingEssays(); }
   else if (tabId === 'students') { loadStudentsList(); }
   else if (tabId === 'qbank') { loadQuestionBank(); }
