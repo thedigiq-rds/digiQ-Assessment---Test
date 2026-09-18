@@ -4148,16 +4148,33 @@ document.addEventListener('focusout', function(e) {
   }
   </style>
 
+  <div class="page-heading" style="display:none;"><i class="ti ti-forms"></i> Create Forms</div>
   <!-- Header -->
-  <div class="cfb-header">
-    <div class="cfb-title" id="cfb-view-title"><i class="ti ti-forms"></i> Create Form</div>
+  <div class="cfb-header" style="flex-direction: column; align-items: flex-start; gap: 16px;">
+    <div class="cfb-title" id="cfb-view-title"><i class="ti ti-forms"></i> Create Forms</div>
     <div style="display:flex; gap:8px; flex-wrap:wrap;" id="cfb-header-actions">
+      <button class="cfb-btn cfb-btn-outline" onclick="cfbLoadForms()"><i class="ti ti-list"></i> My Forms</button>
       <button class="cfb-btn cfb-btn-primary" onclick="cfbNewForm()"><i class="ti ti-plus"></i> New Form</button>
     </div>
   </div>
 
   <!-- View container — shows either the list or the editor -->
   <div id="cfb-view-list">
+    <div class="filter-bar" style="margin-bottom: 20px;">
+      <div class="search-wrap f-search" style="margin-bottom:0; position:relative;">
+        <span class="search-icon" style="position:absolute; left:12px; top:50%; transform:translateY(-50%);"><i class="ti ti-search"></i></span>
+        <input type="text" id="cfb-search" placeholder="Search title or description..." oninput="filterCFBForms()" style="border:none;background:transparent;width:100%;outline:none;padding:8px 8px 8px 36px;">
+      </div>
+      <select id="cfb-status-filter" class="f-select-sm" onchange="filterCFBForms()">
+        <option value="">All Status</option>
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+        <option value="closed">Closed</option>
+      </select>
+      <input type="date" id="cfb-date-from" class="f-input-date" onchange="filterCFBForms()" title="From Date">
+      <input type="date" id="cfb-date-to" class="f-input-date" onchange="filterCFBForms()" title="To Date">
+      <button class="btn-clear-filter" onclick="clearCFBFilters()">Clear Filters</button>
+    </div>
     <div id="cfb-forms-list-grid" class="cfb-grid">
       <div class="cfb-empty">
         <div class="cfb-empty-icon"><i class="ti ti-forms"></i></div>
@@ -8825,6 +8842,8 @@ window.switchTab = function(tabId, el) {
   if (tabId === 'forms') cfbLoadForms();
 };
 
+window.allCFBForms = [];
+
 function cfbLoadForms() {
   const grid = document.getElementById('cfb-forms-list-grid');
   grid.innerHTML = '<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-loader ti-spin"></i></div><div class="cfb-empty-title">Loading forms...</div></div>';
@@ -8832,42 +8851,76 @@ function cfbLoadForms() {
 
   google.script.run.withSuccessHandler(res => {
     if (!res.success) { grid.innerHTML = `<div class="cfb-empty">Error loading forms.</div>`; return; }
-    
-    const forms = res.data;
-    if (forms.length === 0) {
-      grid.innerHTML = `
-        <div class="cfb-empty" style="grid-column: 1/-1;">
-          <div class="cfb-empty-icon"><i class="ti ti-forms"></i></div>
-          <div class="cfb-empty-title">No Forms Found</div>
-          <div class="cfb-empty-sub">Click "New Form" to create one.</div>
-          <button class="cfb-btn cfb-btn-primary" style="margin-top:16px;" onclick="cfbNewForm()">New Form</button>
-        </div>`;
-      return;
-    }
-
-    let html = '';
-    forms.forEach(f => {
-      let pillClass = 'cfb-pill-draft';
-      if (f.status === 'published') pillClass = 'cfb-pill-published';
-      else if (f.status === 'closed') pillClass = 'cfb-pill-closed';
-
-      html += `
-        <div class="cfb-card" onclick="cfbEditForm('${f.id}')">
-          <div class="cfb-card-top">
-            <div class="cfb-card-title">${f.title || 'Untitled Form'}</div>
-            <div class="cfb-pill ${pillClass}">${f.status}</div>
-          </div>
-          <div class="cfb-card-desc">${(f.description || '').substring(0,80)}${f.description && f.description.length > 80 ? '...' : ''}</div>
-          <div class="cfb-card-meta">
-            <span><i class="ti ti-database"></i> ${f.responseCount || 0} Responses</span>
-            <span><i class="ti ti-calendar"></i> ${new Date(f.updatedAt).toLocaleDateString()}</span>
-          </div>
-        </div>`;
-    });
-    grid.innerHTML = html;
+    window.allCFBForms = res.data || [];
+    renderCFBForms(window.allCFBForms);
   }).withFailureHandler(err => {
     grid.innerHTML = `<div class="cfb-empty">Network error.</div>`;
   }).getForms();
+}
+
+function renderCFBForms(forms) {
+  const grid = document.getElementById('cfb-forms-list-grid');
+  if (!forms || forms.length === 0) {
+    grid.innerHTML = `
+      <div class="cfb-empty" style="grid-column: 1/-1;">
+        <div class="cfb-empty-icon"><i class="ti ti-forms"></i></div>
+        <div class="cfb-empty-title">No Forms Found</div>
+        <div class="cfb-empty-sub">Click "New Form" to create one.</div>
+        <button class="cfb-btn cfb-btn-primary" style="margin-top:16px;" onclick="cfbNewForm()">New Form</button>
+      </div>`;
+    return;
+  }
+  let html = '';
+  forms.forEach(f => {
+    let pillClass = 'cfb-pill-draft';
+    if (f.status === 'published') pillClass = 'cfb-pill-published';
+    else if (f.status === 'closed') pillClass = 'cfb-pill-closed';
+    html += `
+      <div class="cfb-card" onclick="cfbEditForm('${f.id}')">
+        <div class="cfb-card-top">
+          <div class="cfb-card-title">${f.title || 'Untitled Form'}</div>
+          <div class="cfb-pill ${pillClass}">${f.status}</div>
+        </div>
+        <div class="cfb-card-desc">${(f.description || '').substring(0,80)}${f.description && f.description.length > 80 ? '...' : ''}</div>
+        <div class="cfb-card-meta">
+          <span><i class="ti ti-database"></i> ${f.responseCount || 0} Responses</span>
+          <span><i class="ti ti-calendar"></i> ${new Date(f.updatedAt).toLocaleDateString()}</span>
+        </div>
+      </div>`;
+  });
+  grid.innerHTML = html;
+}
+
+function filterCFBForms() {
+  const q = document.getElementById('cfb-search').value.toLowerCase();
+  const status = document.getElementById('cfb-status-filter').value;
+  const dFrom = document.getElementById('cfb-date-from').value;
+  const dTo = document.getElementById('cfb-date-to').value;
+  
+  let filtered = window.allCFBForms || [];
+  if (q) {
+    filtered = filtered.filter(f => (f.title || '').toLowerCase().includes(q) || (f.description || '').toLowerCase().includes(q));
+  }
+  if (status) {
+    filtered = filtered.filter(f => f.status === status);
+  }
+  if (dFrom) {
+    const fromTime = new Date(dFrom).setHours(0,0,0,0);
+    filtered = filtered.filter(f => new Date(f.updatedAt).setHours(0,0,0,0) >= fromTime);
+  }
+  if (dTo) {
+    const toTime = new Date(dTo).setHours(0,0,0,0);
+    filtered = filtered.filter(f => new Date(f.updatedAt).setHours(0,0,0,0) <= toTime);
+  }
+  renderCFBForms(filtered);
+}
+
+function clearCFBFilters() {
+  document.getElementById('cfb-search').value = '';
+  document.getElementById('cfb-status-filter').value = '';
+  document.getElementById('cfb-date-from').value = '';
+  document.getElementById('cfb-date-to').value = '';
+  renderCFBForms(window.allCFBForms);
 }
 
 // ─── NAVIGATION ───
@@ -8875,8 +8928,9 @@ function cfbLoadForms() {
 function cfbSwitchToListView() {
   document.getElementById('cfb-view-list').style.display = 'block';
   document.getElementById('cfb-view-editor').style.display = 'none';
-  document.getElementById('cfb-view-title').innerHTML = '<i class="ti ti-forms"></i> Manage Forms';
+  document.getElementById('cfb-view-title').innerHTML = '<i class="ti ti-forms"></i> Create Forms';
   document.getElementById('cfb-header-actions').innerHTML = `
+    <button class="cfb-btn cfb-btn-outline" onclick="cfbLoadForms()"><i class="ti ti-list"></i> My Forms</button>
     <button class="cfb-btn cfb-btn-primary" onclick="cfbNewForm()"><i class="ti ti-plus"></i> New Form</button>
   `;
 }
