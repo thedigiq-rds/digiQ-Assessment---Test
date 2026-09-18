@@ -87,7 +87,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     try {
       data = JSON.parse(text);
     } catch (e) {
-      throw new Error("Server returned an invalid response (not JSON). Please try again later.");
+      throw new Error("Network error or Google blocked the request. Please try connecting via Wi-Fi or try again later.");
     }
     if (data.success && onSuccess) onSuccess(data.result);
     else if (!data.success && onFailure) {
@@ -2052,7 +2052,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     font-family: 'Poppins', 'Inter', sans-serif; font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em;
     margin-bottom: 5px; line-height: 1.2;
     background: linear-gradient(135deg, #a5b4fc 0%, #67e8f9 50%, #818cf8 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;
   }
   .sd-brand-name { color: #e2e8f0; font-size: 0.9rem; font-weight: 400; }
   .sd-brand-sub  { color: var(--teal-lt); font-size: 0.8rem; margin-top: 4px; font-weight: 300; letter-spacing: 0.04em; }
@@ -2210,6 +2210,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     .sd-page-heading { padding: 20px 20px 5px; font-size:1.4rem; }
     .sd-page-desc { padding: 0 20px 15px; }
     .sd-content-area { padding: 0 20px 30px; }
+  }
   /* ═════════ MOBILE REDESIGN ═════════ */
   
   .mobile-top-bar {
@@ -2255,7 +2256,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     .sd-header { display: none !important; }
     
     /* App Shell */
-    .mobile-top-bar { display: none !important; }
+    .mobile-top-bar { display: flex !important; }
     
     /* Mobile Dashboard */
     #mob-student-dash { display: flex !important; flex-direction: column; padding: 12px; background: #fafafc; min-height: 100vh; overflow-y: auto; }
@@ -2445,22 +2446,24 @@ function callBackend(action, args, onSuccess, onFailure) {
                </div>
              </div>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
-            <div>
-              <div style="font-size:1.4rem; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px;"><i class="ti ti-activity"></i> Live Exams</div>
-            </div>
-            <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(4px); padding:8px 16px; border-radius:12px; display:flex; align-items:center; gap:16px; border:1px solid var(--main-border); box-shadow:0 2px 6px rgba(0,0,0,0.04);">
-              <div style="font-size:0.85rem;">
-                <span class="refresh-dot" style="display:inline-block;vertical-align:middle;margin-right:7px;"></span>
-                <strong style="color:#0f172a; font-weight:700;">Live Dashboard</strong> <span style="color:var(--text-muted);">&nbsp;·&nbsp; Updated <span id="sd-last-refresh-time">Loading…</span></span>
+          <div class="desktop-tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
+              <div>
+                <div style="font-size:1.4rem; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px;"><i class="ti ti-activity"></i> Live Exams</div>
               </div>
-              <button class="btn-primary-admin" onclick="loadStudentDashboard()" style="padding:7px 14px; font-size:0.85rem; border-radius:8px; display:flex; align-items:center; gap:6px;">
-                <i class="ti ti-refresh"></i> Refresh
-              </button>
+              <div style="background:rgba(255,255,255,0.7); backdrop-filter:blur(4px); padding:8px 16px; border-radius:12px; display:flex; align-items:center; gap:16px; border:1px solid var(--main-border); box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+                <div style="font-size:0.85rem;">
+                  <span class="refresh-dot" style="display:inline-block;vertical-align:middle;margin-right:7px;"></span>
+                  <strong style="color:#0f172a; font-weight:700;">Live Dashboard</strong> <span style="color:var(--text-muted);">&nbsp;·&nbsp; Updated <span id="sd-last-refresh-time">Loading…</span></span>
+                </div>
+                <button class="btn-primary-admin" onclick="loadStudentDashboard()" style="padding:7px 14px; font-size:0.85rem; border-radius:8px; display:flex; align-items:center; gap:6px;">
+                  <i class="ti ti-refresh"></i> Refresh
+                </button>
+              </div>
             </div>
-          </div>
-          <div class="sd-grid" id="sd-live-grid">
-            <div style="color:var(--text-muted); font-size:0.9rem;">Loading live exams...</div>
+            <div class="sd-grid" id="sd-live-grid">
+              <div style="color:var(--text-muted); font-size:0.9rem;">Loading live exams...</div>
+            </div>
           </div>
         </div>
 
@@ -4279,17 +4282,15 @@ function callBackend(action, args, onSuccess, onFailure) {
   // ═══════════════════════════════════════════════════════
   // STUDENT APP FEEDBACK JS
   // ═══════════════════════════════════════════════════════
-  let apfbCurrentRating = 0;
+  let apfbCurrentRating = 5;
   
   function openStudentFeedbackModal() {
     // Reset modal
-    apfbCurrentRating = 0;
-    document.querySelectorAll('.apfb-star').forEach(s => s.classList.remove('lit'));
-    document.querySelectorAll('.apfb-cat').forEach(c => c.classList.remove('selected'));
-    document.querySelector('.apfb-cat').classList.add('selected'); // Select 'General' by default
-    document.getElementById('apfb-message').value = '';
-    
     document.getElementById('apfb-overlay').classList.add('active');
+    apfbSetRating(5);
+    document.querySelectorAll('.apfb-cat').forEach(c => c.classList.remove('selected'));
+    document.querySelector('.apfb-cat[data-cat="General"]').classList.add('selected');
+    document.getElementById('apfb-message').value = '';
     
     // Attempt to close mobile sidebar if open
     if(window.innerWidth <= 768) {
