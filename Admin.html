@@ -8086,7 +8086,17 @@ if (typeof window.switchTab === 'function' && !window._switchTabHooked) {
     const target = document.getElementById('tab-' + tabId);
     if (target) {
       const heading = target.querySelector('.page-heading');
-      if (heading) document.getElementById('topBarTitle').innerHTML = heading.innerHTML;
+      if (heading) {
+        document.getElementById('topBarTitle').innerHTML = heading.innerHTML;
+        
+        const mobTitleText = document.getElementById('mob-page-title-text');
+        const mobIcon = document.getElementById('mob-page-icon');
+        if (mobTitleText) mobTitleText.textContent = heading.textContent.trim();
+        if (mobIcon) {
+          const headingIcon = heading.querySelector('i');
+          if (headingIcon) mobIcon.className = headingIcon.className;
+        }
+      }
     }
   };
   window._switchTabHooked = true;
