@@ -2398,6 +2398,95 @@ function callBackend(action, args, onSuccess, onFailure) {
     .mob-card-small { padding: 16px; margin-bottom: 0; }
     .mob-card-small .mob-card-icon { width: 38px; height: 38px; font-size: 1.2rem; border-radius: 12px; margin-bottom: 10px; }
     .mob-card-small .mob-card-title { font-size: 0.95rem; margin-bottom: 4px; }
+
+    /* Mobile dashboard operation groups — visual structure only; each card
+       keeps its existing icon, text, and action. */
+    .mob-dashboard-group {
+      --group-bg: #f4f8ff;
+      --group-border: #d8e6fb;
+      --group-accent: #2563eb;
+      --group-icon-bg: #e0edff;
+      --group-orb: rgba(37, 99, 235, 0.1);
+      position: relative;
+      isolation: isolate;
+      margin-bottom: 18px;
+      padding: 15px;
+      overflow: hidden;
+      border: 1px solid var(--group-border);
+      border-radius: 20px;
+      background: linear-gradient(145deg, #ffffff 0%, var(--group-bg) 100%);
+      box-shadow: 0 5px 16px rgba(15, 23, 42, 0.045);
+    }
+    .mob-dashboard-group--insights {
+      --group-bg: #faf5ff;
+      --group-border: #e9d8fd;
+      --group-accent: #7c3aed;
+      --group-icon-bg: #f0e6ff;
+      --group-orb: rgba(124, 58, 237, 0.1);
+    }
+    .mob-dashboard-group--people {
+      --group-bg: #effcf6;
+      --group-border: #cbeedc;
+      --group-accent: #059669;
+      --group-icon-bg: #dff8eb;
+      --group-orb: rgba(5, 150, 105, 0.1);
+    }
+    .mob-dashboard-group::after {
+      content: '';
+      position: absolute;
+      top: -62px;
+      right: -45px;
+      z-index: 0;
+      width: 138px;
+      height: 138px;
+      border: 20px solid var(--group-orb);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .mob-dashboard-group .mob-section-title {
+      position: relative;
+      z-index: 1;
+      margin: 0 0 12px;
+      color: var(--group-accent);
+      font-size: 0.76rem;
+      letter-spacing: 0.07em;
+    }
+    .mob-dashboard-group .mob-card-grid {
+      position: relative;
+      z-index: 1;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0;
+    }
+    /* An odd final card fills the remaining row. When another card is added,
+       this selector no longer matches and the grid balances itself again. */
+    .mob-dashboard-group .mob-card-grid > .mob-card:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+    }
+    .mob-dashboard-group .mob-card {
+      min-height: 108px;
+      margin: 0;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.88);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.07);
+    }
+    .mob-dashboard-group .mob-card .mob-card-icon {
+      width: 36px;
+      height: 36px;
+      margin-bottom: auto;
+      border-radius: 11px;
+      background: var(--group-icon-bg);
+      color: var(--group-accent);
+    }
+    .mob-dashboard-group .mob-card .mob-card-title {
+      margin: 10px 0 0;
+      color: #172033;
+      font-size: 0.88rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
     
     /* Main Content adjustments */
     .main-content { width: 100% !important; margin: 0; border: none; border-radius: 0; box-shadow: none; background: #fafafc; flex: 1; flex-direction: column; overflow-y: auto; overflow-x: hidden; padding: 0 !important; }
@@ -2870,53 +2959,59 @@ document.addEventListener('focusout', function(e) {
              <div class="mob-welcome-title">Hello, <span id="mob-admin-name-header">Admin</span> 👋</div>
            </div>
            
-           <div class="mob-section-title">Core Operations</div>
-           <div class="mob-card-grid">
-             <div class="mob-card mob-card-small surface-blue" onclick="openCreateNewQuizTab()">
-               <div class="mob-card-icon"><i class="ti ti-plus"></i></div>
-               <div class="mob-card-title">Create Quiz</div>
+           <section class="mob-dashboard-group mob-dashboard-group--operations">
+             <div class="mob-section-title">Core Operations</div>
+             <div class="mob-card-grid">
+               <div class="mob-card mob-card-small surface-blue" onclick="openCreateNewQuizTab()">
+                 <div class="mob-card-icon"><i class="ti ti-plus"></i></div>
+                 <div class="mob-card-title">Create Quiz</div>
+               </div>
+               <div class="mob-card mob-card-small surface-purple" onclick="switchTab('manage')">
+                 <div class="mob-card-icon"><i class="ti ti-list-check"></i></div>
+                 <div class="mob-card-title">Manage Quizzes</div>
+               </div>
+               <div class="mob-card mob-card-small surface-pink" onclick="switchTab('essays')">
+                 <div class="mob-card-icon"><i class="ti ti-pencil"></i></div>
+                 <div class="mob-card-title">Essay Grading</div>
+               </div>
+               <div class="mob-card mob-card-small surface-mint" onclick="switchTab('epb')">
+                 <div class="mob-card-icon"><i class="ti ti-file-text"></i></div>
+                 <div class="mob-card-title">Exam Builder</div>
+               </div>
+               <div class="mob-card mob-card-small surface-peach" onclick="switchTab('qbank')">
+                 <div class="mob-card-icon"><i class="ti ti-database"></i></div>
+                 <div class="mob-card-title">Question Bank</div>
+               </div>
              </div>
-             <div class="mob-card mob-card-small surface-purple" onclick="switchTab('manage')">
-               <div class="mob-card-icon"><i class="ti ti-list-check"></i></div>
-               <div class="mob-card-title">Manage Quizzes</div>
-             </div>
-             <div class="mob-card mob-card-small surface-pink" onclick="switchTab('essays')">
-               <div class="mob-card-icon"><i class="ti ti-pencil"></i></div>
-               <div class="mob-card-title">Essay Grading</div>
-             </div>
-             <div class="mob-card mob-card-small surface-mint" onclick="switchTab('epb')">
-               <div class="mob-card-icon"><i class="ti ti-file-text"></i></div>
-               <div class="mob-card-title">Exam Builder</div>
-             </div>
-             <div class="mob-card mob-card-small surface-peach" style="grid-column: span 2;" onclick="switchTab('qbank')">
-               <div class="mob-card-icon"><i class="ti ti-database"></i></div>
-               <div class="mob-card-title">Question Bank</div>
-             </div>
-           </div>
+           </section>
 
-           <div class="mob-section-title">Insights &amp; Forms</div>
-           <div class="mob-card-grid">
-             <div class="mob-card mob-card-small surface-blue" onclick="switchTab('reports')">
-               <div class="mob-card-icon"><i class="ti ti-chart-line"></i></div>
-               <div class="mob-card-title">Analytics</div>
+           <section class="mob-dashboard-group mob-dashboard-group--insights">
+             <div class="mob-section-title">Insights &amp; Forms</div>
+             <div class="mob-card-grid">
+               <div class="mob-card mob-card-small surface-blue" onclick="switchTab('reports')">
+                 <div class="mob-card-icon"><i class="ti ti-chart-line"></i></div>
+                 <div class="mob-card-title">Analytics</div>
+               </div>
+               <div class="mob-card mob-card-small surface-peach" onclick="switchTab('forms')">
+                 <div class="mob-card-icon"><i class="ti ti-forms"></i></div>
+                 <div class="mob-card-title">Create Form</div>
+               </div>
              </div>
-             <div class="mob-card mob-card-small surface-peach" onclick="switchTab('forms')">
-               <div class="mob-card-icon"><i class="ti ti-forms"></i></div>
-               <div class="mob-card-title">Create Form</div>
-             </div>
-           </div>
+           </section>
 
-           <div class="mob-section-title">People &amp; Administration</div>
-           <div class="mob-card-grid">
-             <div class="mob-card mob-card-small surface-purple" id="mob-card-students" onclick="switchTab('students')">
-               <div class="mob-card-icon"><i class="ti ti-school"></i></div>
-               <div class="mob-card-title">Students</div>
+           <section class="mob-dashboard-group mob-dashboard-group--people">
+             <div class="mob-section-title">People &amp; Administration</div>
+             <div class="mob-card-grid">
+               <div class="mob-card mob-card-small surface-purple" id="mob-card-students" onclick="switchTab('students')">
+                 <div class="mob-card-icon"><i class="ti ti-school"></i></div>
+                 <div class="mob-card-title">Students</div>
+               </div>
+               <div class="mob-card mob-card-small surface-pink" id="mob-card-subadmins" onclick="switchTab('subadmins')">
+                 <div class="mob-card-icon"><i class="ti ti-users"></i></div>
+                 <div class="mob-card-title">Sub-Admins</div>
+               </div>
              </div>
-             <div class="mob-card mob-card-small surface-pink" id="mob-card-subadmins" onclick="switchTab('subadmins')">
-               <div class="mob-card-icon"><i class="ti ti-users"></i></div>
-               <div class="mob-card-title">Sub-Admins</div>
-             </div>
-           </div>
+           </section>
 
            <!-- Dashboard Statistics included in mobile view -->
            <div class="mob-section-title">Dashboard Statistics</div>
