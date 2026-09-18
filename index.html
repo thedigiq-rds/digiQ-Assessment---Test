@@ -2201,10 +2201,91 @@ function callBackend(action, args, onSuccess, onFailure) {
     .sd-page-heading { padding: 20px 20px 5px; font-size:1.4rem; }
     .sd-page-desc { padding: 0 20px 15px; }
     .sd-content-area { padding: 0 20px 30px; }
+  /* ═════════ MOBILE REDESIGN ═════════ */
+  .mob-header, #mob-student-dash, .mob-page-header { display: none; }
+  
+  @media (max-width: 768px) {
+    /* Hide old nav */
+    .sd-mobile-bar { display: none !important; }
+    .sd-sidebar { display: none !important; }
+    
+    /* App Shell */
+    .mob-header { display: flex !important; align-items: center; justify-content: space-between; padding: 12px 20px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #f0f0f5; position: sticky; top: 0; z-index: 100; padding-top: env(safe-area-inset-top, 12px); }
+    .mob-header-logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); font-family: 'Poppins', sans-serif; letter-spacing: -0.5px; }
+    .mob-header-actions { display: flex; gap: 12px; align-items: center; }
+    .mob-avatar { width: 38px; height: 38px; border-radius: 50%; background: #f0f1ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; border: 1.5px solid #e0e4ff; }
+    
+    /* Mobile Dashboard */
+    #mob-student-dash { display: flex !important; flex-direction: column; padding: 20px; background: #fafafc; min-height: 100vh; overflow-y: auto; }
+    .mob-welcome { margin-bottom: 24px; }
+    .mob-welcome-title { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1.25; font-family: 'Poppins', sans-serif; }
+    .mob-welcome-sub { font-size: 0.95rem; color: var(--text-muted); margin-top: 4px; }
+    
+    /* Modern Rounded Cards */
+    .mob-card { background: #fff; border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.03); margin-bottom: 16px; position: relative; display: flex; flex-direction: column; cursor: pointer; border: 1px solid #f2f2f5; transition: transform 0.15s, box-shadow 0.15s; }
+    .mob-card:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+    .mob-card-icon { width: 48px; height: 48px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 14px; }
+    .mob-card-icon.blue { background: #eef2ff; color: #4f46e5; }
+    .mob-card-icon.purple { background: #f3e8ff; color: #9333ea; }
+    .mob-card-icon.mint { background: #ecfdf5; color: #10b981; }
+    .mob-card-icon.peach { background: #fff7ed; color: #ea580c; }
+    .mob-card-title { font-size: 1.15rem; font-weight: 700; color: var(--text); margin-bottom: 6px; font-family: 'Poppins', sans-serif; }
+    .mob-card-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
+    .mob-card-arrow { position: absolute; right: 20px; bottom: 20px; color: var(--text-muted); font-size: 1.2rem; }
+    
+    .mob-card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .mob-card-small { padding: 18px; margin-bottom: 0; }
+    .mob-card-small .mob-card-icon { width: 40px; height: 40px; font-size: 1.2rem; border-radius: 12px; margin-bottom: 12px; }
+    .mob-card-small .mob-card-title { font-size: 0.95rem; margin-bottom: 4px; }
+    
+    /* Contextual View Layer */
+    .sd-wrapper { flex-direction: column; }
+    .sd-main { display: none; width: 100%; margin: 0; border: none; border-radius: 0; box-shadow: none; background: #fafafc; flex: 1; flex-direction: column; overflow-y: auto; padding: 0 !important; }
+    .mob-page-active .sd-main { display: flex !important; }
+    .mob-page-active #mob-student-dash { display: none !important; }
+    
+    .mob-page-header { display: flex !important; align-items: center; gap: 14px; padding: 12px 20px; background: #fff; border-bottom: 1px solid #f0f0f5; position: sticky; top: 0; z-index: 10; padding-top: env(safe-area-inset-top, 12px); }
+    .mob-back-btn { width: 38px; height: 38px; border-radius: 50%; background: #f5f5f7; display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 1.2rem; cursor: pointer; border: none; transition: background 0.15s; }
+    .mob-back-btn:active { background: #e5e5e8; }
+    .mob-page-title { font-size: 1.2rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: var(--text); flex: 1; margin: 0; }
+    
+    /* Hide Desktop page headings on mobile */
+    .sd-page-heading { display: none !important; }
+    .sd-page-desc { display: none !important; }
+    .sd-content-area { padding: 20px !important; }
+    
+    /* Profile Mobile Screen */
+    .mob-profile-overlay { position: fixed; inset: 0; background: #fafafc; z-index: 9999; display: none; flex-direction: column; padding-top: env(safe-area-inset-top, 0); overflow-y: auto; }
+    .mob-profile-overlay.active { display: flex; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .mob-profile-header { display: flex; align-items: center; padding: 16px 20px; }
+    .mob-profile-title { flex: 1; text-align: center; font-size: 1.15rem; font-weight: 700; font-family: 'Poppins', sans-serif; margin-right: 38px; }
+    
+    .mob-profile-card { background: #fff; margin: 0 20px 20px; border-radius: 20px; padding: 24px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f2f2f5; }
+    .mob-profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: #eef2ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin-bottom: 12px; }
+    .mob-profile-name { font-size: 1.3rem; font-weight: 700; color: var(--text); font-family: 'Poppins', sans-serif; }
+    .mob-profile-email { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 16px; }
+    
+    .mob-profile-menu { background: #fff; margin: 0 20px 20px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #f2f2f5; overflow: hidden; }
+    .mob-profile-item { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-bottom: 1px solid #f5f5f5; color: var(--text); font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .mob-profile-item:active { background: #fafafc; }
+    .mob-profile-item:last-child { border-bottom: none; }
+    .mob-profile-item.danger { color: #ef4444; }
+    .mob-profile-icon { font-size: 1.3rem; color: var(--text-muted); }
+    .mob-profile-item.danger .mob-profile-icon { color: #ef4444; }
+    .mob-profile-arrow { margin-left: auto; color: #d1d5db; }
   }
 </style>
 
 <div id="student-dashboard" style="display:none;">
+  <!-- ═════════ MOBILE HEADER ═════════ -->
+  <div class="mob-header">
+    <div class="mob-header-logo">digiQ</div>
+    <div class="mob-header-actions">
+      <div class="mob-avatar" onclick="openMobStudentProfile()"><i class="ti ti-user"></i></div>
+    </div>
+  </div>
+
   <div class="sd-wrapper">
     <!-- Desktop Sidebar -->
     <div class="sd-sidebar">
@@ -2223,18 +2304,47 @@ function callBackend(action, args, onSuccess, onFailure) {
           <a class="nav-link active" id="sd-nav-live" onclick="switchStudentTab('live', this)"><span class="nav-icon"><i class="ti ti-activity"></i></span>Live Exams</a>
           <a class="nav-link" id="sd-nav-past" onclick="switchStudentTab('past', this)"><span class="nav-icon"><i class="ti ti-history"></i></span>History</a>
           <a class="nav-link" id="sd-nav-settings" onclick="switchStudentTab('settings', this)"><span class="nav-icon"><i class="ti ti-settings"></i></span>Change Password</a>
+          <a class="nav-link" id="sd-nav-feedback" onclick="openStudentFeedbackModal()"><span class="nav-icon"><i class="ti ti-message-star"></i></span>App Feedback</a>
           
           <a class="nav-link nav-link-danger" onclick="logoutStudent()" style="margin-top:auto;"><span class="nav-icon"><i class="ti ti-logout"></i></span>Logout</a>
         </nav>
       </div>
     </div>
 
+    <!-- ═════════ MOBILE DASHBOARD ═════════ -->
+    <div id="mob-student-dash">
+       <div class="mob-welcome">
+         <div class="mob-welcome-title">Good morning,<br><span id="mob-student-name-header">Student</span> 👋</div>
+         <div class="mob-welcome-sub">Ready to learn something new today?</div>
+       </div>
+       
+       <div class="mob-card" onclick="mobSwitchStudentTab('live', 'Live Exams')">
+         <div class="mob-card-icon blue"><i class="ti ti-activity"></i></div>
+         <div class="mob-card-title">Live Exams</div>
+         <div class="mob-card-desc">Check for ongoing assessments</div>
+         <div class="mob-card-arrow"><i class="ti ti-arrow-right"></i></div>
+       </div>
+       
+       <div class="mob-card" onclick="mobSwitchStudentTab('past', 'History')">
+         <div class="mob-card-icon purple"><i class="ti ti-history"></i></div>
+         <div class="mob-card-title">History</div>
+         <div class="mob-card-desc">View your past assessment performance</div>
+         <div class="mob-card-arrow"><i class="ti ti-arrow-right"></i></div>
+       </div>
+    </div>
+
     <!-- Main Content -->
     <div class="sd-main">
+      <!-- ═════════ MOBILE CONTEXTUAL HEADER ═════════ -->
+      <div class="mob-page-header">
+        <button class="mob-back-btn" onclick="mobGoBackStudent()"><i class="ti ti-arrow-left"></i></button>
+        <h2 class="mob-page-title" id="mob-page-title-text">Live Exams</h2>
+      </div>
+
       <div class="sd-page-heading">Welcome, <span id="sd-student-name" style="color:var(--primary);">Student</span></div>
       <div class="sd-page-desc" id="sd-student-details">Your personal dashboard for assessments and history.</div>
       
-      <div class="sd-content-area">
+      <div class="sd-content-area" id="sd-content-area">
         <!-- Live Tab -->
         <div id="tab-sd-live" style="display:block;">
           <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
@@ -2317,11 +2427,96 @@ function callBackend(action, args, onSuccess, onFailure) {
           <svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
           <span class="label">Settings</span>
       </div>
+      <div class="nav-item" id="sd-mtab-feedback" onclick="openStudentFeedbackModal()">
+          <svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          <span class="label">Feedback</span>
+      </div>
       <div class="nav-item" id="sd-mtab-logout" onclick="logoutStudent()">
           <svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
           <span class="label">Logout</span>
       </div>
     </nav>
+  </div>
+</div>
+
+<!-- ═════════ MOBILE PROFILE OVERLAY ═════════ -->
+<div class="mob-profile-overlay" id="mob-profile-overlay">
+  <div class="mob-profile-header">
+    <button class="mob-back-btn" onclick="closeMobStudentProfile()"><i class="ti ti-arrow-left"></i></button>
+    <div class="mob-profile-title">Profile</div>
+  </div>
+  
+  <div class="mob-profile-card">
+    <div class="mob-profile-avatar"><i class="ti ti-user"></i></div>
+    <div class="mob-profile-name" id="mob-profile-name-text">Student Name</div>
+    <div class="mob-profile-email" id="mob-profile-email-text">student@example.com</div>
+  </div>
+  
+  <div class="mob-profile-menu">
+    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Change Password'); closeMobStudentProfile();">
+      <i class="ti ti-settings mob-profile-icon"></i>
+      Change Password
+      <i class="ti ti-chevron-right mob-profile-arrow"></i>
+    </div>
+    <div class="mob-profile-item" onclick="openStudentFeedbackModal(); closeMobStudentProfile();">
+      <i class="ti ti-message-star mob-profile-icon"></i>
+      App Feedback
+      <i class="ti ti-chevron-right mob-profile-arrow"></i>
+    </div>
+    <div class="mob-profile-item danger" onclick="logoutStudent()">
+      <i class="ti ti-logout mob-profile-icon"></i>
+      Logout
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ STUDENT APP FEEDBACK MODAL ══════════ -->
+<style>
+.apfb-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(4px); z-index:9999; display:none; align-items:center; justify-content:center; }
+.apfb-overlay.active { display:flex; }
+.apfb-card { background:#fff; border-radius:20px; padding:32px; width:100%; max-width:480px; box-shadow:0 24px 60px rgba(0,0,0,0.18); animation:fadeUp 0.3s ease; position:relative; }
+.apfb-close { position:absolute; top:16px; right:16px; background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--text-muted); }
+.apfb-title  { font-family:'Poppins',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text); margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+.apfb-sub    { font-size:0.85rem; color:var(--text-muted); margin-bottom:20px; }
+.apfb-label  { font-size:0.82rem; font-weight:600; color:var(--text); margin-bottom:5px; display:block; }
+.apfb-stars  { display:flex; gap:6px; margin-bottom:16px; }
+.apfb-star   { font-size:1.8rem; color:#e5e7eb; cursor:pointer; transition:color 0.1s; line-height:1; }
+.apfb-star.lit{ color:#f59e0b; }
+.apfb-cats   { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.apfb-cat    { padding:5px 14px; border-radius:20px; font-size:0.8rem; font-weight:600; cursor:pointer; border:1.5px solid var(--main-border); color:var(--text-muted); transition:0.15s; user-select:none; }
+.apfb-cat.selected { border-color:var(--primary,#6366f1); background:#f0f1ff; color:var(--primary,#6366f1); }
+.apfb-textarea { width:100%; border:1.5px solid var(--main-border); border-radius:10px; padding:10px 14px; font-size:0.88rem; font-family:inherit; resize:vertical; min-height:90px; outline:none; transition:border-color 0.15s; box-sizing:border-box; }
+.apfb-textarea:focus { border-color:var(--primary,#6366f1); }
+.apfb-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
+</style>
+
+<div class="apfb-overlay" id="apfb-overlay">
+  <div class="apfb-card">
+    <button class="apfb-close" onclick="closeStudentFeedbackModal()"><i class="ti ti-x"></i></button>
+    <div class="apfb-title"><i class="ti ti-message-star"></i> App Feedback</div>
+    <div class="apfb-sub">Help us improve digiQ — your feedback goes directly to the developer.</div>
+    <label class="apfb-label">Overall Rating</label>
+    <div class="apfb-stars" id="apfb-stars">
+      <span class="apfb-star" data-v="1" onclick="apfbSetRating(1)">★</span>
+      <span class="apfb-star" data-v="2" onclick="apfbSetRating(2)">★</span>
+      <span class="apfb-star" data-v="3" onclick="apfbSetRating(3)">★</span>
+      <span class="apfb-star" data-v="4" onclick="apfbSetRating(4)">★</span>
+      <span class="apfb-star" data-v="5" onclick="apfbSetRating(5)">★</span>
+    </div>
+    <label class="apfb-label">Category</label>
+    <div class="apfb-cats" id="apfb-cats">
+      <div class="apfb-cat selected" data-cat="General">General</div>
+      <div class="apfb-cat" data-cat="Bug Report">Bug Report</div>
+      <div class="apfb-cat" data-cat="Feature Request">Feature Request</div>
+      <div class="apfb-cat" data-cat="UI Feedback">UI Feedback</div>
+      <div class="apfb-cat" data-cat="Performance">Performance</div>
+    </div>
+    <label class="apfb-label">Your Message</label>
+    <textarea class="apfb-textarea" id="apfb-message" placeholder="Share what's on your mind..." maxlength="2000"></textarea>
+    <div class="apfb-actions">
+      <button class="btn-secondary" onclick="closeStudentFeedbackModal()" style="padding:8px 16px; border-radius:8px;">Cancel</button>
+      <button class="btn-primary" id="apfb-submit-btn" onclick="submitStudentFeedback()" style="padding:8px 16px; border-radius:8px;"><i class="ti ti-send"></i> Submit</button>
+    </div>
   </div>
 </div>
 <!-- ═══════════════════════════════════════════════════════ -->
@@ -3974,6 +4169,120 @@ function callBackend(action, args, onSuccess, onFailure) {
         showModal('Server Error', 'Failed to generate certificate: ' + err.message, 'error');
       })
       .generateCertificateForDownload(certDocId, name, rollNo, score, total, perc, timestampStr);
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // STUDENT APP FEEDBACK JS
+  // ═══════════════════════════════════════════════════════
+  let apfbCurrentRating = 0;
+  
+  function openStudentFeedbackModal() {
+    // Reset modal
+    apfbCurrentRating = 0;
+    document.querySelectorAll('.apfb-star').forEach(s => s.classList.remove('lit'));
+    document.querySelectorAll('.apfb-cat').forEach(c => c.classList.remove('selected'));
+    document.querySelector('.apfb-cat').classList.add('selected'); // Select 'General' by default
+    document.getElementById('apfb-message').value = '';
+    
+    document.getElementById('apfb-overlay').classList.add('active');
+    
+    // Attempt to close mobile sidebar if open
+    if(window.innerWidth <= 768) {
+        document.querySelector('.sd-sidebar').style.transform = 'translateX(-100%)';
+        const overlay = document.getElementById('sd-sidebar-overlay');
+        if(overlay) overlay.style.display = 'none';
+    }
+  }
+
+  function closeStudentFeedbackModal() {
+    document.getElementById('apfb-overlay').classList.remove('active');
+  }
+
+  function apfbSetRating(val) {
+    apfbCurrentRating = val;
+    document.querySelectorAll('.apfb-star').forEach(s => {
+      if (parseInt(s.dataset.v) <= val) {
+        s.classList.add('lit');
+      } else {
+        s.classList.remove('lit');
+      }
+    });
+  }
+
+  // Handle category selection
+  document.querySelectorAll('.apfb-cat').forEach(cat => {
+    cat.addEventListener('click', function() {
+      document.querySelectorAll('.apfb-cat').forEach(c => c.classList.remove('selected'));
+      this.classList.add('selected');
+    });
+  });
+
+  function submitStudentFeedback() {
+    if (apfbCurrentRating === 0) {
+      showModal('Required', 'Please select a star rating.', 'warning');
+      return;
+    }
+    const message = document.getElementById('apfb-message').value.trim();
+    if (!message) {
+      showModal('Required', 'Please enter your feedback message.', 'warning');
+      return;
+    }
+    
+    const category = document.querySelector('.apfb-cat.selected').dataset.cat;
+    
+    const btn = document.getElementById('apfb-submit-btn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="ti ti-loader" style="animation:spin 1s linear infinite;"></i> Submitting...';
+    btn.disabled = true;
+    
+    // We get current student ID and Name from global vars or UI
+    // In student dashboard, we have global userEmail and window.currentStudentId (or similar)
+    // Actually, submitAppFeedback(role, name, email, rating, category, message)
+    const sName = document.getElementById('sd-student-name').innerText;
+    let sEmail = "student@unknown.com"; // Let's try to get email if possible, or just pass user context
+    if(typeof window.studentEmail !== 'undefined') sEmail = window.studentEmail;
+    else if(document.getElementById('sd-email')) sEmail = document.getElementById('sd-email').innerText; // If there's an email element
+    
+    google.script.run
+      .withSuccessHandler(res => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        closeStudentFeedbackModal();
+        showToast('Feedback submitted successfully. Thank you!', 'success');
+      })
+      .withFailureHandler(err => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        showModal('Error', 'Failed to submit feedback: ' + err.message, 'error');
+      })
+      .submitAppFeedback('Student', sName, sEmail, apfbCurrentRating, category, message);
+  }
+  /* ═════════ MOBILE REDESIGN LOGIC ═════════ */
+  function openMobStudentProfile() {
+    document.getElementById('mob-profile-name-text').innerText = document.getElementById('sd-student-name').innerText;
+    document.getElementById('mob-profile-email-text').innerText = window.studentEmailStr || 'Student';
+    document.getElementById('mob-profile-overlay').classList.add('active');
+  }
+
+  function closeMobStudentProfile() {
+    document.getElementById('mob-profile-overlay').classList.remove('active');
+  }
+
+  function mobSwitchStudentTab(tabId, title) {
+    document.getElementById('mob-page-title-text').innerText = title;
+    
+    // Call existing desktop logic to handle content loading
+    let fakeNavElem = document.getElementById('sd-nav-' + tabId);
+    if(fakeNavElem) {
+      switchStudentTab(tabId, fakeNavElem);
+    }
+    
+    // Add mobile page active class to body
+    document.body.classList.add('mob-page-active');
+  }
+
+  function mobGoBackStudent() {
+    document.body.classList.remove('mob-page-active');
   }
 </script>
 </body>
