@@ -2291,7 +2291,6 @@ function callBackend(action, args, onSuccess, onFailure) {
     .mob-back-btn:active { background: rgba(217,119,6,0.2); }
     
     .mob-header-titles { display: flex; flex-direction: column; flex: 1; margin-right: 8px; overflow: hidden; }
-    .mob-college-name { font-size: 0.75rem; color: #b45309; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
     .mob-page-title { font-size: 1.1rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: #d97706; margin: 0; letter-spacing: -0.3px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mob-header-actions { display: flex; align-items: center; gap: 12px; }
     .mob-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(217,119,6,0.1); color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; border: none; padding: 0; }
@@ -2573,7 +2572,7 @@ document.addEventListener('focusout', function(e) {
     <div class="mobile-title-left">
       <div class="mobile-college-name">M. N. College, Visnagar</div>
       <div class="mobile-portal-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-        <i class="ti ti-shield-lock" style="font-size:0.85rem;"></i> digiQ &bull; Admin
+        <i class="ti ti-shield-lock" style="font-size:0.85rem;"></i> digiQ &bull; <span id="mob-role-info">Admin</span>
       </div>
     </div>
     <div style="position:relative; display:flex; align-items:center; flex-shrink:0;">
@@ -2692,7 +2691,6 @@ document.addEventListener('focusout', function(e) {
       <button class="mob-back-btn" id="mob-back-btn" onclick="switchTab('overview')" style="display:none;"><i class="ti ti-arrow-left"></i></button>
       
       <div class="mob-header-titles">
-        <div class="mob-college-name">M. N. College, Visnagar</div>
         <div class="mob-page-title">
           <i class="ti ti-layout-dashboard" id="mob-page-icon"></i>
           <span id="mob-page-title-text">Dashboard</span>
@@ -5039,26 +5037,26 @@ function switchTab(tabId, navEl, fromPopState = false) {
       if (mobBackBtn) mobBackBtn.style.display = 'flex';
       let title = "Dashboard";
       let iconClass = "ti ti-layout-dashboard";
+      let dLink = el;
+      if (!dLink) dLink = document.querySelector(`.sidebar-item[onclick*="'${tabId}'"]`);
         
-        if (dLink) {
-          title = dLink.innerText.trim();
-          let iElem = dLink.querySelector('i');
-          if (iElem) iconClass = iElem.className;
-        } else {
-          switch(tabId) {
-            case 'create': title = "Create Quiz"; iconClass = "ti ti-plus"; break;
-            case 'epb': title = "Exam Builder"; iconClass = "ti ti-file-text"; break;
-            case 'qbank': title = "Question Bank"; iconClass = "ti ti-database"; break;
-            case 'forms': title = "Create Form"; iconClass = "ti ti-forms"; break;
-            default: title = "Dashboard";
-          }
+      if (dLink) {
+        title = dLink.innerText.trim();
+        let iElem = dLink.querySelector('i');
+        if (iElem) iconClass = iElem.className;
+      } else {
+        switch(tabId) {
+          case 'create': title = "Create Quiz"; iconClass = "ti ti-plus"; break;
+          case 'epb': title = "Exam Builder"; iconClass = "ti ti-file-text"; break;
+          case 'qbank': title = "Question Bank"; iconClass = "ti ti-database"; break;
+          case 'forms': title = "Create Form"; iconClass = "ti ti-forms"; break;
+          default: title = "Dashboard";
         }
-        if (mobPageTitle) mobPageTitle.innerText = title;
-        if (mobPageIcon) mobPageIcon.className = iconClass;
       }
+      if (mobPageTitle) mobPageTitle.innerText = title;
+      if (mobPageIcon) mobPageIcon.className = iconClass;
     }
   }
-
   if (tabId === 'essays') { loadPendingEssays(); }
   else if (tabId === 'students') { loadStudentsList(); }
   else if (tabId === 'qbank') { loadQuestionBank(); }
