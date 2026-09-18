@@ -4770,7 +4770,6 @@ function _restoreAdminSession(res) {
     updateSemesterOptions();
   }
   // Obsolete bottom tab bar initialization removed
-  setMobileTabActive('overview');
   loadDashboard(); startAutoRefresh();
   if (typeof renderGeoPresetOptions === 'function') renderGeoPresetOptions('');
 }
@@ -4962,7 +4961,6 @@ const FAB_TAB_META = {
 function openCreateNewQuizTab(navEl) {
   if (editingQuizId) { resetCreateQuizForm(false); } else { clearDeployedLinkBox(); }
   switchTab('create', navEl);
-  setMobileTabActive('create');
 }
 
 function switchTab(tabId, navEl, fromPopState = false) {
