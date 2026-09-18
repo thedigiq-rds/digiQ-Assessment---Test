@@ -2235,11 +2235,15 @@ function callBackend(action, args, onSuccess, onFailure) {
     .page-header { display: none !important; }
     .desk-only-stats { display: none !important; }
 
-    /* The overview's charts and submissions table are desktop-only here.
-       Leaving them below the mobile navigation dashboard also made their
-       wider layout horizontally draggable. */
-    #tab-overview > :not(#mob-admin-dash) { display: none !important; }
+    /* Keep the dashboard insights available on mobile without letting the
+       chart grid establish a wider intrinsic minimum than the viewport. */
     .tab-content { min-width: 0; max-width: 100%; }
+    #tab-overview .charts-row {
+      grid-template-columns: minmax(0, 1fr) !important;
+      width: 100%;
+    }
+    #tab-overview .chart-box,
+    #tab-overview .panel { min-width: 0; max-width: 100%; }
     .top-bar {
       display: flex !important;
       position: sticky !important;
