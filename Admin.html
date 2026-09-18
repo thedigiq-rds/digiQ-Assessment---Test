@@ -2218,26 +2218,30 @@ function callBackend(action, args, onSuccess, onFailure) {
     }
 
   /* ═════════ MOBILE REDESIGN (ADMIN) ═════════ */
-  .mob-header-main, #mob-admin-dash, .mob-page-header, .mob-profile-overlay { display: none; }
-  body.mob-page-active .top-bar,
-  body.mob-page-active #mob-admin-dash { display: none !important; }
+  .mob-page-header, .mob-profile-overlay { display: none; }
   
   @media (max-width: 768px) {
     /* Hide desktop UI on mobile */
     .sidebar { display: none !important; }
     .fab-container { display: none !important; }
     .page-header { display: none !important; }
+    .top-bar { display: none !important; }
     
     /* Main mobile header */
-    .mob-header-main { display: flex !important; align-items: center; justify-content: space-between; padding: 12px 20px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid #f0f0f5; position: sticky; top: 0; z-index: 100; padding-top: env(safe-area-inset-top, 12px); }
-    .mob-header-logo { display: flex; align-items: center; gap: 8px; font-size: 1.4rem; font-weight: 800; color: var(--primary); font-family: 'Poppins', sans-serif; letter-spacing: -0.5px; }
-    .mob-header-actions { display: flex; gap: 12px; align-items: center; }
-    .mob-avatar { width: 38px; height: 38px; border-radius: 50%; background: #f0f1ff; color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; border: 1.5px solid #e0e4ff; }
+    .mob-page-header { display: flex !important; align-items: center; padding: 10px 16px; background: #FFF9E8; border-bottom: 1px solid #FFE4C4; position: sticky; top: 0; z-index: 100; margin-bottom: 0; }
+    .mob-back-btn { width: 38px; height: 38px; border-radius: 50%; background: rgba(217,119,6,0.1); display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 1.2rem; cursor: pointer; border: none; transition: background 0.15s; margin-right: 12px; }
+    .mob-back-btn:active { background: rgba(217,119,6,0.2); }
+    
+    .mob-header-titles { display: flex; flex-direction: column; flex: 1; margin-right: 8px; }
+    .mob-college-name { font-size: 0.75rem; color: #b45309; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mob-page-title { font-size: 1.1rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: #d97706; margin: 0; letter-spacing: -0.3px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mob-header-actions { display: flex; align-items: center; gap: 12px; }
+    .mob-avatar { width: 32px; height: 32px; border-radius: 50%; background: rgba(217,119,6,0.1); color: #d97706; display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer; border: none; }
     
     /* Mobile Dashboard */
-    #mob-admin-dash { display: flex !important; flex-direction: column; padding-bottom: 24px; }
+    #mob-admin-dash { display: flex !important; flex-direction: column; padding: 20px; padding-bottom: 24px; }
     .mob-welcome { margin-bottom: 24px; }
-    .mob-welcome-title { font-size: 1.25rem; font-weight: 800; color: var(--text); line-height: 1.25; font-family: 'Poppins', sans-serif; }
+    .mob-welcome-title { font-size: 1.1rem; font-weight: 800; color: var(--text); line-height: 1.25; font-family: 'Poppins', sans-serif; }
     .mob-welcome-sub { font-size: 0.95rem; color: var(--text-muted); margin-top: 4px; }
     
     .mob-section-title { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 8px 0 12px; }
@@ -2680,17 +2684,22 @@ document.addEventListener('focusout', function(e) {
   <div class="main-content" style="overflow-x:hidden; display: flex; flex-direction: column; padding: 0;">
     <!-- ═════════ MOBILE CONTEXTUAL HEADER ═════════ -->
     <div class="mob-page-header" id="mob-header-back">
-      <button class="mob-back-btn" id="mob-back-btn" onclick="switchTab('overview')"><i class="ti ti-arrow-left"></i></button>
-      <i class="ti ti-layout-dashboard" id="mob-page-icon" style="font-size: 1.2rem; color: #d97706; margin-right: 8px;"></i>
-      <h2 class="mob-page-title" id="mob-page-title-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dashboard</h2>
+      <button class="mob-back-btn" id="mob-back-btn" onclick="switchTab('overview')" style="display:none;"><i class="ti ti-arrow-left"></i></button>
       
-      <div class="mob-header-right" style="display: flex; gap: 8px; align-items: center; margin-left: auto;">
-        <div class="search-box" style="width: 100px; height: 32px; min-width: 0; padding: 5px 8px; border-radius: 16px; display: flex; align-items: center; background: #fff; border: 1px solid #FFE4C4;">
-          <i class="ti ti-search" style="font-size: 0.9rem; color: #94a3b8; margin-right: 4px;"></i>
-          <input type="text" placeholder="Search..." style="font-size: 0.8rem; border: none; background: transparent; width: 100%; outline: none;" id="mobSearchInput">
+      <div class="mob-header-titles">
+        <div class="mob-college-name">M. N. College, Visnagar</div>
+        <div class="mob-page-title">
+          <i class="ti ti-layout-dashboard" id="mob-page-icon"></i>
+          <span id="mob-page-title-text">Dashboard</span>
         </div>
-        <button class="icon-btn" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 50%; border: 1px solid #FFE4C4; background: #fff; display: flex; align-items: center; justify-content: center; color: #64748b; position: relative;"><i class="ti ti-bell"></i><span class="badge" style="width:6px;height:6px;position:absolute;top:6px;right:6px;background:#ef4444;border-radius:50%;"></span></button>
-        <button class="icon-btn" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 50%; border: 1px solid #FFE4C4; background: #fff; display: flex; align-items: center; justify-content: center; color: #64748b;"><i class="ti ti-help"></i></button>
+      </div>
+      
+      <div class="mob-header-actions">
+        <i class="ti ti-search" style="font-size:1.2rem; color:#d97706;" onclick="document.getElementById('omniSearchInput').focus()"></i>
+        <i class="ti ti-bell" style="font-size:1.2rem; color:#d97706;" onclick="toggleTbDropdown('notifDropdown')"></i>
+        <button class="mob-avatar" onclick="openMobProfile()">
+          <i class="ti ti-user"></i>
+        </button>
       </div>
     </div>
 
@@ -2795,10 +2804,30 @@ document.addEventListener('focusout', function(e) {
                <div class="mob-card-title">Sub-Admins</div>
              </div>
            </div>
+
+           <!-- Dashboard Statistics included in mobile view -->
+           <div class="mob-section-title">Dashboard Statistics</div>
+           <div class="stats-grid">
+             <div class="stat-card sc-1">
+               <span class="stat-icon"><i class="ti ti-folders"></i></span>
+               <div class="stat-num" id="stat-total-mob">—</div>
+               <div class="stat-label">Total Quizzes</div>
+             </div>
+             <div class="stat-card sc-2">
+               <span class="stat-icon"><i class="ti ti-circle-check"></i></span>
+               <div class="stat-num" id="stat-active-mob">—</div>
+               <div class="stat-label">Active Quizzes</div>
+             </div>
+             <div class="stat-card sc-3">
+               <span class="stat-icon"><i class="ti ti-pencil"></i></span>
+               <div class="stat-num" id="stat-responses-mob">—</div>
+               <div class="stat-label">Total Submissions</div>
+             </div>
+           </div>
         </div>
         <!-- END MOBILE NAVIGATION DASHBOARD -->
 
-            <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
+        <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
         <div>
           <div class="page-heading"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
         </div>
@@ -4735,10 +4764,6 @@ function _restoreAdminSession(res) {
   const mobAdminNameHeader = document.getElementById('mob-admin-name-header');
   if (mobAdminNameHeader) {
     mobAdminNameHeader.textContent = displayName;
-  }
-  const mobAdminCollegeHeader = document.getElementById('mob-admin-college-header');
-  if (mobAdminCollegeHeader) {
-    mobAdminCollegeHeader.textContent = 'Manage your assessment platform';
   }
 
   // Populate compact sidebar profile button
