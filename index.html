@@ -2258,27 +2258,27 @@ function callBackend(action, args, onSuccess, onFailure) {
     .mobile-top-bar { display: none !important; }
     
     /* Mobile Dashboard */
-    #mob-student-dash { display: flex !important; flex-direction: column; padding: 20px; background: #fafafc; min-height: 100vh; overflow-y: auto; }
+    #mob-student-dash { display: flex !important; flex-direction: column; padding: 12px; background: #fafafc; min-height: 100vh; overflow-y: auto; }
     .mob-welcome { margin-bottom: 24px; }
     .mob-welcome-title { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1.25; font-family: 'Poppins', sans-serif; }
     .mob-welcome-sub { font-size: 0.95rem; color: var(--text-muted); margin-top: 4px; }
     
     /* Modern Pastel Cards */
-    .mob-card { border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); margin-bottom: 16px; position: relative; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s; border: none; }
+    .mob-card { border-radius: 16px; padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); margin-bottom: 12px; position: relative; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s; border: 1px solid transparent; }
     .mob-card:active { transform: scale(0.97); }
     .mob-card-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 14px; }
     
-    .mob-card.surface-blue { background: #EEF5FF; }
-    .mob-card.surface-blue .mob-card-icon { background: rgba(79,70,229,0.1); color: #4f46e5; }
+    .mob-card.surface-blue { background: #D0E2FF; border-color: #8EB8FF; }
+    .mob-card.surface-blue .mob-card-icon { background: rgba(79,70,229,0.15); color: #4f46e5; }
     
-    .mob-card.surface-purple { background: #F3F0FF; }
-    .mob-card.surface-purple .mob-card-icon { background: rgba(147,51,234,0.1); color: #9333ea; }
+    .mob-card.surface-purple { background: #E7DDFD; border-color: #C0A8F8; }
+    .mob-card.surface-purple .mob-card-icon { background: rgba(147,51,234,0.15); color: #9333ea; }
     
-    .mob-card.surface-mint { background: #EEFBF5; }
-    .mob-card.surface-mint .mob-card-icon { background: rgba(16,185,129,0.1); color: #10b981; }
+    .mob-card.surface-mint { background: #D1F8E6; border-color: #88EAB9; }
+    .mob-card.surface-mint .mob-card-icon { background: rgba(16,185,129,0.15); color: #10b981; }
     
-    .mob-card.surface-peach { background: #FFF4E8; }
-    .mob-card.surface-peach .mob-card-icon { background: rgba(234,88,12,0.1); color: #ea580c; }
+    .mob-card.surface-peach { background: #FFE0C2; border-color: #FFB366; }
+    .mob-card.surface-peach .mob-card-icon { background: rgba(234,88,12,0.15); color: #ea580c; }
     
     .mob-card.surface-pink { background: #FFF0F4; }
     .mob-card.surface-pink .mob-card-icon { background: rgba(219,39,119,0.1); color: #db2777; }
@@ -2938,7 +2938,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       const subTitle = document.querySelector('.auth-subtitle');
       if (subTitle) subTitle.innerText = 'Login to view your dashboard';
       
-      const otpToggle = document.getElementById('btn-login-otp');
+      const otpToggle = document.getElementById('login-toggle-btn');
       if (otpToggle) otpToggle.style.display = 'none'; // Only password login for portal
       return;
     }
@@ -3031,6 +3031,13 @@ function callBackend(action, args, onSuccess, onFailure) {
     document.getElementById('auth-portal').style.display = 'none';
     showLoader('GENERATING');
     showToast('Verifying OTP...', 'info', 3000);
+
+    if (!QUIZ_ID) {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('auth-portal').style.display = 'flex';
+      showModal('OTP Error', 'OTP login is only available for active exams. Please use Password Login for the dashboard.', 'error');
+      return;
+    }
 
     google.script.run
       .withSuccessHandler(res => {
