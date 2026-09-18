@@ -2252,7 +2252,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     .sd-header { display: none !important; }
     
     /* App Shell */
-    .mobile-top-bar { display: flex !important; }
+    .mobile-top-bar { display: none !important; }
     
     /* Mobile Dashboard */
     #mob-student-dash { display: flex !important; flex-direction: column; padding: 20px; background: #fafafc; min-height: 100vh; overflow-y: auto; }
@@ -2293,7 +2293,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     .mob-card-small .mob-card-title { font-size: 0.95rem; margin-bottom: 4px; }
 
     /* Light Orange Back Header */
-    .mob-page-header { display: flex !important; align-items: center; padding: 12px 20px; background: #FFF9E8; border-bottom: 1px solid #FFE4C4; position: sticky; top: 0; z-index: 100; padding-top: env(safe-area-inset-top, 12px); margin-bottom: 16px; }
+    .mob-page-header { display: flex !important; align-items: center; padding: 10px 16px; background: #FFF9E8; border-bottom: 1px solid #FFE4C4; position: sticky; top: 0; z-index: 100; margin-bottom: 0; }
     .mob-back-btn { width: 38px; height: 38px; border-radius: 50%; background: rgba(217,119,6,0.1); display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 1.2rem; cursor: pointer; border: none; transition: background 0.15s; margin-right: 12px; }
     .mob-back-btn:active { background: rgba(217,119,6,0.2); }
     .mob-page-title { font-size: 1.1rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: #d97706; flex: 1; margin: 0; letter-spacing: -0.3px; }
@@ -2352,6 +2352,22 @@ function callBackend(action, args, onSuccess, onFailure) {
           <path d="M12 11c-2 0-3.5 1-4 2.5" stroke-dasharray="2 2" opacity="0.4"/>
         </svg>
       </button>
+    </div>
+  </div>
+
+  <!-- ═════════ MOBILE CONTEXTUAL HEADER ═════════ -->
+  <div class="mob-page-header" id="mob-header-student">
+    <button class="mob-back-btn" id="mob-back-btn" onclick="mobGoBackStudent()"><i class="ti ti-arrow-left"></i></button>
+    <i class="ti ti-layout-dashboard" id="mob-page-icon" style="font-size: 1.2rem; color: #d97706; margin-right: 8px;"></i>
+    <h2 class="mob-page-title" id="mob-page-title-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dashboard</h2>
+    
+    <div class="mob-header-right" style="display: flex; gap: 8px; align-items: center; margin-left: auto;">
+      <div class="search-box" style="width: 100px; height: 32px; min-width: 0; padding: 5px 8px; border-radius: 16px; display: flex; align-items: center; background: #fff; border: 1px solid #FFE4C4;">
+        <i class="ti ti-search" style="font-size: 0.9rem; color: #94a3b8; margin-right: 4px;"></i>
+        <input type="text" placeholder="Search..." style="font-size: 0.8rem; border: none; background: transparent; width: 100%; outline: none;">
+      </div>
+      <button class="icon-btn" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 50%; border: 1px solid #FFE4C4; background: #fff; display: flex; align-items: center; justify-content: center; color: #64748b; position: relative;"><i class="ti ti-bell"></i><span class="badge" style="width:6px;height:6px;position:absolute;top:6px;right:6px;background:#ef4444;border-radius:50%;"></span></button>
+      <button class="icon-btn" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 50%; border: 1px solid #FFE4C4; background: #fff; display: flex; align-items: center; justify-content: center; color: #64748b;" onclick="openStudentFeedbackModal()"><i class="ti ti-help"></i></button>
     </div>
   </div>
 
@@ -2415,11 +2431,7 @@ function callBackend(action, args, onSuccess, onFailure) {
 
     <!-- Main Content -->
     <div class="sd-main">
-      <!-- ═════════ MOBILE CONTEXTUAL HEADER ═════════ -->
-      <div class="mob-page-header">
-        <button class="mob-back-btn" onclick="mobGoBackStudent()"><i class="ti ti-arrow-left"></i></button>
-        <h2 class="mob-page-title" id="mob-page-title-text">Live Exams</h2>
-      </div>
+
 
       <div class="sd-page-heading">Welcome, <span id="sd-student-name" style="color:var(--primary);">Student</span></div>
       <div class="sd-page-desc" id="sd-student-details">Your personal dashboard for assessments and history.</div>
@@ -4349,7 +4361,20 @@ function callBackend(action, args, onSuccess, onFailure) {
   }
 
   function mobSwitchStudentTab(tabId, title) {
-    document.getElementById('mob-page-title-text').innerText = title;
+    let mobPageTitle = document.getElementById('mob-page-title-text');
+    let mobPageIcon = document.getElementById('mob-page-icon');
+    let mobBackBtn = document.getElementById('mob-back-btn');
+    
+    if (mobPageTitle) mobPageTitle.innerText = title;
+    
+    let iconClass = "ti ti-layout-dashboard";
+    switch(tabId) {
+      case 'live': iconClass = "ti ti-activity"; break;
+      case 'past': iconClass = "ti ti-history"; break;
+      case 'settings': iconClass = "ti ti-key"; break;
+    }
+    if (mobPageIcon) mobPageIcon.className = iconClass;
+    if (mobBackBtn) mobBackBtn.style.display = 'flex';
     
     // Call existing desktop logic to handle content loading
     let fakeNavElem = document.getElementById('sd-nav-' + tabId);
@@ -4363,6 +4388,14 @@ function callBackend(action, args, onSuccess, onFailure) {
 
   function mobGoBackStudent() {
     document.body.classList.remove('mob-page-active');
+    
+    let mobPageTitle = document.getElementById('mob-page-title-text');
+    let mobPageIcon = document.getElementById('mob-page-icon');
+    let mobBackBtn = document.getElementById('mob-back-btn');
+    
+    if (mobPageTitle) mobPageTitle.innerText = "Dashboard";
+    if (mobPageIcon) mobPageIcon.className = 'ti ti-layout-dashboard';
+    if (mobBackBtn) mobBackBtn.style.display = 'none';
   }
 </script>
 </body>
