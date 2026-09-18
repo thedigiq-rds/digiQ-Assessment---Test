@@ -2235,15 +2235,64 @@ function callBackend(action, args, onSuccess, onFailure) {
     .page-header { display: none !important; }
     .desk-only-stats { display: none !important; }
 
-    /* Keep the dashboard insights available on mobile without letting the
-       chart grid establish a wider intrinsic minimum than the viewport. */
+    /* Compact, two-up analytics cards. The existing Chart.js canvases and
+       data remain unchanged; only their mobile presentation is condensed. */
     .tab-content { min-width: 0; max-width: 100%; }
     #tab-overview .charts-row {
-      grid-template-columns: minmax(0, 1fr) !important;
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 12px !important;
       width: 100%;
+      margin-bottom: 20px;
     }
     #tab-overview .chart-box,
     #tab-overview .panel { min-width: 0; max-width: 100%; }
+    #tab-overview .chart-box {
+      position: relative;
+      isolation: isolate;
+      display: flex;
+      flex-direction: column;
+      min-height: 162px;
+      padding: 13px 12px 12px;
+      overflow: hidden;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.07);
+    }
+    #tab-overview .chart-box::after {
+      content: '';
+      position: absolute;
+      top: -18px;
+      right: -16px;
+      z-index: 0;
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.68);
+      transform: rotate(38deg);
+    }
+    #tab-overview .chart-box:nth-child(1) { background: linear-gradient(145deg, #eef8f3, #ffffff); border-color: #b9e3cd; }
+    #tab-overview .chart-box:nth-child(2) { background: linear-gradient(145deg, #eef5ff, #ffffff); border-color: #bed6f7; }
+    #tab-overview .chart-box:nth-child(3) { background: linear-gradient(145deg, #f5f1ff, #ffffff); border-color: #d7c8f7; }
+    #tab-overview .chart-box:nth-child(4) { background: linear-gradient(145deg, #fff4ea, #ffffff); border-color: #f3d1b2; }
+    #tab-overview .chart-label {
+      position: relative;
+      z-index: 1;
+      margin-bottom: 7px;
+      color: #1e293b;
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    #tab-overview .chart-canvas-wrap {
+      position: relative;
+      z-index: 1;
+      width: min(116px, 100%);
+      height: 116px;
+      margin: auto;
+    }
+    #tab-overview .chart-canvas-wrap canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
     .top-bar {
       display: flex !important;
       position: sticky !important;
