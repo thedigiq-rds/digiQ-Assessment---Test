@@ -2237,7 +2237,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     /* Mobile Dashboard */
     #mob-admin-dash { display: flex !important; flex-direction: column; padding-bottom: 24px; }
     .mob-welcome { margin-bottom: 24px; }
-    .mob-welcome-title { font-size: 1.6rem; font-weight: 800; color: var(--text); line-height: 1.25; font-family: 'Poppins', sans-serif; }
+    .mob-welcome-title { font-size: 1.25rem; font-weight: 800; color: var(--text); line-height: 1.25; font-family: 'Poppins', sans-serif; }
     .mob-welcome-sub { font-size: 0.95rem; color: var(--text-muted); margin-top: 4px; }
     
     .mob-section-title { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 8px 0 12px; }
@@ -2694,65 +2694,6 @@ document.addEventListener('focusout', function(e) {
       </div>
     </div>
 
-    <!-- Mobile Navigation Dashboard -->
-    <div id="mob-admin-dash">
-       <div class="mob-welcome">
-         <div class="mob-welcome-title">Hello, <span id="mob-admin-name-header">Admin</span> 👋</div>
-         <div class="mob-welcome-sub" id="mob-admin-college-header">Manage your assessment platform</div>
-       </div>
-       
-       <div class="mob-section-title">Core Operations</div>
-       <div class="mob-card-grid">
-         <div class="mob-card mob-card-small surface-blue" onclick="openCreateNewQuizTab()">
-           <div class="mob-card-icon"><i class="ti ti-plus"></i></div>
-           <div class="mob-card-title">Create Quiz</div>
-         </div>
-         <div class="mob-card mob-card-small surface-purple" onclick="switchTab('manage')">
-           <div class="mob-card-icon"><i class="ti ti-list-check"></i></div>
-           <div class="mob-card-title">Manage Quizzes</div>
-         </div>
-         <div class="mob-card mob-card-small surface-pink" onclick="switchTab('essays')">
-           <div class="mob-card-icon"><i class="ti ti-pencil"></i></div>
-           <div class="mob-card-title">Essay Grading</div>
-         </div>
-         <div class="mob-card mob-card-small surface-mint" onclick="switchTab('epb')">
-           <div class="mob-card-icon"><i class="ti ti-file-text"></i></div>
-           <div class="mob-card-title">Exam Builder</div>
-         </div>
-         <div class="mob-card mob-card-small surface-peach" style="grid-column: span 2;" onclick="switchTab('qbank')">
-           <div class="mob-card-icon"><i class="ti ti-database"></i></div>
-           <div class="mob-card-title">Question Bank</div>
-         </div>
-       </div>
-
-       <div class="mob-section-title">Insights &amp; Forms</div>
-       <div class="mob-card-grid">
-         <div class="mob-card mob-card-small surface-blue" onclick="switchTab('reports')">
-           <div class="mob-card-icon"><i class="ti ti-chart-line"></i></div>
-           <div class="mob-card-title">Analytics</div>
-         </div>
-         <div class="mob-card mob-card-small surface-peach" onclick="switchTab('forms')">
-           <div class="mob-card-icon"><i class="ti ti-forms"></i></div>
-           <div class="mob-card-title">Create Form</div>
-         </div>
-       </div>
-
-       <div class="mob-section-title">People &amp; Administration</div>
-       <div class="mob-card-grid">
-         <div class="mob-card mob-card-small surface-purple" id="mob-card-students" style="display:none;" onclick="switchTab('students')">
-           <div class="mob-card-icon"><i class="ti ti-school"></i></div>
-           <div class="mob-card-title">Students</div>
-         </div>
-         <div class="mob-card mob-card-small surface-pink" id="mob-card-subadmins" style="display:none;" onclick="switchTab('subadmins')">
-           <div class="mob-card-icon"><i class="ti ti-users"></i></div>
-           <div class="mob-card-title">Sub-Admins</div>
-         </div>
-       </div>
-       
-       <div class="mob-section-title" style="margin-top: 10px;">Live Dashboard</div>
-    </div>
-    <!-- END MOBILE NAVIGATION DASHBOARD -->
-
     <!-- TOP BAR -->
     <div class="top-bar">
       <div class="top-bar-left">
@@ -2801,6 +2742,62 @@ document.addEventListener('focusout', function(e) {
       <!-- ══════════ OVERVIEW TAB ══════════ -->
       <div id="tab-overview" class="tab-content active" style="display:block;">
         
+        <!-- Mobile Navigation Dashboard -->
+        <div id="mob-admin-dash">
+           <div class="mob-welcome">
+             <div class="mob-welcome-title">Hello, <span id="mob-admin-name-header">Admin</span> 👋</div>
+           </div>
+           
+           <div class="mob-section-title">Core Operations</div>
+           <div class="mob-card-grid">
+             <div class="mob-card mob-card-small surface-blue" onclick="openCreateNewQuizTab()">
+               <div class="mob-card-icon"><i class="ti ti-plus"></i></div>
+               <div class="mob-card-title">Create Quiz</div>
+             </div>
+             <div class="mob-card mob-card-small surface-purple" onclick="switchTab('manage')">
+               <div class="mob-card-icon"><i class="ti ti-list-check"></i></div>
+               <div class="mob-card-title">Manage Quizzes</div>
+             </div>
+             <div class="mob-card mob-card-small surface-pink" onclick="switchTab('essays')">
+               <div class="mob-card-icon"><i class="ti ti-pencil"></i></div>
+               <div class="mob-card-title">Essay Grading</div>
+             </div>
+             <div class="mob-card mob-card-small surface-mint" onclick="switchTab('epb')">
+               <div class="mob-card-icon"><i class="ti ti-file-text"></i></div>
+               <div class="mob-card-title">Exam Builder</div>
+             </div>
+             <div class="mob-card mob-card-small surface-peach" style="grid-column: span 2;" onclick="switchTab('qbank')">
+               <div class="mob-card-icon"><i class="ti ti-database"></i></div>
+               <div class="mob-card-title">Question Bank</div>
+             </div>
+           </div>
+
+           <div class="mob-section-title">Insights &amp; Forms</div>
+           <div class="mob-card-grid">
+             <div class="mob-card mob-card-small surface-blue" onclick="switchTab('reports')">
+               <div class="mob-card-icon"><i class="ti ti-chart-line"></i></div>
+               <div class="mob-card-title">Analytics</div>
+             </div>
+             <div class="mob-card mob-card-small surface-peach" onclick="switchTab('forms')">
+               <div class="mob-card-icon"><i class="ti ti-forms"></i></div>
+               <div class="mob-card-title">Create Form</div>
+             </div>
+           </div>
+
+           <div class="mob-section-title">People &amp; Administration</div>
+           <div class="mob-card-grid">
+             <div class="mob-card mob-card-small surface-purple" id="mob-card-students" onclick="switchTab('students')">
+               <div class="mob-card-icon"><i class="ti ti-school"></i></div>
+               <div class="mob-card-title">Students</div>
+             </div>
+             <div class="mob-card mob-card-small surface-pink" id="mob-card-subadmins" onclick="switchTab('subadmins')">
+               <div class="mob-card-icon"><i class="ti ti-users"></i></div>
+               <div class="mob-card-title">Sub-Admins</div>
+             </div>
+           </div>
+        </div>
+        <!-- END MOBILE NAVIGATION DASHBOARD -->
+
             <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
         <div>
           <div class="page-heading"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
@@ -4997,25 +4994,21 @@ function switchTab(tabId, navEl, fromPopState = false) {
   if (activeFabLabel) activeFabLabel.classList.add('active-item');
   
   // Mobile UI Sync
-  const mobDash = document.getElementById('mob-admin-dash');
   const mobBackBtn = document.getElementById('mob-back-btn');
   const mobPageTitle = document.getElementById('mob-page-title-text');
   const mobPageIcon = document.getElementById('mob-page-icon');
   
-  if (mobDash) {
-    if (window.innerWidth <= 768) {
-      if (tabId === 'overview') {
-        document.body.classList.remove('mob-page-active');
-        mobDash.style.display = 'flex';
-        if (mobBackBtn) mobBackBtn.style.display = 'none';
-        if (mobPageTitle) mobPageTitle.innerText = "Dashboard";
-        if (mobPageIcon) mobPageIcon.className = 'ti ti-layout-dashboard';
-      } else {
-        document.body.classList.add('mob-page-active');
-        mobDash.style.display = 'none';
-        if (mobBackBtn) mobBackBtn.style.display = 'flex';
-        let title = "Dashboard";
-        let iconClass = "ti ti-layout-dashboard";
+  if (window.innerWidth <= 768) {
+    if (tabId === 'overview') {
+      document.body.classList.remove('mob-page-active');
+      if (mobBackBtn) mobBackBtn.style.display = 'none';
+      if (mobPageTitle) mobPageTitle.innerText = "Dashboard";
+      if (mobPageIcon) mobPageIcon.className = 'ti ti-layout-dashboard';
+    } else {
+      document.body.classList.add('mob-page-active');
+      if (mobBackBtn) mobBackBtn.style.display = 'flex';
+      let title = "Dashboard";
+      let iconClass = "ti ti-layout-dashboard";
         
         if (dLink) {
           title = dLink.innerText.trim();
