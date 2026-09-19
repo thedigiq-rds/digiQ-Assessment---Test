@@ -2920,7 +2920,16 @@ document.addEventListener('focusout', function(e) {
         <a class="nav-link"        id="nav-subadmins" onclick="switchTab('subadmins', this)" style="display:none;"><span class="nav-icon"><i class="ti ti-users"></i></span><span class="nav-link-text">Sub-Admins</span></a>
       </nav>
     </div>
-        <div class="sidebar-footer" style="flex-shrink:0; margin-top:auto;">
+    <div class="sidebar-footer" style="flex-shrink:0; margin-top:auto; padding: 20px 24px; border-top: 1px solid var(--main-border);">
+      <div style="margin-bottom: 15px;">
+        <div style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 4px;">Admin Portal</div>
+        <div id="sidebar-admin-name" style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Loading...</div>
+        <div id="sidebar-admin-streams" style="font-size: 0.8rem; color: var(--text-muted); display: none; margin-top: 2px;"></div>
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">
+        <div style="margin-bottom: 2px;">Developed by</div>
+        <div style="font-weight: 600; color: var(--text);">Dr. Rajendra Suthar</div>
+      </div>
     </div>
   </div>
 
@@ -2939,6 +2948,12 @@ document.addEventListener('focusout', function(e) {
         </div>
       </div>
       
+      <div class="mob-header-right" style="display: flex; gap: 8px; align-items: center; margin-left: auto; min-width: 0;">
+        <div class="search-box" style="width: 80px; height: 32px; min-width: 0; padding: 5px 8px; border-radius: 16px; display: flex; align-items: center; background: #fff; border: 1px solid #FFE4C4; overflow: hidden;">
+          <i class="ti ti-search" style="font-size: 0.9rem; color: #94a3b8; margin-right: 4px;"></i>
+          <input type="text" placeholder="Search" style="font-size: 0.8rem; border: none; background: transparent; width: 100%; min-width: 0; outline: none;" oninput="if(typeof handleOmniSearch === 'function') handleOmniSearch(this.value)">
+        </div>
+      </div>
     </div>
 
     <!-- TOP BAR -->
@@ -2963,12 +2978,7 @@ document.addEventListener('focusout', function(e) {
             </svg>
           </div>
           <span class="notif-badge" style="display: none; width:8px; height:8px; position:absolute; top:4px; right:4px; background:#ef4444; border-radius:50%; border:2px solid #fff;"></span>
-          <div class="sb-profile-text">
-            <div class="sb-profile-role-label">Developed by</div>
-            <div class="sb-profile-name" id="sidebar-admin-name">Loading...</div>
-            <div class="sb-profile-streams" id="sidebar-admin-streams" style="display:none;"></div>
-          </div>
-          <i class="ti ti-chevron-down sb-chevron" id="sbChevron"></i>
+          <i class="ti ti-chevron-down sb-chevron" id="sbChevron" style="display:none;"></i>
         </div>
 
         <div class="sb-profile-menu" id="sbProfileMenu">
@@ -9730,33 +9740,56 @@ setTimeout(generateMockNotifications, 2000);
 </script>
 <!-- Notifications Modal -->
 <div class="modal-overlay" id="notifModal">
-  <div class="modal" style="max-width: 400px; padding: 0;">
-    <div class="modal-header" style="padding: 16px 24px;">
+  <div class="modal-content">
+    <div class="modal-header">
       <h3 class="modal-title">Notifications</h3>
       <button class="modal-close" onclick="closeModal('notifModal')"><i class="ti ti-x"></i></button>
     </div>
-    <div class="modal-body" style="padding: 0; max-height: 400px; overflow-y: auto;" id="notifList">
-      <div class="tb-dropdown-item" style="color: var(--color-text-muted); justify-content: center; padding: 24px;">No new notifications</div>
+    <div class="modal-body" style="max-height: 400px; overflow-y: auto;" id="notifList">
+      <div style="padding: 20px; text-align: center; color: var(--text-muted);">No new notifications</div>
     </div>
-    <div class="modal-footer" style="padding: 12px 24px;">
-      <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="markAllNotificationsRead();">Mark all as read</button>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-outline" style="padding: 6px 12px; border-radius:4px; margin-right:8px;" onclick="closeModal('notifModal')">Close</button>
+      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="markAllNotificationsRead(); closeModal('notifModal');">Mark all as read</button>
     </div>
   </div>
 </div>
 
-<!-- Help Modal -->
+<!-- Help & Support Modal -->
 <div class="modal-overlay" id="helpModal">
-  <div class="modal" style="max-width: 400px;">
+  <div class="modal-content">
     <div class="modal-header">
       <h3 class="modal-title">Help &amp; Support</h3>
       <button class="modal-close" onclick="closeModal('helpModal')"><i class="ti ti-x"></i></button>
     </div>
-    <div class="modal-body" style="display: flex; flex-direction: column; gap: 12px;">
-      <a href="digiQ_Manual.pdf" target="_blank" class="btn btn-outline" style="justify-content: flex-start; border-radius: 8px;"><i class="ti ti-file-text"></i> User Manual (PDF)</a>
-      <a href="mailto:support@digiq.com" class="btn btn-outline" style="justify-content: flex-start; border-radius: 8px;"><i class="ti ti-mail"></i> Contact Support</a>
-      <div style="text-align: center; margin-top: 16px; color: var(--text-muted); font-size: 0.85rem;">
-        About digiQ Assessment v2.1
+    <div class="modal-body">
+      <div style="padding:10px 0;">
+        <p style="margin-bottom:12px;"><strong>Need assistance?</strong><br>We're here to help you with any questions or issues you may have while using the platform.</p>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-mail" style="font-size:1.5rem; color:var(--primary);"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Email Support</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">thedigiq@gmail.com</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-phone" style="font-size:1.5rem; color:#10b981;"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">IT Helpdesk</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">9924964372</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-book" style="font-size:1.5rem; color:#f59e0b;"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Documentation</div>
+            <a href="digiQ_Manual.pdf" target="_blank" style="font-size:0.8rem; color:var(--primary); text-decoration:none;">View User Guide</a>
+          </div>
+        </div>
       </div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="closeModal('helpModal')">Close</button>
     </div>
   </div>
 </div>
