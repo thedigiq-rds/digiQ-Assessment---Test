@@ -2402,20 +2402,20 @@ function callBackend(action, args, onSuccess, onFailure) {
     /* Mobile dashboard operation groups — visual structure only; each card
        keeps its existing icon, text, and action. */
     .mob-dashboard-group {
-      --group-bg: #f4f8ff;
-      --group-border: #d8e6fb;
+      --group-bg: transparent;
+      --group-border: transparent;
       --group-accent: #2563eb;
       --group-icon-bg: #e0edff;
-      --group-orb: rgba(37, 99, 235, 0.1);
+      --group-orb: transparent;
       position: relative;
       isolation: isolate;
       margin-bottom: 18px;
-      padding: 15px;
+      padding: 0;
       overflow: hidden;
-      border: 1px solid var(--group-border);
-      border-radius: 20px;
-      background: linear-gradient(145deg, #ffffff 0%, var(--group-bg) 100%);
-      box-shadow: 0 5px 16px rgba(15, 23, 42, 0.045);
+      border: none;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
     }
     .mob-dashboard-group--insights {
       --group-bg: #faf5ff;
