@@ -2347,6 +2347,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     .top-bar-right { gap: 10px !important; pointer-events: auto !important; height: 100% !important; align-items: center !important; flex: 0 0 auto !important; max-width: 50% !important; }
     .top-bar-right .search-box { width: 100% !important; }
     .top-bar-right .search-box input { width: 100% !important; padding-left: 28px !important; font-size: 0.85rem !important; }
+    .top-bar-right .sb-profile-btn { display: none !important; }
     
     /* Main mobile header */
     .mob-page-header { display: flex !important; align-items: center; padding: 10px 16px; background: #FFF9E8; border-bottom: 1px solid #FFE4C4; position: sticky; top: 0; z-index: 100; margin-bottom: 0; }
@@ -2920,45 +2921,6 @@ document.addEventListener('focusout', function(e) {
       </nav>
     </div>
         <div class="sidebar-footer" style="flex-shrink:0; margin-top:auto;">
-      <!-- Compact Profile Dropdown (opens upward) -->
-      <div class="sb-profile-menu" id="sbProfileMenu">
-        <div class="sb-menu-header">
-          <div class="sb-menu-name" id="spm-name">Loading...</div>
-          <div class="sb-menu-role" id="spm-role">Admin</div>
-          <div class="sb-menu-stream" id="spm-stream" style="display:none;"></div>
-        </div>
-        <div class="sb-menu-item" onclick="closeSbProfile(); openModal('notifModal');">
-          <i class="ti ti-bell"></i> Notifications
-        </div>
-        <div class="sb-menu-item" onclick="closeSbProfile(); openChangePasswordModal();">
-          <i class="ti ti-key"></i> Change Password
-        </div>
-        <div class="sb-menu-item" onclick="closeSbProfile(); openAdminFeedbackModal();">
-          <i class="ti ti-message-star"></i> App Feedback
-        </div>
-        <div class="sb-menu-item" onclick="closeSbProfile(); openModal('helpModal');">
-          <i class="ti ti-help"></i> Help &amp; Support
-        </div>
-        <div class="sb-menu-item sb-logout" onclick="closeSbProfile(); confirmLogout();">
-          <i class="ti ti-logout"></i> Logout
-        </div>
-      </div>
-      <!-- Profile Icon Button (redesigned) -->
-      <div class="sb-profile-btn" id="sbProfileBtn" onclick="toggleSbProfile()" style="position:relative;">
-        <div class="sb-avatar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#FFA500" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-        </div>
-        <span class="notif-badge" style="display: none; width:8px; height:8px; position:absolute; top:4px; right:4px; background:#ef4444; border-radius:50%; border:2px solid #fff;"></span>
-        <div class="sb-profile-text">
-          <div class="sb-profile-role-label">Developed by</div>
-          <div class="sb-profile-name" id="sidebar-admin-name">Loading...</div>
-          <div class="sb-profile-streams" id="sidebar-admin-streams" style="display:none;"></div>
-        </div>
-        <i class="ti ti-chevron-up sb-chevron" id="sbChevron"></i>
-      </div>
     </div>
   </div>
 
