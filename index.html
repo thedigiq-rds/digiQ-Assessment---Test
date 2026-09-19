@@ -2088,6 +2088,19 @@ function callBackend(action, args, onSuccess, onFailure) {
   /* Main Content */
   .sd-main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; position: relative; background: var(--bg-surface); padding-bottom:80px; }
   .sd-page-heading { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text); padding: 30px 30px 10px; display: flex; justify-content: space-between; align-items: center; }
+  .sd-icon-profile-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: box-shadow 0.2s, border-color 0.2s, background 0.2s;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .sd-icon-profile-btn:hover { box-shadow: 0 4px 16px rgba(99,102,241,0.18); border-color: #c7d2fe; background: #f5f3ff; }
+  .sd-icon-profile-btn svg { width: 22px; height: 22px; color: #4f46e5; }
   .sd-page-desc { padding: 0 30px 20px; font-size: 0.95rem; color: var(--text-muted); }
   .sd-content-area { padding: 0 30px 30px; }
 
@@ -2502,13 +2515,14 @@ function callBackend(action, args, onSuccess, onFailure) {
       <div class="sd-page-heading">
         <div>Welcome, <span id="sd-student-name" style="color:var(--primary);">Student</span></div>
         <div class="sd-desktop-profile-wrap" style="position:relative;">
-          <div class="sd-profile-btn" onclick="toggleDesktopStudentProfile()" style="cursor:pointer; display:flex; align-items:center; gap:8px; background:#fff; padding:6px 12px; border-radius:20px; border:1px solid #e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
-            <div style="width:28px; height:28px; border-radius:50%; background:#eef2ff; color:#4f46e5; display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:600;">S</div>
-            <span style="font-size:0.9rem; font-weight:600;">Profile</span>
-            <i class="ti ti-chevron-down" style="font-size:0.8rem; color:var(--text-muted);"></i>
-            <span class="notif-badge" style="display:none; width:8px; height:8px; position:absolute; top:-2px; right:-2px; background:#ef4444; border-radius:50%; border:2px solid #fff;"></span>
-          </div>
-          <div class="sd-profile-menu" id="desktopStudentProfileMenu" style="display:none; position:absolute; top:calc(100% + 8px); right:0; background:#fff; min-width:200px; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:100; flex-direction:column; overflow:hidden;">
+          <button class="sd-icon-profile-btn" onclick="toggleDesktopStudentProfile()" title="Profile & Settings">
+            <span class="notif-badge" style="display:none; width:8px; height:8px; position:absolute; top:2px; right:2px; background:#ef4444; border-radius:50%; border:2px solid #fff; z-index:1;"></span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+            </svg>
+          </button>
+          <div class="sd-profile-menu" id="desktopStudentProfileMenu" style="display:none; position:absolute; top:calc(100% + 10px); right:0; background:#fff; min-width:210px; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 12px 32px rgba(0,0,0,0.12); z-index:100; flex-direction:column; overflow:hidden;">
             <div class="sd-profile-item" onclick="openModal('notifModal'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-bell"></i> Notifications</div>
             <div class="sd-profile-item" onclick="switchStudentTab('settings', null); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-key"></i> Change Password</div>
             <div class="sd-profile-item" onclick="openStudentFeedbackModal(); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-message-star"></i> App Feedback</div>
