@@ -2402,7 +2402,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     /* Mobile dashboard operation groups — visual structure only; each card
        keeps its existing icon, text, and action. */
     .mob-dashboard-group {
-      --group-bg: transparent;
+      --group-bg: #f4f8ff;
       --group-border: transparent;
       --group-accent: #2563eb;
       --group-icon-bg: #e0edff;
@@ -2410,11 +2410,12 @@ function callBackend(action, args, onSuccess, onFailure) {
       position: relative;
       isolation: isolate;
       margin-bottom: 12px;
-      padding: 0;
-      overflow: hidden;
+      margin-left: -8px;
+      margin-right: -8px;
+      padding: 16px 12px;
       border: none;
       border-radius: 18px;
-      background: transparent;
+      background: var(--group-bg);
       box-shadow: none;
     }
     .mob-dashboard-group--insights {
@@ -3021,17 +3022,17 @@ document.addEventListener('focusout', function(e) {
                  <div class="mob-card-icon"><i class="ti ti-list-check"></i></div>
                  <div class="mob-card-title">Manage Quizzes</div>
                </div>
-               <div class="mob-card mob-card-small surface-pink" onclick="switchTab('essays')">
-                 <div class="mob-card-icon"><i class="ti ti-pencil"></i></div>
-                 <div class="mob-card-title">Essay Grading</div>
+               <div class="mob-card mob-card-small surface-peach" onclick="switchTab('qbank')">
+                 <div class="mob-card-icon"><i class="ti ti-database"></i></div>
+                 <div class="mob-card-title">Question Bank</div>
                </div>
                <div class="mob-card mob-card-small surface-mint" onclick="switchTab('epb')">
                  <div class="mob-card-icon"><i class="ti ti-file-text"></i></div>
                  <div class="mob-card-title">Exam Builder</div>
                </div>
-               <div class="mob-card mob-card-small surface-peach" onclick="switchTab('qbank')">
-                 <div class="mob-card-icon"><i class="ti ti-database"></i></div>
-                 <div class="mob-card-title">Question Bank</div>
+               <div class="mob-card mob-card-small surface-pink" onclick="switchTab('essays')">
+                 <div class="mob-card-icon"><i class="ti ti-pencil"></i></div>
+                 <div class="mob-card-title">Essay Grading</div>
                </div>
              </div>
            </section>
