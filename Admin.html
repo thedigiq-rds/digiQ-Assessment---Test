@@ -2402,10 +2402,10 @@ function callBackend(action, args, onSuccess, onFailure) {
     /* Mobile dashboard operation groups — visual structure only; each card
        keeps its existing icon, text, and action. */
     .mob-dashboard-group {
-      --group-bg: #f4f8ff;
+      --group-bg: #d3e4ff;
       --group-border: transparent;
       --group-accent: #2563eb;
-      --group-icon-bg: #e0edff;
+      --group-icon-bg: #d0e1ff;
       --group-orb: transparent;
       position: relative;
       isolation: isolate;
@@ -2419,18 +2419,18 @@ function callBackend(action, args, onSuccess, onFailure) {
       box-shadow: none;
     }
     .mob-dashboard-group--insights {
-      --group-bg: #faf5ff;
-      --group-border: #e9d8fd;
+      --group-bg: #e9d5ff;
+      --group-border: #ddd6fe;
       --group-accent: #7c3aed;
-      --group-icon-bg: #f0e6ff;
-      --group-orb: rgba(124, 58, 237, 0.1);
+      --group-icon-bg: #e2d1f9;
+      --group-orb: rgba(124, 58, 237, 0.12);
     }
     .mob-dashboard-group--people {
-      --group-bg: #effcf6;
-      --group-border: #cbeedc;
-      --group-accent: #059669;
-      --group-icon-bg: #dff8eb;
-      --group-orb: rgba(5, 150, 105, 0.1);
+      --group-bg: #ffe4e6;
+      --group-border: #fecdd3;
+      --group-accent: #e11d48;
+      --group-icon-bg: #ffd1d6;
+      --group-orb: rgba(225, 29, 72, 0.12);
     }
     .mob-dashboard-group::after {
       content: '';
@@ -3008,7 +3008,7 @@ document.addEventListener('focusout', function(e) {
         <!-- Mobile Navigation Dashboard -->
         <div id="mob-admin-dash">
            <div class="mob-welcome">
-             <div class="mob-welcome-title">Hello, <span id="mob-admin-name-header">Admin</span> 👋</div>
+             <div class="mob-welcome-title">Hello, <span id="mob-admin-name-header">Admin</span> <i class="ti ti-sparkles" style="color: #f59e0b; font-size: 1.3rem; vertical-align: middle;"></i></div>
            </div>
            
            <section class="mob-dashboard-group mob-dashboard-group--operations">
