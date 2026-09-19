@@ -2087,7 +2087,7 @@ function callBackend(action, args, onSuccess, onFailure) {
 
   /* Main Content */
   .sd-main { flex: 1; display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; position: relative; background: var(--bg-surface); padding-bottom:80px; }
-  .sd-page-heading { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text); padding: 30px 30px 10px; }
+  .sd-page-heading { font-family: 'Poppins', sans-serif; font-size: 1.6rem; font-weight: 700; color: var(--text); padding: 30px 30px 10px; display: flex; justify-content: space-between; align-items: center; }
   .sd-page-desc { padding: 0 30px 20px; font-size: 0.95rem; color: var(--text-muted); }
   .sd-content-area { padding: 0 30px 30px; }
 
@@ -2210,7 +2210,24 @@ function callBackend(action, args, onSuccess, onFailure) {
     .sd-page-desc { padding: 0 20px 15px; }
     .sd-content-area { padding: 0 20px 30px; }
   }
-  /* ═════════ MOBILE REDESIGN ═════════ */
+
+  /* Standard Modals */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 10000; backdrop-filter: blur(4px); }
+  .modal-overlay.active { display: flex; }
+  .modal-content { background: #fff; border-radius: 16px; width: 90%; max-width: 420px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; animation: zoomIn 0.2s ease-out; display: flex; flex-direction: column; }
+  @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #f2f2f5; }
+  .modal-title { font-size: 1.15rem; font-weight: 700; color: var(--text); font-family: 'Poppins', sans-serif; margin: 0; }
+  .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 4px; transition: background 0.2s; }
+  .modal-close:hover { background: #f5f5f5; color: var(--text); }
+  .modal-body { padding: 20px; font-size: 0.95rem; color: var(--text); max-height: 60vh; overflow-y: auto; }
+  .modal-footer { padding: 16px 20px; border-top: 1px solid #f2f2f5; background: #fafafc; }
+  
+  @media (max-width: 900px) {
+    .sd-desktop-profile-wrap { display: none !important; }
+  }
+
+  /*  MOBILE REDESIGN  */
   
   .mobile-top-bar {
     display: flex;
@@ -2447,7 +2464,7 @@ function callBackend(action, args, onSuccess, onFailure) {
     <h2 class="mob-page-title" id="mob-page-title-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dashboard</h2>
     
     <div class="mob-header-right" style="display: flex; gap: 8px; align-items: center; margin-left: auto; min-width: 0;">
-      <div class="search-box" style="width: 110px; height: 32px; min-width: 0; padding: 5px 8px; border-radius: 16px; display: flex; align-items: center; background: #fff; border: 1px solid #FFE4C4; overflow: hidden;">
+      <div class="search-box" style="width: 80px; height: 32px; min-width: 0; padding: 5px 8px; border-radius: 16px; display: flex; align-items: center; background: #fff; border: 1px solid #FFE4C4; overflow: hidden;">
         <i class="ti ti-search" style="font-size: 0.9rem; color: #94a3b8; margin-right: 4px;"></i>
         <input type="text" placeholder="Search" style="font-size: 0.8rem; border: none; background: transparent; width: 100%; min-width: 0; outline: none;">
       </div>
@@ -2471,12 +2488,7 @@ function callBackend(action, args, onSuccess, onFailure) {
         <nav class="sd-nav" id="sd-sidebarNav" onscroll="updateStudentSidebarNotch()">
           <a class="nav-link active" id="sd-nav-live" onclick="switchStudentTab('live', this)"><span class="nav-icon"><i class="ti ti-activity"></i></span>Live Exams</a>
           <a class="nav-link" id="sd-nav-past" onclick="switchStudentTab('past', this)"><span class="nav-icon"><i class="ti ti-history"></i></span>History</a>
-          <a class="nav-link" id="sd-nav-notif" onclick="openModal('notifModal')"><span class="nav-icon"><i class="ti ti-bell"></i></span>Notifications</a>
-          <a class="nav-link" id="sd-nav-settings" onclick="switchStudentTab('settings', this)"><span class="nav-icon"><i class="ti ti-settings"></i></span>Change Password</a>
-          <a class="nav-link" id="sd-nav-feedback" onclick="openStudentFeedbackModal()"><span class="nav-icon"><i class="ti ti-message-star"></i></span>App Feedback</a>
-          <a class="nav-link" id="sd-nav-help" onclick="openModal('helpModal')"><span class="nav-icon"><i class="ti ti-help"></i></span>Help &amp; Support</a>
-          
-          <a class="nav-link nav-link-danger" onclick="logoutStudent()" style="margin-top:auto;"><span class="nav-icon"><i class="ti ti-logout"></i></span>Logout</a>
+          <div style="flex:1;"></div>
         </nav>
       </div>
     </div>
@@ -2487,7 +2499,24 @@ function callBackend(action, args, onSuccess, onFailure) {
     <div class="sd-main">
 
 
-      <div class="sd-page-heading">Welcome, <span id="sd-student-name" style="color:var(--primary);">Student</span></div>
+      <div class="sd-page-heading">
+        <div>Welcome, <span id="sd-student-name" style="color:var(--primary);">Student</span></div>
+        <div class="sd-desktop-profile-wrap" style="position:relative;">
+          <div class="sd-profile-btn" onclick="toggleDesktopStudentProfile()" style="cursor:pointer; display:flex; align-items:center; gap:8px; background:#fff; padding:6px 12px; border-radius:20px; border:1px solid #e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.02);">
+            <div style="width:28px; height:28px; border-radius:50%; background:#eef2ff; color:#4f46e5; display:flex; align-items:center; justify-content:center; font-size:1rem; font-weight:600;">S</div>
+            <span style="font-size:0.9rem; font-weight:600;">Profile</span>
+            <i class="ti ti-chevron-down" style="font-size:0.8rem; color:var(--text-muted);"></i>
+            <span class="notif-badge" style="display:none; width:8px; height:8px; position:absolute; top:-2px; right:-2px; background:#ef4444; border-radius:50%; border:2px solid #fff;"></span>
+          </div>
+          <div class="sd-profile-menu" id="desktopStudentProfileMenu" style="display:none; position:absolute; top:calc(100% + 8px); right:0; background:#fff; min-width:200px; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 10px 25px rgba(0,0,0,0.1); z-index:100; flex-direction:column; overflow:hidden;">
+            <div class="sd-profile-item" onclick="openModal('notifModal'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-bell"></i> Notifications</div>
+            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-key"></i> Change Password</div>
+            <div class="sd-profile-item" onclick="openStudentFeedbackModal(); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-message-star"></i> App Feedback</div>
+            <div class="sd-profile-item" onclick="openModal('helpModal'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-help"></i> Help &amp; Support</div>
+            <div class="sd-profile-item" onclick="logoutStudent(); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; color:#ef4444;"><i class="ti ti-logout"></i> Logout</div>
+          </div>
+        </div>
+      </div>
       <div class="sd-page-desc" id="sd-student-details">Your personal dashboard for assessments and history.</div>
       
       <div class="sd-content-area" id="sd-content-area">
@@ -2884,8 +2913,85 @@ function callBackend(action, args, onSuccess, onFailure) {
   </div>
 </div>
 
+<!-- Notifications Modal -->
+<div class="modal-overlay" id="notifModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Notifications</h3>
+      <button class="modal-close" onclick="closeModal('notifModal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="notifListContainer">
+      <div style="padding: 20px; text-align: center; color: var(--text-muted);">No new notifications</div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-outline" style="padding: 6px 12px; border-radius:4px; margin-right:8px;" onclick="closeModal('notifModal')">Close</button>
+      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="markAllNotificationsRead(); closeModal('notifModal');">Mark all as read</button>
+    </div>
+  </div>
+</div>
+
+<!-- Help & Support Modal -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Help &amp; Support</h3>
+      <button class="modal-close" onclick="closeModal('helpModal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:10px 0;">
+        <p style="margin-bottom:12px;"><strong>Need assistance?</strong><br>We're here to help you with any questions or issues you may have while using the platform.</p>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-mail" style="font-size:1.5rem; color:var(--primary);"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Email Support</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">support@college.edu</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-phone" style="font-size:1.5rem; color:#10b981;"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">IT Helpdesk</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">+1 (800) 123-4567</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-book" style="font-size:1.5rem; color:#f59e0b;"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Documentation</div>
+            <a href="#" style="font-size:0.8rem; color:var(--primary); text-decoration:none;">View User Guide</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="closeModal('helpModal')">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  function openModal(id) {
+    document.getElementById(id).classList.add('active');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+  
+  function toggleDesktopStudentProfile() {
+    const m = document.getElementById('desktopStudentProfileMenu');
+    m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+  }
+  document.addEventListener('click', e => {
+    const w = document.querySelector('.sd-desktop-profile-wrap');
+    if(w && !w.contains(e.target)) {
+      const m = document.getElementById('desktopStudentProfileMenu');
+      if (m) m.style.display = 'none';
+    }
+  });
+</script>
 
 <script>
   const _search = window.location.search;
