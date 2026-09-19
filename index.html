@@ -2411,6 +2411,9 @@ function callBackend(action, args, onSuccess, onFailure) {
     .mob-back-btn { width: 38px; height: 38px; border-radius: 50%; background: rgba(217,119,6,0.1); display: flex; align-items: center; justify-content: center; color: #d97706; font-size: 1.2rem; cursor: pointer; border: none; transition: background 0.15s; margin-right: 12px; }
     .mob-back-btn:active { background: rgba(217,119,6,0.2); }
     
+    .mob-refresh-btn { background: none; border: none; color: #d97706; cursor: pointer; padding: 6px; display: flex; align-items: center; justify-content: center; margin-left: auto; transition: transform 0.3s; border-radius: 50%; }
+    .mob-refresh-btn:active { transform: rotate(180deg); background: rgba(217,119,6,0.1); }
+    
     .mob-header-titles { display: flex; flex-direction: column; flex: 1; margin-right: 8px; overflow: hidden; }
     .mob-page-title { font-size: 1.1rem; font-weight: 700; font-family: 'Poppins', sans-serif; color: #d97706; margin: 0; letter-spacing: -0.3px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mob-header-actions { display: flex; align-items: center; gap: 12px; }
@@ -2475,7 +2478,13 @@ function callBackend(action, args, onSuccess, onFailure) {
   <div class="mob-page-header" id="mob-header-student">
     <button class="mob-back-btn" id="mob-back-btn" onclick="mobGoBackStudent()" style="display:none;"><i class="ti ti-arrow-left"></i></button>
     <i class="ti ti-layout-dashboard" id="mob-page-icon" style="font-size: 1.2rem; color: #d97706; margin-right: 8px;"></i>
-    <h2 class="mob-page-title" id="mob-page-title-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Dashboard</h2>
+    <h2 class="mob-page-title" id="mob-page-title-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">Dashboard</h2>
+    
+    <button onclick="loadStudentDashboard()" class="mob-refresh-btn" aria-label="Refresh">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
+      </svg>
+    </button>
   </div>
 
   <div class="sd-wrapper">
