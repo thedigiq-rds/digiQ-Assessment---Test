@@ -2451,24 +2451,7 @@ function callBackend(action, args, onSuccess, onFailure) {
 </style>
 
 <div id="student-dashboard" style="display:none;">
-  <!-- ═════════ MOBILE TITLE BAR ═════════ -->
-  <div class="mobile-top-bar" id="mobile-top-bar">
-    <div class="mobile-title-left">
-      <div class="mobile-college-name">M. N. College, Visnagar</div>
-      <div class="mobile-portal-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-        <i class="ti ti-shield-lock" style="font-size:0.85rem;"></i> digiQ &bull; Student
-      </div>
-    </div>
-    <div style="position:relative; display:flex; align-items:center; flex-shrink:0;">
-      <button class="mobile-profile-btn" onclick="openMobStudentProfile()" aria-label="Profile">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
-          <path d="M12 11c-2 0-3.5 1-4 2.5" stroke-dasharray="2 2" opacity="0.4"/>
-        </svg>
-      </button>
-    </div>
-  </div>
+
 
   <!-- ═════════ MOBILE CONTEXTUAL HEADER ═════════ -->
   <div class="mob-page-header" id="mob-header-student">
@@ -4600,41 +4583,50 @@ function callBackend(action, args, onSuccess, onFailure) {
 
   function mobSwitchStudentTab(tabId, title) {
     let mobPageTitle = document.getElementById('mob-page-title-text');
-    let mobPageIcon = document.getElementById('mob-page-icon');
-    let mobBackBtn = document.getElementById('mob-back-btn');
-    
+    let mobPageIcon  = document.getElementById('mob-page-icon');
+    let mobBackBtn   = document.getElementById('mob-back-btn');
+    let mobDash      = document.getElementById('mob-student-dash');
+
     if (mobPageTitle) mobPageTitle.innerText = title;
-    
+
     let iconClass = "ti ti-layout-dashboard";
     switch(tabId) {
-      case 'live': iconClass = "ti ti-activity"; break;
-      case 'past': iconClass = "ti ti-history"; break;
-      case 'settings': iconClass = "ti ti-key"; break;
+      case 'live':     iconClass = "ti ti-activity"; break;
+      case 'past':     iconClass = "ti ti-history";  break;
+      case 'settings': iconClass = "ti ti-key";      break;
     }
     if (mobPageIcon) mobPageIcon.className = iconClass;
-    if (mobBackBtn) mobBackBtn.style.display = 'flex';
-    
-    // Call existing desktop logic to handle content loading
+    if (mobBackBtn)  mobBackBtn.style.display = 'flex';
+
+    // Hide the mobile dashboard cards panel so the desktop tab content shows
+    if (mobDash) mobDash.style.display = 'none';
+
+    // Call existing desktop logic to handle content switching
     let fakeNavElem = document.getElementById('sd-nav-' + tabId);
-    if(fakeNavElem) {
+    if (fakeNavElem) {
       switchStudentTab(tabId, fakeNavElem);
+    } else {
+      switchStudentTab(tabId, null);
     }
-    
-    // Add mobile page active class to body
+
+    // Add mobile page active class so .desktop-tab-content becomes visible
     document.body.classList.add('mob-page-active');
   }
 
   function mobGoBackStudent() {
     document.body.classList.remove('mob-page-active');
-    
+
     let mobPageTitle = document.getElementById('mob-page-title-text');
-    let mobPageIcon = document.getElementById('mob-page-icon');
-    let mobBackBtn = document.getElementById('mob-back-btn');
-    
+    let mobPageIcon  = document.getElementById('mob-page-icon');
+    let mobBackBtn   = document.getElementById('mob-back-btn');
+    let mobDash      = document.getElementById('mob-student-dash');
+
     if (mobPageTitle) mobPageTitle.innerText = "Dashboard";
-    if (mobPageIcon) mobPageIcon.className = 'ti ti-layout-dashboard';
-    if (mobBackBtn) mobBackBtn.style.display = 'none';
-    
+    if (mobPageIcon)  mobPageIcon.className = 'ti ti-layout-dashboard';
+    if (mobBackBtn)   mobBackBtn.style.display = 'none';
+    // Restore mobile dashboard
+    if (mobDash) mobDash.style.removeProperty('display');
+
     // Always return to live tab on dashboard home
     let fakeNavElem = document.getElementById('sd-nav-live');
     if(fakeNavElem) {
