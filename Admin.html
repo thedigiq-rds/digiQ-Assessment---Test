@@ -2948,10 +2948,10 @@ document.addEventListener('focusout', function(e) {
         </div>
       </div>
       
-      <div class="mob-header-right" style="display: flex; gap: 8px; align-items: center; margin-left: auto; min-width: 0;">
-        <div class="search-box" style="width: 80px; height: 32px; min-width: 0; padding: 5px 8px; border-radius: 16px; display: flex; align-items: center; background: #fff; border: 1px solid #FFE4C4; overflow: hidden;">
-          <i class="ti ti-search" style="font-size: 0.9rem; color: #94a3b8; margin-right: 4px;"></i>
-          <input type="text" placeholder="Search" style="font-size: 0.8rem; border: none; background: transparent; width: 100%; min-width: 0; outline: none;" oninput="if(typeof handleOmniSearch === 'function') handleOmniSearch(this.value)">
+      <div class="mob-header-right" style="display: flex; gap: 4px; align-items: center; margin-left: auto; min-width: 0;">
+        <div class="search-box" style="width: 65px !important; max-width: 65px !important; height: 28px !important; min-width: 0; padding: 4px 6px !important; border-radius: 14px; display: flex; align-items: center; background: #fff; border: 1px solid #FFE4C4; overflow: hidden; flex-shrink: 1;">
+          <i class="ti ti-search" style="font-size: 0.8rem; color: #94a3b8; margin-right: 2px;"></i>
+          <input type="text" placeholder="Search" style="font-size: 0.75rem !important; border: none; background: transparent; width: 100%; min-width: 0; outline: none;" oninput="if(typeof handleOmniSearch === 'function') handleOmniSearch(this.value)">
         </div>
       </div>
     </div>
@@ -9740,7 +9740,7 @@ setTimeout(generateMockNotifications, 2000);
 </script>
 <!-- Notifications Modal -->
 <div class="modal-overlay" id="notifModal">
-  <div class="modal-content">
+  <div class="modal" style="max-width: 400px;">
     <div class="modal-header">
       <h3 class="modal-title">Notifications</h3>
       <button class="modal-close" onclick="closeModal('notifModal')"><i class="ti ti-x"></i></button>
@@ -9757,7 +9757,7 @@ setTimeout(generateMockNotifications, 2000);
 
 <!-- Help & Support Modal -->
 <div class="modal-overlay" id="helpModal">
-  <div class="modal-content">
+  <div class="modal" style="max-width: 400px;">
     <div class="modal-header">
       <h3 class="modal-title">Help &amp; Support</h3>
       <button class="modal-close" onclick="closeModal('helpModal')"><i class="ti ti-x"></i></button>
