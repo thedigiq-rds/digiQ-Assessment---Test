@@ -1636,6 +1636,7 @@ function callBackend(action, args, onSuccess, onFailure) {
       .stats-grid, .grid-2, .grid-3, .grid-3-1, .charts-row {
         grid-template-columns: 1fr 1fr !important; gap: 12px !important;
       }
+      .stats-grid { padding: 0 8px !important; }
       .panel { padding: 16px 14px !important; }
       .login-split-container {
         flex-direction: column !important; max-width: 420px !important;
@@ -2244,7 +2245,9 @@ function callBackend(action, args, onSuccess, onFailure) {
       isolation: isolate;
       grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
       gap: 16px 14px !important;
-      width: 100%;
+      width: auto !important;
+      margin-left: -4px;
+      margin-right: -4px;
       margin-bottom: 20px;
       padding: 18px 12px;
       overflow: hidden;
@@ -2406,17 +2409,18 @@ function callBackend(action, args, onSuccess, onFailure) {
       --group-border: transparent;
       --group-accent: #2563eb;
       --group-icon-bg: #d0e1ff;
-      --group-orb: transparent;
+      --group-orb: rgba(37, 99, 235, 0.12);
       position: relative;
       isolation: isolate;
       margin-bottom: 12px;
-      margin-left: -8px;
-      margin-right: -8px;
+      margin-left: -4px;
+      margin-right: -4px;
       padding: 16px 12px;
       border: none;
       border-radius: 18px;
       background: var(--group-bg);
       box-shadow: none;
+      overflow: hidden;
     }
     .mob-dashboard-group--insights {
       --group-bg: #e9d5ff;
