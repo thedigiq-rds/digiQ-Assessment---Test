@@ -2451,8 +2451,6 @@ function callBackend(action, args, onSuccess, onFailure) {
         <i class="ti ti-search" style="font-size: 0.9rem; color: #94a3b8; margin-right: 4px;"></i>
         <input type="text" placeholder="Search" style="font-size: 0.8rem; border: none; background: transparent; width: 100%; min-width: 0; outline: none;">
       </div>
-      <button class="icon-btn" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 50%; border: 1px solid #FFE4C4; background: #fff; display: flex; align-items: center; justify-content: center; color: #64748b; position: relative;"><i class="ti ti-bell"></i><span class="badge" style="width:6px;height:6px;position:absolute;top:6px;right:6px;background:#ef4444;border-radius:50%;"></span></button>
-      <button class="icon-btn" style="width: 32px; height: 32px; font-size: 1rem; border-radius: 50%; border: 1px solid #FFE4C4; background: #fff; display: flex; align-items: center; justify-content: center; color: #64748b;" onclick="openStudentFeedbackModal()"><i class="ti ti-help"></i></button>
     </div>
   </div>
 
@@ -2473,8 +2471,10 @@ function callBackend(action, args, onSuccess, onFailure) {
         <nav class="sd-nav" id="sd-sidebarNav" onscroll="updateStudentSidebarNotch()">
           <a class="nav-link active" id="sd-nav-live" onclick="switchStudentTab('live', this)"><span class="nav-icon"><i class="ti ti-activity"></i></span>Live Exams</a>
           <a class="nav-link" id="sd-nav-past" onclick="switchStudentTab('past', this)"><span class="nav-icon"><i class="ti ti-history"></i></span>History</a>
+          <a class="nav-link" id="sd-nav-notif" onclick="openModal('notifModal')"><span class="nav-icon"><i class="ti ti-bell"></i></span>Notifications</a>
           <a class="nav-link" id="sd-nav-settings" onclick="switchStudentTab('settings', this)"><span class="nav-icon"><i class="ti ti-settings"></i></span>Change Password</a>
           <a class="nav-link" id="sd-nav-feedback" onclick="openStudentFeedbackModal()"><span class="nav-icon"><i class="ti ti-message-star"></i></span>App Feedback</a>
+          <a class="nav-link" id="sd-nav-help" onclick="openModal('helpModal')"><span class="nav-icon"><i class="ti ti-help"></i></span>Help &amp; Support</a>
           
           <a class="nav-link nav-link-danger" onclick="logoutStudent()" style="margin-top:auto;"><span class="nav-icon"><i class="ti ti-logout"></i></span>Logout</a>
         </nav>
@@ -2638,6 +2638,11 @@ function callBackend(action, args, onSuccess, onFailure) {
   </div>
   
   <div class="mob-profile-menu">
+    <div class="mob-profile-item" onclick="openModal('notifModal'); closeMobStudentProfile();">
+      <i class="ti ti-bell mob-profile-icon"></i>
+      Notifications
+      <i class="ti ti-chevron-right mob-profile-arrow"></i>
+    </div>
     <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Change Password'); closeMobStudentProfile();">
       <i class="ti ti-settings mob-profile-icon"></i>
       Change Password
@@ -2646,6 +2651,11 @@ function callBackend(action, args, onSuccess, onFailure) {
     <div class="mob-profile-item" onclick="openStudentFeedbackModal(); closeMobStudentProfile();">
       <i class="ti ti-message-star mob-profile-icon"></i>
       App Feedback
+      <i class="ti ti-chevron-right mob-profile-arrow"></i>
+    </div>
+    <div class="mob-profile-item" onclick="openModal('helpModal'); closeMobStudentProfile();">
+      <i class="ti ti-help mob-profile-icon"></i>
+      Help &amp; Support
       <i class="ti ti-chevron-right mob-profile-arrow"></i>
     </div>
     <div class="mob-profile-item danger" onclick="logoutStudent()">
