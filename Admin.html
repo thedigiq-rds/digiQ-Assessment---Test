@@ -5155,6 +5155,10 @@ function _restoreAdminSession(res) {
   if (mobProfileName) {
     mobProfileName.textContent = displayName;
   }
+  const mobProfileEmail = document.getElementById('mob-admin-profile-email');
+  if (mobProfileEmail) {
+    mobProfileEmail.textContent = res.email || '';
+  }
 
   // Populate compact sidebar profile button
   const sidebarAdminNameEl = document.getElementById('sidebar-admin-name');
@@ -5347,6 +5351,25 @@ async function confirmLogout(skipConfirm = false) {
 }
 
 /* Obsolete mobile tab bar scripts removed */
+
+/* ════════════════════════════════════════
+   MOBILE PROFILE OVERLAY (Admin)
+════════════════════════════════════════ */
+function openMobAdminProfile() {
+  const overlay = document.getElementById('mob-profile-overlay');
+  if (!overlay) return;
+  // Refresh name/email in case they changed after login
+  const nameEl  = document.getElementById('mob-admin-profile-name');
+  const emailEl = document.getElementById('mob-admin-profile-email');
+  if (nameEl  && activeRole) nameEl.textContent  = activeRole.name  || 'Admin';
+  if (emailEl && activeRole) emailEl.textContent = activeRole.email || '';
+  overlay.classList.add('active');
+}
+
+function closeMobAdminProfile() {
+  const overlay = document.getElementById('mob-profile-overlay');
+  if (overlay) overlay.classList.remove('active');
+}
 
 function toggleProfileDropdown() {
   const dd = document.getElementById('profileDropdown');
