@@ -3601,6 +3601,52 @@ function callBackend(action, args, onSuccess, onFailure) {
   /* ──────────────────────────────────────────────────────── */
   /* INTERACTION                                               */
   /* ──────────────────────────────────────────────────────── */
+  
+  function toggleMultiAns(qId, val) {
+    let decoded = String(val).replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\\'/g, "'");
+    let current = [];
+    try { current = JSON.parse(answers[qId] || "[]"); } catch(e){}
+    if (current.includes(decoded)) current = current.filter(x => x !== decoded);
+    else current.push(decoded);
+    answers[qId] = JSON.stringify(current);
+    renderQuestion();
+    saveStateToLocal();
+    updateProgressUI();
+  }
+  
+  function updateMatchingAns(qId, leftIndex, rightVal) {
+    let current = [];
+    try { current = JSON.parse(answers[qId] || "[]"); } catch(e){}
+    current[leftIndex] = rightVal;
+    answers[qId] = JSON.stringify(current);
+    saveStateToLocal();
+    updateProgressUI();
+  }
+  
+  function updateChronologyAns(qId, orderedArrayStr) {
+    answers[qId] = orderedArrayStr;
+    saveStateToLocal();
+    updateProgressUI();
+  }
+  
+  function moveChronology(qId, index, dir, total) {
+    let current = [];
+    try { current = JSON.parse(answers[qId] || "[]"); } catch(e){}
+    if (current.length !== total) {
+      // initialize
+      let q = examData.find(x => x.id === qId);
+      current = JSON.parse(q.options || "[]");
+    }
+    if (index + dir < 0 || index + dir >= total) return;
+    let temp = current[index];
+    current[index] = current[index + dir];
+    current[index + dir] = temp;
+    answers[qId] = JSON.stringify(current);
+    renderQuestion();
+    saveStateToLocal();
+    updateProgressUI();
+  }
+
   function selectAns(qId, val) {
     let decoded = String(val).replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\\\\'/g, "'");
     answers[qId] = decoded;
