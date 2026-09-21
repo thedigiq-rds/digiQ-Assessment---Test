@@ -3535,6 +3535,91 @@ function callBackend(action, args, onSuccess, onFailure) {
                     style="font-size: 0.98rem; padding: 16px 20px; border: 2px solid #cbd5e1; border-radius: 12px; width: 100%; background: #ffffff; color: #1e293b; font-weight: 500; resize: vertical; line-height: 1.6;">${safeAns}</textarea>
           <div style="margin-top:8px; font-size:0.8rem; color:#64748b;"><svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> Your descriptive answer will be submitted for review and evaluation by your instructor.</div>
         </div>`;
+    } else if (qType === 'NUMERICAL') {
+      const safeAns = currentAns.replace(/"/g, '&quot;');
+      container.innerHTML = `
+        <div style="padding: 14px 0;">
+          <input type="number" step="any" class="f-input"
+                 placeholder="Type your numerical answer here..."
+                 value="${safeAns}"
+                 oninput="onTextAns('${q.id}', this.value)"
+                 style="font-size: 1.05rem; padding: 16px 20px; border: 2px solid #cbd5e1; border-radius: 12px; width: 100%; background: #ffffff; color: #1e293b; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        </div>`;
+    } else if (qType === 'FILL_BLANK') {
+      const safeAns = currentAns.replace(/"/g, '&quot;');
+      container.innerHTML = `
+        <div style="padding: 14px 0;">
+          <input type="text" class="f-input"
+                 placeholder="Type your answer here..."
+                 value="${safeAns}"
+                 oninput="onTextAns('${q.id}', this.value)"
+                 style="font-size: 1.05rem; padding: 16px 20px; border: 2px solid #cbd5e1; border-radius: 12px; width: 100%; background: #ffffff; color: #1e293b; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+        </div>`;
+    } else if (qType === 'MULTIPLE_MCQ' || qType === 'MULTIPLE_STATEMENT') {
+      let selectedArr = [];
+      try { selectedArr = JSON.parse(currentAns || "[]"); } catch(e){}
+      container.innerHTML = q.options.map((opt, i) => {
+        const isSelected = selectedArr.includes(String(opt).trim());
+        const sel = isSelected ? 'selected' : '';
+        const safeOpt = String(opt).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `<button class="option-btn ${sel}" onclick="toggleMultiAns('${q.id}', '${safeOpt}')" style="display:flex; align-items:center; gap:14px;">
+          <div style="width:24px; height:24px; border:2px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}; border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0; background:${isSelected ? 'var(--primary)' : 'transparent'}; transition:all 0.2s;">
+            ${isSelected ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+          </div>
+          <span>${opt}</span>
+        </button>`;
+      }).join('');
+      container.insertAdjacentHTML('afterbegin', '<div style="margin-bottom:12px; font-size:0.85rem; color:#64748b; font-weight:600;"><svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg> Select one or more correct options</div>');
+    } else if (qType === 'MATCHING') {
+      const leftItems = q.options.left || [];
+      const rightOptions = q.options.right || [];
+      let mappedArr = [];
+      try { mappedArr = JSON.parse(currentAns || "[]"); } catch(e){}
+      let html = '<div style="display:flex; flex-direction:column; gap:14px; margin-bottom:14px;">';
+      leftItems.forEach((lItem, i) => {
+        const currentMapped = mappedArr[i] || "";
+        const rightOptsHtml = ['<option value="">-- Select Match --</option>', ...rightOptions.map(ro => {
+          const safeRo = String(ro).replace(/"/g, '&quot;');
+          const sel = (String(ro).trim() === String(currentMapped).trim()) ? 'selected' : '';
+          return `<option value="${safeRo}" ${sel}>${ro}</option>`;
+        })].join('');
+        
+        html += `
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; padding:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px;">
+            <div style="flex:1; font-weight:600; color:#1e293b; font-size:0.95rem;">${lItem}</div>
+            <div style="flex:1; display:flex; justify-content:flex-end;">
+              <select class="f-input" onchange="updateMatchingAns('${q.id}', ${i}, this.value, ${leftItems.length})" style="font-size:0.9rem; padding:10px 14px; border:2px solid #cbd5e1; border-radius:8px; width:100%; max-width:250px; background:#fff; color:#1e293b; font-weight:500;">
+                ${rightOptsHtml}
+              </select>
+            </div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    } else if (qType === 'CHRONOLOGY') {
+      let items = [];
+      try { items = JSON.parse(currentAns || "[]"); } catch(e){}
+      if (!items || items.length === 0) items = [...(q.options || [])]; // Default to provided shuffled order
+      
+      let html = '<div style="display:flex; flex-direction:column; gap:12px; margin-bottom:14px;">';
+      html += '<div style="font-size:0.85rem; color:#64748b; font-weight:600; margin-bottom:4px;"><svg class="svg-icon" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11V7a5 5 0 0 1 10 0v4"></path><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect></svg> Use the arrows to correctly order the items</div>';
+      items.forEach((item, i) => {
+        html += `
+          <div style="display:flex; align-items:center; gap:16px; padding:14px 18px; background:#ffffff; border:2px solid #e2e8f0; border-radius:12px; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <button onclick="moveChronoItem('${q.id}', ${i}, -1)" ${i===0?'disabled':''} style="background:transparent; border:none; cursor:pointer; color:${i===0?'#cbd5e1':'#64748b'}; padding:2px; transition:color 0.2s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></button>
+              <button onclick="moveChronoItem('${q.id}', ${i}, 1)" ${i===items.length-1?'disabled':''} style="background:transparent; border:none; cursor:pointer; color:${i===items.length-1?'#cbd5e1':'#64748b'}; padding:2px; transition:color 0.2s;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></button>
+            </div>
+            <div style="flex:1; font-weight:600; color:#1e293b; font-size:0.95rem;">${item}</div>
+            <div style="width:28px; height:28px; border-radius:50%; background:#f1f5f9; color:#64748b; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; flex-shrink:0;">${i+1}</div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      container.innerHTML = html;
+      // Mark as implicitly answered if they interacted? Wait, if they just see the default order it's not answered unless they interact. 
+      // But we initialized items. Let's not auto-answer, they must interact.
     } else {
       container.innerHTML = q.options.map((opt, i) => {
         const isSelected = (answers[q.id] != null && String(answers[q.id]).trim() === String(opt).trim());
@@ -3653,6 +3738,63 @@ function callBackend(action, args, onSuccess, onFailure) {
     renderQuestion();
     saveStateToLocal();
     updateProgressUI();
+  }
+
+  function toggleMultiAns(qId, val) {
+    let decoded = String(val).replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\\\\'/g, "'");
+    let arr = [];
+    try { arr = JSON.parse(answers[qId] || "[]"); } catch(e){}
+    const idx = arr.indexOf(decoded);
+    if (idx > -1) arr.splice(idx, 1);
+    else arr.push(decoded);
+    if (arr.length === 0) delete answers[qId];
+    else answers[qId] = JSON.stringify(arr);
+    renderQuestion();
+    saveStateToLocal();
+    updateProgressUI();
+  }
+
+  function updateMatchingAns(qId, idx, val, totalItems) {
+    let arr = [];
+    try { arr = JSON.parse(answers[qId] || "[]"); } catch(e){}
+    while(arr.length < totalItems) arr.push("");
+    arr[idx] = val;
+    if (arr.every(a => a === "")) delete answers[qId];
+    else answers[qId] = JSON.stringify(arr);
+    
+    saveStateToLocal();
+    updateProgressUI();
+    
+    // Manually update circles to avoid un-focusing the dropdown by calling renderQuestion()
+    document.querySelectorAll('.q-circle').forEach(c => {
+      const idxStr = c.getAttribute('data-index');
+      if (!idxStr) return;
+      const q = examData[parseInt(idxStr, 10)];
+      if (q && q.id === qId) {
+        if (answers[qId]) c.classList.add('answered');
+        else c.classList.remove('answered');
+      }
+    });
+  }
+
+  function moveChronoItem(qId, idx, dir) {
+    let arr = [];
+    try { arr = JSON.parse(answers[qId] || "[]"); } catch(e){}
+    if (arr.length === 0) {
+      // First interaction, initialize with the provided default order
+      const q = examData.find(x => x.id === qId);
+      if (q) arr = [...(q.options || [])];
+    }
+    
+    if (idx + dir >= 0 && idx + dir < arr.length) {
+      const temp = arr[idx];
+      arr[idx] = arr[idx + dir];
+      arr[idx + dir] = temp;
+      answers[qId] = JSON.stringify(arr);
+      renderQuestion();
+      saveStateToLocal();
+      updateProgressUI();
+    }
   }
 
   function onTextAns(qId, val) {
