@@ -2669,6 +2669,27 @@ document.addEventListener('focusout', function(e) {
         }
     </script>
 
+
+<style>
+  .mb-card { border:1.5px solid var(--main-border); border-radius:12px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.04); overflow:hidden; transition:border-color 0.15s, box-shadow 0.15s; }
+  .mb-card:hover { border-color:var(--primary-lt,#818cf8); box-shadow:0 4px 12px rgba(99,102,241,0.07); }
+  .mb-card-header { background:#f8fafc; padding:12px 16px; border-bottom:1px solid var(--main-border); display:flex; justify-content:space-between; align-items:center; font-weight:700; color:#334155; font-size:0.88rem; }
+  .mb-card-body { padding:16px; }
+  .mb-input { width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.9rem; box-sizing:border-box; }
+  .mb-input:focus { border-color:#6366f1; outline:none; }
+  .mb-row { display:flex; gap:16px; margin-bottom:12px; }
+  .mb-col { flex:1; min-width:0; }
+  .mb-label { display:block; font-size:0.78rem; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase; letter-spacing:.04em; }
+  .mb-del-btn { color:#ef4444; cursor:pointer; background:none; border:none; padding:4px 8px; border-radius:4px; transition:background 0.15s; }
+  .mb-del-btn:hover { background:#fee2e2; }
+  .mb-rich-toolbar { display:flex; gap:4px; background:#f1f5f9; padding:4px; border:1px solid #cbd5e1; border-bottom:none; border-radius:6px 6px 0 0; }
+  .mb-rich-btn { background:none; border:none; cursor:pointer; padding:4px 8px; border-radius:4px; color:#475569; }
+  .mb-rich-btn:hover { background:#e2e8f0; color:#0f172a; }
+  .mb-rich-editor { border:1px solid #cbd5e1; border-radius:0 0 6px 6px; padding:10px; min-height:80px; outline:none; font-size:0.95rem; line-height:1.5; }
+  .mb-rich-editor:focus { border-color:#6366f1; }
+  .mb-type-badge { font-size:0.72rem; font-weight:700; padding:3px 8px; border-radius:6px; background:#f0f1ff; color:#6366f1; }
+  #cq-view-manual-builder .cfb-qt-btn { font-size:0.82rem; }
+</style>
 </head>
 <body>
 
@@ -2928,7 +2949,7 @@ document.addEventListener('focusout', function(e) {
       </div>
       <nav class="sidebar-nav" id="sidebarNav" onscroll="updateSidebarNotch()">
         <a class="nav-link active" id="nav-overview"  onclick="switchTab('overview',  this)"><span class="nav-icon"><i class="ti ti-layout-dashboard"></i></span><span class="nav-link-text">Dashboard</span></a>
-        <a class="nav-link"        id="nav-create"    onclick="openCreateNewQuizTab(this)"><span class="nav-icon"><i class="ti ti-plus"></i></span><span class="nav-link-text">Create Quiz</span></a>
+        <a class="nav-link"        id="nav-create"    onclick="openCreateNewQuizTab(this)"><span class="nav-icon"><i class="ti ti-plus"></i></span><span class="nav-link-text">Create Assessment</span></a>
         <a class="nav-link"        id="nav-manage"    onclick="switchTab('manage',    this)"><span class="nav-icon"><i class="ti ti-list-check"></i></span><span class="nav-link-text">Manage Quizzes</span></a>
         <a class="nav-link"        id="nav-essays"    onclick="switchTab('essays',    this)"><span class="nav-icon"><i class="ti ti-pencil"></i></span><span class="nav-link-text">Essay Grading</span></a>
         <a class="nav-link"        id="nav-epb"       onclick="switchTab('epb',       this)"><span class="nav-icon"><i class="ti ti-file-text"></i></span><span class="nav-link-text">Exam Paper Builder</span></a>
@@ -3155,7 +3176,9 @@ document.addEventListener('focusout', function(e) {
 
     <!-- ══════════ CREATE QUIZ TAB ══════════ -->
     <div id="tab-create" class="tab-content" style="display:none;">
-      <div class="page-heading"><i class="ti ti-circle-plus"></i> Create New Quiz</div>
+      <!-- ── CREATE FORM VIEW (default) ── -->
+      <div id="cq-view-form">
+      <div class="page-heading"><i class="ti ti-circle-plus"></i> Create New Assessment</div>
 
       <!-- Step 1: Assessment Type -->
       <div class="panel" style="margin-bottom:18px; border-left:4px solid var(--primary);">
@@ -3165,7 +3188,7 @@ document.addEventListener('focusout', function(e) {
         <div style="max-width:480px;">
           <select id="cqAssessmentType" class="f-select" style="padding:12px 16px;" onchange="onAssessmentTypeChange(this.value)">
             <option value="">-- Select Type --</option>
-            <option value="MCQ">Multiple Choice Questions (MCQ)</option>
+            <option value="MCQ">Create Objective Assessment</option>
             <option value="SHORT">Short Answer Questions (Auto-Grading)</option>
             <option value="ESSAY">Descriptive Essay Questions (Manual Evaluation)</option>
           </select>
@@ -3360,7 +3383,7 @@ document.addEventListener('focusout', function(e) {
         <!-- Step 3: Question Bank -->
         <div class="panel" style="margin-bottom:18px;">
           <div class="panel-title" style="display:flex; justify-content:space-between; align-items:center;">
-            <span>Step 3: Question Bank (<span id="cqBankTitleBadge">MCQ</span>)</span>
+            <span>Step 3: Set Questions</span>
             <span style="color:var(--primary); font-size:0.82rem;">Upload Excel / CSV</span>
           </div>
           <div id="qmode-file-panel" style="display:block;">
@@ -3379,6 +3402,8 @@ document.addEventListener('focusout', function(e) {
               <input type="file" id="cqFile" class="f-input" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv" style="flex:1; min-width:220px; padding:10px;" onchange="clearDeployedLinkBox()">
               <div style="color:var(--text-dim); font-weight:600;">OR</div>
               <button type="button" class="btn-primary-admin" onclick="openQbSelectModal()" style="padding:11px 20px; white-space:nowrap;"><i class="ti ti-database" style="margin-right:6px;"></i> Select from Question Bank</button>
+              <div style="color:var(--text-dim); font-weight:600; margin:0 8px;">OR</div>
+              <button type="button" class="btn-primary-admin" onclick="openManualBuilder()" style="padding:11px 20px; white-space:nowrap; background-color:#10b981; border-color:#10b981;"><i class="ti ti-pencil" style="margin-right:6px;"></i> + Add Manually</button>
             </div>
           </div>
         </div>
@@ -3410,6 +3435,93 @@ document.addEventListener('focusout', function(e) {
         </div>
 
     </div>
+      </div><!-- end cq-view-form -->
+
+      <!-- ── MANUAL BUILDER INLINE VIEW (hidden by default) ── -->
+      <div id="cq-view-manual-builder" style="display:none;">
+        <!-- Top header bar matching cfb pattern -->
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:20px; padding-bottom:16px; border-bottom:2px solid var(--main-border);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:38px; height:38px; background:linear-gradient(135deg,#10b981,#059669); border-radius:12px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(16,185,129,0.3);">
+              <i class="ti ti-pencil" style="color:#fff; font-size:1.3rem;"></i>
+            </div>
+            <div>
+              <div class="page-heading" style="margin:0; font-size:1.15rem;"><i class="ti ti-pencil"></i> Manual Question Builder</div>
+              <div style="font-size:0.78rem; color:var(--text-muted); margin-top:2px;">Create Objective Assessment — add questions manually</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn-outline" onclick="closeMBView()" style="padding:10px 18px;">
+              <i class="ti ti-arrow-left"></i> Back to Form
+            </button>
+            <button class="btn-primary-admin" onclick="saveManualBuilder()" style="padding:10px 22px;">
+              <i class="ti ti-device-floppy"></i> Save &amp; Return
+            </button>
+          </div>
+        </div>
+
+        <!-- Builder Layout: reuse cfb-builder-wrap pattern -->
+        <div class="cfb-builder-wrap" style="height:calc(100vh - 220px); border-radius:16px;">
+
+          <!-- Left Sidebar: Settings + Question Types -->
+          <div class="cfb-builder-sidebar">
+            <div class="cfb-builder-sidebar-head">
+              <h4>Settings</h4>
+            </div>
+            <div style="padding:12px; border-bottom:1px solid var(--main-border);">
+              <div style="display:flex; flex-direction:column; gap:10px; font-size:0.85rem;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:#334155;">
+                  <input type="checkbox" id="mb-create-sections" onchange="mbToggleSections()">
+                  <span>Create Sections</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:#334155;">
+                  <input type="checkbox" id="mb-shuffle-qs">
+                  <span>Shuffle Questions</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color:#334155;">
+                  <input type="checkbox" id="mb-shuffle-opts">
+                  <span>Shuffle Options</span>
+                </label>
+              </div>
+            </div>
+            <div class="cfb-builder-sidebar-head" style="margin-top:4px;">
+              <h4>Add Question</h4>
+            </div>
+            <div class="cfb-qt-list">
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('SINGLE_MCQ')"><i class="ti ti-circle-dot"></i> Single Correct MCQ</button>
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('MULTIPLE_MCQ')"><i class="ti ti-square-check"></i> Multiple Correct MCQ</button>
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('TRUE_FALSE')"><i class="ti ti-toggle-right"></i> True / False</button>
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('MATCHING')"><i class="ti ti-arrows-exchange"></i> Matching</button>
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('CHRONOLOGY')"><i class="ti ti-sort-ascending"></i> Chronology / Arrange</button>
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('ASSERTION_REASON')"><i class="ti ti-message-report"></i> Assertion-Reason</button>
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('STATEMENT_BASED')"><i class="ti ti-list-details"></i> Statement-Based</button>
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('MULTIPLE_STATEMENT')"><i class="ti ti-layers-intersect"></i> Multiple Statement</button>
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('NUMERICAL')"><i class="ti ti-calculator"></i> Numerical Answer</button>
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('FILL_BLANK')"><i class="ti ti-input-search"></i> Fill in the Blank</button>
+            </div>
+          </div>
+
+          <!-- Right Canvas: Section tabs + Question Cards -->
+          <div class="cfb-canvas" style="background:#f8fafc;">
+            <!-- Section tabs (visible only when Create Sections is checked) -->
+            <div id="mb-sections-container" style="display:none;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-size:0.85rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em;">Sections</span>
+                <button class="cfb-btn cfb-btn-secondary cfb-btn-sm" onclick="mbAddSection()"><i class="ti ti-plus"></i> Add Section</button>
+              </div>
+              <div id="mb-section-tabs" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:4px;"></div>
+            </div>
+
+            <!-- Question cards -->
+            <div id="mb-questions-container" style="display:flex; flex-direction:column; gap:16px; padding-bottom:40px;">
+              <div style="text-align:center; color:#94a3b8; padding:48px 20px; font-size:1rem;">
+                <i class="ti ti-click" style="font-size:3rem; margin-bottom:12px; display:block; opacity:0.4;"></i>
+                Click a question type on the left to add your first question.
+              </div>
+            </div>
+          </div>
+        </div><!-- end cfb-builder-wrap -->
+      </div><!-- end cq-view-manual-builder -->
 
       
       <!-- Import Questions Modal -->
@@ -6480,7 +6592,8 @@ async function processQuizCreation() {
   if (!validationPassed) { loader.style.display='none'; hideLoader(); btn.disabled=false; return; }
 
   const file = document.getElementById('cqFile').files[0];
-  if (!file && !editingQuizId) { showToast('Please upload an Excel/CSV file.', 'warning'); loader.style.display='none'; hideLoader(); btn.disabled=false; return; }
+  const hasManualQuestions = (typeof existingQuestionsForEdit !== 'undefined' && existingQuestionsForEdit && existingQuestionsForEdit.length > 0);
+  if (!file && !editingQuizId && !hasManualQuestions) { showToast('Please upload an Excel/CSV file or Add Manually.', 'warning'); loader.style.display='none'; hideLoader(); btn.disabled=false; return; }
 
   const duration    = document.getElementById('cqTime').value.trim();
   const passPercent = document.getElementById('cqPass').value.trim();
@@ -6503,7 +6616,9 @@ async function processQuizCreation() {
     campusName: document.getElementById('cqGeoName')?.value?.trim() || '',
     enableSchedule: _scheduleEnabled ? "Yes" : "No",
     startTime: _scheduleEnabled ? `${document.getElementById('cqStartDate').value} ${document.getElementById('cqStartHour').value}:${document.getElementById('cqStartMinute').value} ${document.getElementById('cqStartAmPm').value}` : '',
-    endTime: _scheduleEnabled ? `${document.getElementById('cqEndDate').value} ${document.getElementById('cqEndHour').value}:${document.getElementById('cqEndMinute').value} ${document.getElementById('cqEndAmPm').value}` : ''
+    endTime: _scheduleEnabled ? `${document.getElementById('cqEndDate').value} ${document.getElementById('cqEndHour').value}:${document.getElementById('cqEndMinute').value} ${document.getElementById('cqEndAmPm').value}` : '',
+    shuffleQuestions: window.manualShuffleQs || 'Yes',
+    shuffleOptions: window.manualShuffleOpts || 'Yes'
   };
 
   if (_scheduleEnabled) {
@@ -8231,1530 +8346,301 @@ function epbPrint() {
   if (!el) { window.print(); return; }
   var win = window.open('','_blank');
   win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>@import url(\'https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap\'); body{margin:0;font-family:Merriweather,Georgia,serif;} @media print{body{background:white;} @page{size:A4 portrait;margin:0;}}</style></head><body><div style="width:210mm;height:297mm;max-height:297mm;padding:10mm 14mm;box-sizing:border-box;overflow:hidden;display:flex;flex-direction:column;">' + el.innerHTML + '</div></body></html>');
-  win.document.close(); win.focus();
-  setTimeout(function(){ win.print(); win.close(); }, 500);
+  win.document.close();
+  win.focus();
+  win.print();
 }
 
-function epbOpenSavedPapers() {
-  document.getElementById('epb-editor-view').style.display = 'none';
-  document.getElementById('epb-saved-view').style.display = 'block';
-  document.getElementById('epb-main-btns').style.display = 'none';
-  document.getElementById('epb-saved-btns').style.display = 'flex';
-  document.getElementById('epb-papers-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px; color:#94a3b8;">Loading saved papers...</td></tr>';
-  google.script.run
-    .withSuccessHandler(function(data){ epbSavedPapers = data||[]; epbRenderPapersTable(data); })
-    .withFailureHandler(function(err){ document.getElementById('epb-papers-tbody').innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px; color:#ef4444;">Error: '+err.message+'</td></tr>'; })
-    .getSavedPapers();
-}
+  /* ═══════════════════════════════════════════════════════════════
+     MANUAL ASSESSMENT BUILDER — Inline View
+     Follows the same view-swap pattern as Create Form (cfbNewForm).
+  ═══════════════════════════════════════════════════════════════ */
+  let mbQuestions = [];
+  let mbSections = [{ id:'default', name:'Uncategorized' }];
+  let mbActiveSection = 'default';
 
-function epbGoBackToEditor() {
-  document.getElementById('epb-saved-view').style.display = 'none';
-  document.getElementById('epb-editor-view').style.display = 'block';
-  document.getElementById('epb-main-btns').style.display = 'flex';
-  document.getElementById('epb-saved-btns').style.display = 'none';
-}
-
-function epbRenderPapersTable(data) {
-  var tbody = document.getElementById('epb-papers-tbody');
-  if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:40px; color:#94a3b8;">No saved papers found.</td></tr>'; return; }
-  tbody.innerHTML = '';
-  data.slice().reverse().forEach(function(row) {
-    var tr = document.createElement('tr');
-    var dateStr = '—';
-    try { var d = new Date(row.timestamp); if (!isNaN(d)) dateStr = formatStandardDate(d) + ' ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); } catch(e){}
-    tr.innerHTML = '<td>' + dateStr + '</td><td style="font-weight:600; color:#0f172a;">' + (row.creator||'—') + '</td>' +
-      '<td><div style="font-weight:500;">' + (row.program||'—') + '</div><div style="font-size:0.72rem; color:#64748b;">Sem ' + (row.semester||'—') + '</div></td>' +
-      '<td><span style="background:#eef2ff; color:#4f46e5; font-size:0.72rem; font-weight:600; padding:3px 8px; border-radius:12px; border:1px solid #c7d2fe;">' + (row.paperCode||'—') + '</span></td>' +
-      '<td style="font-weight:500;">' + (row.paperName||'—') + '</td>' +
-      '<td style="white-space:nowrap; min-width:110px;">' +
-        '<div style="display:flex; gap:4px; flex-wrap:nowrap; align-items:center; justify-content:flex-end;">' +
-          '<button class="btn-xs btn-xs-action" onclick="epbDownloadPaper('+row.id+')" title="Download PDF"><svg class="svg-icon" width="1.1em" height="1.1em" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg></button>' +
-          '<button class="btn-xs btn-xs-action" onclick="epbEditPaper('+row.id+')" title="Edit"><i class="ti ti-edit"></i></button>' +
-          '<button class="btn-xs btn-xs-danger" onclick="epbDeletePaper('+row.id+')" title="Delete"><i class="ti ti-trash"></i></button>' +
-        '</div>' +
-      '</td>';
-    tbody.appendChild(tr);
-  });
-}
-
-function epbLoadJSONToEditor(paperData) {
-  function setVal(id, v) { var el = document.getElementById(id); if (el) el.value = v || ''; }
-  setVal('epb-institution', paperData.institution);
-  setVal('epb-academicyear', paperData.academicYear);
-  setVal('epb-program', paperData.program);
-  setVal('epb-semester', paperData.semester);
-  setVal('epb-papertype', paperData.paperType);
-  setVal('epb-papercode', paperData.paperCode);
-  setVal('epb-title', paperData.titleOfPaper);
-  setVal('epb-date', paperData.examDate);
-  setVal('epb-marks', paperData.totalMarks);
-  setVal('epb-time', paperData.duration);
-  setVal('epb-creator', paperData.creator);
-  setVal('epb-instructions', paperData.instructions);
-  epbSections = paperData.sections || [];
-  epbRenderEditors();
-}
-
-function epbEditPaper(id) {
-  var row = epbSavedPapers.find(function(p){ return p.id === id; });
-  if (!row) return;
-  try { var data = JSON.parse(row.jsonData); epbLoadJSONToEditor(data); epbGoBackToEditor(); }
-  catch(e) { showToast('Error parsing paper data.', 'error'); }
-}
-
-function epbDownloadPaper(id) {
-  var row = epbSavedPapers.find(function(p){ return p.id === id; });
-  if (!row) return;
-  if (typeof html2pdf === 'undefined') { showToast('PDF library not loaded. Please wait and try again.', 'error'); return; }
-  try {
-    var backup = { institution: document.getElementById('epb-institution').value||'', academicYear: document.getElementById('epb-academicyear').value||'', program: document.getElementById('epb-program').value||'', semester: document.getElementById('epb-semester').value||'', paperType: document.getElementById('epb-papertype').value||'', paperCode: document.getElementById('epb-papercode').value||'', titleOfPaper: document.getElementById('epb-title').value||'', examDate: document.getElementById('epb-date').value||'', totalMarks: document.getElementById('epb-marks').value||'', duration: document.getElementById('epb-time').value||'', creator: document.getElementById('epb-creator').value||'', instructions: document.getElementById('epb-instructions').value||'', sections: JSON.parse(JSON.stringify(epbSections)) };
-    var data = JSON.parse(row.jsonData);
-    epbLoadJSONToEditor(data);
-    var el = document.getElementById('epb-paper-preview');
-    var opts = { margin:0, filename:'Question_Paper.pdf', image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true,logging:false}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'} };
-    html2pdf().from(el).set(opts).save().then(function(){ epbLoadJSONToEditor(backup); });
-  } catch(e) { showToast('Error downloading paper.', 'error'); }
-}
-
-function epbDeletePaper(id) {
-  if (!confirm('Are you sure you want to delete this paper?')) return;
-  var rowNum = id + 2;
-  google.script.run
-    .withSuccessHandler(function(res){ if (res.success) { showToast('Paper deleted.', 'success'); epbOpenSavedPapers(); } else showToast(res.message||'Delete failed.', 'error'); })
-    .withFailureHandler(function(err){ showToast('Error: ' + err.message, 'error'); })
-    .deleteSavedPaper(rowNum);
-}
-
-function epbSaveToCloud() {
-  var btn = document.getElementById('epb-saveBtn');
-  if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
-  function get(id) { var el = document.getElementById(id); return el ? (el.value||'') : ''; }
-  var payload = { institution:get('epb-institution'), academicYear:get('epb-academicyear'), program:get('epb-program'), semester:get('epb-semester'), paperType:get('epb-papertype'), paperCode:get('epb-papercode'), titleOfPaper:get('epb-title'), examDate:get('epb-date'), totalMarks:get('epb-marks'), duration:get('epb-time'), creator:get('epb-creator'), instructions:get('epb-instructions'), sections:epbSections };
-  google.script.run
-    .withSuccessHandler(function(res){ if (btn) { btn.textContent = 'Save to Sheets'; btn.disabled = false; } showToast(res.message||'Paper saved!', res.success ? 'success' : 'error'); })
-    .withFailureHandler(function(err){ if (btn) { btn.textContent = 'Save to Sheets'; btn.disabled = false; } showToast('Error: ' + err.message, 'error'); })
-    .saveQuestionPaper(payload);
-}
-
-function epbTriggerImageUpload() {
-  var sel = window.getSelection();
-  if (sel.getRangeAt && sel.rangeCount) epbSavedSelectionRange = sel.getRangeAt(0);
-  document.getElementById('epb-image-upload').click();
-}
-
-function epbHandleImageUpload(event) {
-  var file = event.target.files[0];
-  if (!file) return;
-  var reader = new FileReader();
-  reader.onload = function(e) {
-    if (epbSavedSelectionRange) { var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(epbSavedSelectionRange); }
-    document.execCommand('insertHTML', false, '<img src="' + e.target.result + '" style="max-width:100%; height:auto; margin:4px; vertical-align:middle;" alt="Image"/>');
-    event.target.value = ''; epbSavedSelectionRange = null;
-  };
-  reader.readAsDataURL(file);
-}
-
-function epbToggleMobilePreview() {
-  var wrap = document.getElementById('epb-preview-wrap');
-  if (wrap) wrap.classList.toggle('mobile-show');
-}
-
-
-// Hook switchTab
-if (typeof window.switchTab === 'function' && !window._switchTabHooked) {
-  const origSwitchTab = window.switchTab;
-  window.switchTab = function(tabId, navEl, fromPopState) {
-    origSwitchTab(tabId, navEl, fromPopState);
-    if (typeof updateSidebarNotch === 'function') {
-      setTimeout(updateSidebarNotch, 50);
-    }
-    const target = document.getElementById('tab-' + tabId);
-    if (target) {
-      const heading = target.querySelector('.page-heading');
-      if (heading) {
-        document.getElementById('topBarTitle').innerHTML = heading.innerHTML;
-        
-        const mobTitleText = document.getElementById('mob-page-title-text');
-        const mobIcon = document.getElementById('mob-page-icon');
-        if (mobTitleText) mobTitleText.textContent = heading.textContent.trim();
-        if (mobIcon) {
-          const headingIcon = heading.querySelector('i');
-          if (headingIcon) mobIcon.className = headingIcon.className;
-        }
-      }
-    }
-  };
-  window._switchTabHooked = true;
-}
-// Init notch on load and start auto-refresh for manage table
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(updateSidebarNotch, 100);
-  
-  // Auto-refresh Manage Quiz table every 60 seconds if it's the active tab
-  setInterval(function() {
-    var manageTab = document.getElementById('tab-manage');
-    if (manageTab && manageTab.classList.contains('active')) {
-      if (typeof renderManageTable === 'function' && typeof globalQuizzes !== 'undefined') {
-        renderManageTable(globalQuizzes);
-      }
-    }
-  }, 60000);
-});
-
-
-/* =========================================================
-   STUDENT ACCOUNTS LOGIC
-   ========================================================= */
-
-function updateStudentSemesterOptions() {
-  const stream  = document.getElementById('stdProgram').value;
-  const sems    = SEM_MAP_FULL[stream] || ['Sem 1','Sem 2','Sem 3','Sem 4'];
-  const semSel  = document.getElementById('stdSemester');
-  semSel.innerHTML = '<option value="" selected disabled>Select Semester</option>' + 
-                     sems.map(s => `<option value="${s}">${s}</option>`).join('');
-}
-
-function addSingleStudent() { submitStudentForm(); } // backward-compat alias
-
-function submitStudentForm() {
-  const name     = document.getElementById('stdName').value.trim();
-  const roll     = document.getElementById('stdRoll').value.trim();
-  const email    = document.getElementById('stdEmail').value.trim();
-  const prog     = document.getElementById('stdProgram').value.trim();
-  let sem        = document.getElementById('stdSemester').value.trim();
-  // Strip "Sem " prefix for storage so it saves just "1" in DB
-  sem = sem.replace(/^sem\s*/i, '').trim();
-  const whatsapp = document.getElementById('stdWhatsApp').value.trim();
-  const pwd      = document.getElementById('stdPassword').value.trim();
-  const editMode = document.getElementById('stdEditMode').value; // '' = create, 'EDIT' = update
-
-  if (!name || !roll || !email || !prog || !sem) {
-    showToast('Name, Roll No, Email, Program, and Semester are required.', 'warning');
-    return;
+  function openManualBuilder() {
+    document.getElementById('cq-view-form').style.display = 'none';
+    document.getElementById('cq-view-manual-builder').style.display = 'block';
+    if (mbQuestions.length === 0) mbRenderQuestions();
+    document.getElementById('cq-view-manual-builder').scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
-  // ── EDIT MODE: update existing student ──────────────────────────────────
-  if (editMode === 'EDIT') {
-    const origRoll    = document.getElementById('stdOrigRoll').value;
-    const origProgram = document.getElementById('stdOrigProgram').value;
-    const origSem     = document.getElementById('stdOrigSemester').value;
-
-    const payload = {
-      originalRollNo: origRoll,
-      originalProgram: origProgram,
-      originalSemester: origSem,
-      fullName: name, rollNo: roll, email: email,
-      program: prog, semester: sem,
-      whatsapp: whatsapp, password: pwd
-    };
-
-    showLoader('Updating Student...');
-    google.script.run
-      .withSuccessHandler(res => {
-        hideLoader();
-        if (res.success) {
-          showToast('Student account updated successfully.', 'success');
-          cancelStudentEdit(); // reset form to create mode
-          loadStudentsList();
-        } else {
-          showACModal('Update Failed', res.message);
-        }
-      })
-      .withFailureHandler(err => {
-        hideLoader();
-        showACModal('Connection Error', err.message);
-      })
-      .adminUpdateStudent(payload);
-    return;
+  function closeMBView() {
+    document.getElementById('cq-view-manual-builder').style.display = 'none';
+    document.getElementById('cq-view-form').style.display = 'block';
   }
 
-  // ── CREATE MODE: add new student ─────────────────────────────────────────
-  const payload = {
-    fullName: name, rollNo: roll, email: email,
-    program: prog, semester: sem,
-    whatsapp: whatsapp, password: pwd
-  };
+  // Legacy alias
+  function closeManualBuilder() { closeMBView(); }
 
-  showLoader('Creating Student...');
-  google.script.run
-    .withSuccessHandler(res => {
-      hideLoader();
-      if (res.success) {
-        showToast(res.message, 'success');
-        document.getElementById('stdName').value = '';
-        document.getElementById('stdRoll').value = '';
-        document.getElementById('stdEmail').value = '';
-        document.getElementById('stdWhatsApp').value = '';
-        document.getElementById('stdPassword').value = '';
-        loadStudentsList();
-      } else {
-        showACModal('Error', res.message);
-      }
-    })
-    .withFailureHandler(err => {
-      hideLoader();
-      showACModal('Connection Error', err.message);
-    })
-    .adminCreateStudent(payload);
-}
-
-function openEditStudent(jsonStr) {
-  let s;
-  try {
-    s = JSON.parse(jsonStr);
-  } catch(e) {
-    showToast('Could not load student data for editing.', 'error');
-    return;
-  }
-
-  // Store edit key in hidden fields
-  document.getElementById('stdEditMode').value    = 'EDIT';
-  document.getElementById('stdOrigRoll').value    = s.rollNo    || '';
-  document.getElementById('stdOrigProgram').value = s.program   || '';
-  document.getElementById('stdOrigSemester').value= s.semester  || '';
-
-  // Pre-fill form fields
-  document.getElementById('stdName').value    = s.fullName || '';
-  document.getElementById('stdRoll').value    = s.rollNo   || '';
-  document.getElementById('stdEmail').value   = s.email    || '';
-  document.getElementById('stdWhatsApp').value= s.whatsapp || '';
-  document.getElementById('stdPassword').value= s.password || '';
-
-  // Set Program select and rebuild semester options
-  const progSel = document.getElementById('stdProgram');
-  progSel.value = s.program || 'B.A.';
-  updateStudentSemesterOptions(); // rebuild semester <option> list
-
-  // Set Semester after options are rebuilt
-  const semSel = document.getElementById('stdSemester');
-  const semVal = String(s.semester || '').trim();
-  // Try exact match first, then numeric match
-  let matched = false;
-  for (let i = 0; i < semSel.options.length; i++) {
-    if (semSel.options[i].value === semVal) { semSel.selectedIndex = i; matched = true; break; }
-  }
-  if (!matched) {
-    const numericSem = semVal.replace(/\D/g, '');
-    for (let i = 0; i < semSel.options.length; i++) {
-      if (semSel.options[i].value.replace(/\D/g, '') === numericSem) { semSel.selectedIndex = i; break; }
+  function mbToggleSections() {
+    const isChecked = document.getElementById('mb-create-sections').checked;
+    document.getElementById('mb-sections-container').style.display = isChecked ? 'block' : 'none';
+    if (isChecked && mbSections.length === 1 && mbSections[0].id === 'default') {
+      mbSections = [];
+      mbAddSection('Section A');
+    } else if (!isChecked) {
+      mbActiveSection = 'default';
+      mbSections = [{ id:'default', name:'Uncategorized' }];
+      mbQuestions.forEach(q => q.section = 'default');
+      mbRenderQuestions();
     }
   }
 
-  // Switch panel UI to Edit Mode
-  document.getElementById('stdFormPanelTitle').textContent = 'Edit Student';
-  document.getElementById('stdFormPanelDesc').textContent  = '';
-  const submitBtn = document.getElementById('stdSubmitBtn');
-  submitBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px; margin-right:5px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Update Student Account';
-  document.getElementById('stdCancelEditBtn').style.display = 'inline-flex';
-
-  // Scroll the form panel into view
-  document.getElementById('stdFormPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function cancelStudentEdit() {
-  // Reset hidden edit fields
-  document.getElementById('stdEditMode').value     = '';
-  document.getElementById('stdOrigRoll').value     = '';
-  document.getElementById('stdOrigProgram').value  = '';
-  document.getElementById('stdOrigSemester').value = '';
-
-  // Clear form fields
-  document.getElementById('stdName').value     = '';
-  document.getElementById('stdRoll').value     = '';
-  document.getElementById('stdEmail').value    = '';
-  document.getElementById('stdWhatsApp').value = '';
-  document.getElementById('stdPassword').value = '';
-
-  // Restore panel UI to Create Mode
-  document.getElementById('stdFormPanelTitle').textContent = 'Add New Student';
-  document.getElementById('stdFormPanelDesc').textContent  = '';
-  const submitBtn = document.getElementById('stdSubmitBtn');
-  submitBtn.innerHTML = '<i class="ti ti-user-plus"></i> Create Student Account';
-  document.getElementById('stdCancelEditBtn').style.display = 'none';
-}
-
-function downloadStudentCSVTemplate() {
-  const csvContent = "FullName,RollNo,Email,WhatsApp,Program,Semester,Password\nJohn Doe,CS2023001,john@example.com,9876543210,B.Tech,1,password123\nJane Smith,BA2023002,jane@example.com,9876543211,B.A.,3,";
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", "student_upload_template.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-function uploadStudentsCSV() {
-  const fileInput = document.getElementById('stdCsvFile');
-  if (!fileInput.files || fileInput.files.length === 0) {
-    showToast('Please select a CSV file to upload.', 'warning');
-    return;
+  function mbAddSection(name) {
+    const sName = name || prompt('Enter section name:', 'Section ' + String.fromCharCode(65 + mbSections.length));
+    if (!sName) return;
+    const sId = 'sec_' + Date.now();
+    mbSections.push({ id: sId, name: sName });
+    mbActiveSection = sId;
+    mbRenderTabs();
+    mbRenderQuestions();
   }
 
-  const file = fileInput.files[0];
-  const reader = new FileReader();
+  function mbRenderTabs() {
+    const cont = document.getElementById('mb-section-tabs');
+    cont.innerHTML = '';
+    mbSections.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = s.id === mbActiveSection ? 'cfb-btn cfb-btn-primary cfb-btn-sm' : 'cfb-btn cfb-btn-secondary cfb-btn-sm';
+      btn.innerText = s.name;
+      btn.onclick = () => { mbActiveSection = s.id; mbRenderTabs(); mbRenderQuestions(); };
+      cont.appendChild(btn);
+    });
+  }
 
-  reader.onload = function(e) {
-    const text = e.target.result;
-    const lines = text.split('\n');
-    let csvData = [];
-    // Simple CSV parser ignoring quotes for now, assuming clean data
-    for (let i = 0; i < lines.length; i++) {
-      if (!lines[i].trim()) continue;
-      const cols = lines[i].split(',').map(s => s.trim().replace(/^"|"$/g, ''));
-      if (i === 0 && cols[0].toLowerCase() === 'fullname') continue; // Skip header row
-      csvData.push(cols);
+  function mbAddQuestion(type) {
+    const qId = 'mq_' + Date.now();
+    const newQ = { id: qId, type, section: mbActiveSection, qText: '', marks: 1, negMarks: 0, required: true };
+    if (type === 'SINGLE_MCQ') { newQ.options = ['', '', '', '']; newQ.correctIdx = 0; }
+    else if (type === 'MULTIPLE_MCQ') { newQ.options = ['', '', '', '']; newQ.correctIndices = [0]; }
+    else if (type === 'TRUE_FALSE') { newQ.options = ['True', 'False']; newQ.correctIdx = 0; }
+    else if (type === 'MATCHING') { newQ.pairs = [{ left:'', right:'' }, { left:'', right:'' }]; }
+    else if (type === 'CHRONOLOGY') { newQ.items = ['', '', '']; }
+    else if (type === 'ASSERTION_REASON') {
+      newQ.assertion = ''; newQ.reason = '';
+      newQ.options = [
+        'Both A and R are true and R is the correct explanation of A',
+        'Both A and R are true but R is not the correct explanation of A',
+        'A is true but R is false',
+        'A is false but R is true'
+      ];
+      newQ.correctIdx = 0;
     }
-    
-    if (csvData.length === 0) {
-       showToast('CSV is empty.', 'error');
-       return;
+    else if (type === 'STATEMENT_BASED') { newQ.statements = ['', '']; newQ.options = ['Statement 1 is true', 'Statement 2 is true', 'Both are true', 'Both are false']; newQ.correctIdx = 2; }
+    else if (type === 'MULTIPLE_STATEMENT') { newQ.statements = ['', '', '']; newQ.options = ['1 & 2', '2 & 3', '1 & 3', 'All of the above']; newQ.correctIdx = 3; }
+    else if (type === 'NUMERICAL') { newQ.correctAns = ''; newQ.tolerance = 0; }
+    else if (type === 'FILL_BLANK') { newQ.correctAns = ''; newQ.caseSensitive = false; }
+    mbQuestions.push(newQ);
+    mbRenderQuestions();
+    setTimeout(() => { const el = document.getElementById(qId); if(el) el.scrollIntoView({ behavior:'smooth' }); }, 120);
+  }
+
+  function mbDeleteQuestion(qId) {
+    if (!confirm('Delete this question?')) return;
+    mbQuestions = mbQuestions.filter(q => q.id !== qId);
+    mbRenderQuestions();
+  }
+
+  function execMBFormat(cmd, qId) {
+    const el = document.getElementById('editor_' + qId);
+    if (!el) return;
+    el.focus();
+    document.execCommand(cmd, false, null);
+  }
+
+  function mbSyncEditor(qId) {
+    const el = document.getElementById('editor_' + qId);
+    const q = mbQuestions.find(x => x.id === qId);
+    if (q && el) q.qText = el.innerHTML;
+  }
+
+  function mbRenderQuestions() {
+    const cont = document.getElementById('mb-questions-container');
+    const filtered = mbQuestions.filter(q => q.section === mbActiveSection);
+    if (filtered.length === 0) {
+      cont.innerHTML = '<div style="text-align:center; color:#94a3b8; padding:48px 20px; font-size:1rem;"><i class="ti ti-click" style="font-size:3rem; margin-bottom:12px; display:block; opacity:0.4;"></i>Click a question type on the left to add a question.</div>';
+      return;
     }
-
-    showLoader('Uploading Students...');
-    google.script.run
-      .withSuccessHandler(res => {
-        hideLoader();
-        const resultsBox = document.getElementById('stdUploadResults');
-        resultsBox.style.display = 'block';
-        resultsBox.innerHTML = '';
-        
-        let html = `<div style="font-weight:600; margin-bottom:8px; color:var(--success);">✅ Added: ${res.added}</div>`;
-        html += `<div style="font-weight:600; margin-bottom:8px; color:var(--warning);">⚠️ Skipped (Duplicates): ${res.skipped || 0}</div>`;
-        
-        if (res.errors && res.errors.length > 0) {
-          html += `<div style="font-weight:600; margin-bottom:4px; color:var(--danger);">❌ Errors / Skips:</div>`;
-          html += `<ul style="margin:0; padding-left:20px; font-size:0.8rem;">`;
-          res.errors.forEach(err => {
-            html += `<li>${err}</li>`;
-          });
-          html += `</ul>`;
-        }
-        
-        resultsBox.innerHTML = html;
-        fileInput.value = '';
-        if (res.added > 0) {
-          showToast(`Successfully added ${res.added} students!`, 'success');
-          loadStudentsList();
-        } else if (res.skipped > 0) {
-          showToast(`No new students added. All existing.`, 'warning');
-        }
-      })
-      .withFailureHandler(err => {
-        hideLoader();
-        showACModal('Connection Error', err.message);
-      })
-      .adminBulkUploadStudents(csvData);
-  };
-  reader.readAsText(file);
-}
-
-let globalStudents = [];
-
-function loadStudentsList() {
-  const tbody = document.querySelector('#studentsTable tbody');
-  tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;"><span class="spin-sm"></span> Loading...</td></tr>';
-  
-  google.script.run
-    .withSuccessHandler(students => {
-      globalStudents = students || [];
-      renderStudentsTable();
-    })
-    .withFailureHandler(err => {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:red;">Failed to load: ${err.message}</td></tr>`;
-    })
-    .getAllStudents();
-}
-
-function renderStudentsTable() {
-  const tbody = document.querySelector('#studentsTable tbody');
-  const progFilter = document.getElementById('filterStdProgram').value;
-  const semFilter = document.getElementById('filterStdSemester').value;
-  
-  let filtered = globalStudents;
-  if (progFilter !== 'ALL') {
-    const pFilterNorm = progFilter.replace(/\s+/g, '').toLowerCase();
-    filtered = filtered.filter(s => String(s.program || '').replace(/\s+/g, '').toLowerCase() === pFilterNorm);
-  }
-  if (semFilter !== 'ALL') {
-    const sFilterNorm = String(semFilter).replace(/\D/g, '');
-    filtered = filtered.filter(s => String(s.semester || '').replace(/\D/g, '') === sFilterNorm);
-  }
-  
-  
-  const sortFilter = document.getElementById('filterStdSort') ? document.getElementById('filterStdSort').value : 'DATE_DESC';
-  
-  filtered.sort((a, b) => {
-    if (sortFilter === 'NAME_ASC') {
-      return (a.fullName || '').localeCompare(b.fullName || '');
-    } else if (sortFilter === 'NAME_DESC') {
-      return (b.fullName || '').localeCompare(a.fullName || '');
-    } else if (sortFilter === 'ROLL_ASC') {
-      const numA = parseInt(a.rollNo, 10);
-      const numB = parseInt(b.rollNo, 10);
-      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-      return String(a.rollNo || '').localeCompare(String(b.rollNo || ''), undefined, {numeric: true});
-    } else if (sortFilter === 'ROLL_DESC') {
-      const numA = parseInt(a.rollNo, 10);
-      const numB = parseInt(b.rollNo, 10);
-      if (!isNaN(numA) && !isNaN(numB)) return numB - numA;
-      return String(b.rollNo || '').localeCompare(String(a.rollNo || ''), undefined, {numeric: true});
-    } else if (sortFilter === 'DATE_ASC') {
-      const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return tA - tB;
-    } else {
-      const tA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-      const tB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-      return tB - tA;
-    }
-  });
-
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#94a3b8;">No students found matching criteria.</td></tr>';
-    return;
-  }
-  
-  let html = '';
-  filtered.forEach(s => {
-    const d = s.createdAt ? formatStandardDate(s.createdAt) : 'N/A';
-    // Safely encode student data as a JSON string for the edit handler
-    const safeJson = JSON.stringify(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-    // Normalize semester display: strip leading "Sem " if present to only show "1", "2", etc.
-    const semRaw = String(s.semester || '').trim();
-    const semDisplay = semRaw.replace(/^sem\s*/i, '').trim();
-    html += `<tr>
-      <td style="text-align: center;">
-        <input type="checkbox" class="student-select" data-roll="${s.rollNo}" data-prog="${s.program}" data-sem="${s.semester}" onchange="updateBulkDeleteButton()">
-      </td>
-      <td style="font-weight:600; color:var(--text);">${s.fullName}</td>
-      <td><span style="background:#eef2ff; color:#4f46e5; padding:2px 8px; border-radius:20px; font-size:0.75rem; font-weight:600;">${s.rollNo}</span></td>
-      <td>${s.email}<br><small style="color:#94a3b8;">${s.whatsapp || 'No WA'}</small></td>
-      <td>${s.program}</td>
-      <td>${semDisplay}</td>
-      <td style="font-family:monospace;">${s.password || 'N/A'}</td>
-      <td style="font-size:0.8rem; color:#64748b;">${d}</td>
-      <td style="text-align:right;">
-        <div style="display:flex; gap:4px; flex-wrap:nowrap; align-items:center; justify-content:flex-end;">
-          <button class="btn-xs btn-xs-action" title="Edit Student" onclick="openEditStudent('${safeJson.replace(/"/g, '&quot;')}')">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="btn-xs btn-xs-danger" title="Remove Student" onclick="deleteStudent('${s.rollNo}', '${s.program}', '${s.semester}')">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
-          </button>
-        </div>
-      </td>
-    </tr>`;
-  });
-  
-  tbody.innerHTML = html;
-  updateBulkDeleteButton(); // Reset button state after re-render
-  document.getElementById('selectAllStudents').checked = false;
-}
-
-function toggleSelectAllStudents() {
-  const isChecked = document.getElementById('selectAllStudents').checked;
-  const checkboxes = document.querySelectorAll('.student-select');
-  checkboxes.forEach(cb => cb.checked = isChecked);
-  updateBulkDeleteButton();
-}
-
-function updateBulkDeleteButton() {
-  const checkboxes = document.querySelectorAll('.student-select:checked');
-  const btn = document.getElementById('btnBulkDeleteStudents');
-  if (checkboxes.length > 0) {
-    btn.style.display = 'inline-flex';
-    btn.innerHTML = `<i class="ti ti-trash"></i> Delete Selected (${checkboxes.length})`;
-  } else {
-    btn.style.display = 'none';
-    document.getElementById('selectAllStudents').checked = false;
-  }
-}
-
-function bulkDeleteStudents() {
-  const checkboxes = document.querySelectorAll('.student-select:checked');
-  if (checkboxes.length === 0) return;
-  
-  const payload = Array.from(checkboxes).map(cb => ({
-    rollNo: cb.getAttribute('data-roll'),
-    program: cb.getAttribute('data-prog'),
-    semester: cb.getAttribute('data-sem')
-  }));
-
-  const msg = `Are you sure you want to permanently delete ${payload.length} selected student(s)?\n\nThis action cannot be undone.`;
-  if (!confirm(msg)) return;
-
-  showLoader(`Deleting ${payload.length} student(s)...`);
-  google.script.run
-    .withSuccessHandler(res => {
-      hideLoader();
-      if (res.success) {
-        showToast(res.message, 'success');
-        loadStudentsList();
-      } else {
-        showToast(res.message, 'error');
-      }
-    })
-    .withFailureHandler(err => {
-      hideLoader();
-      showToast(err.message, 'error');
-    })
-    .adminBulkDeleteStudents(payload);
-}
-
-function exportStudentsExcel() {
-  const progFilter = document.getElementById('filterStdProgram').value;
-  const semFilter = document.getElementById('filterStdSemester').value;
-  
-  let filtered = globalStudents;
-  if (progFilter !== 'ALL') {
-    const pFilterNorm = progFilter.replace(/\s+/g, '').toLowerCase();
-    filtered = filtered.filter(s => String(s.program || '').replace(/\s+/g, '').toLowerCase() === pFilterNorm);
-  }
-  if (semFilter !== 'ALL') {
-    const sFilterNorm = String(semFilter).replace(/\D/g, '');
-    filtered = filtered.filter(s => String(s.semester || '').replace(/\D/g, '') === sFilterNorm);
-  }
-  
-  if (!filtered || filtered.length === 0) {
-    showToast('No students to export', 'warning');
-    return;
-  }
-  
-  const rows = filtered.map(s => ({
-    'Full Name': s.fullName,
-    'Roll No': s.rollNo,
-    'Email': s.email,
-    'WhatsApp': s.whatsapp || '',
-    'Program': s.program,
-    'Semester': s.semester,
-    'Created At': s.createdAt ? new Date(s.createdAt).toLocaleString() : ''
-  }));
-  
-  const ws = XLSX.utils.json_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Students');
-  XLSX.writeFile(wb, `Students_Export_${Date.now()}.xlsx`);
-  showToast('Excel report downloaded!', 'success');
-}
-
-function deleteStudent(rollNo, program, semester) {
-  // Use a styled confirmation modal if available, otherwise fall back to native confirm
-  const msg = `Are you sure you want to permanently delete the student with Roll No: ${rollNo} in ${program} (Sem ${semester})?\n\nThis action cannot be undone.`;
-  if (!confirm(msg)) return;
-  showLoader('Deleting...');
-  google.script.run
-    .withSuccessHandler(res => {
-      hideLoader();
-      if (res.success) {
-        showToast('Student removed successfully.', 'success');
-        // If currently editing this student, cancel edit mode
-        if (document.getElementById('stdOrigRoll').value.toLowerCase() === String(rollNo).toLowerCase()) {
-          cancelStudentEdit();
-        }
-        loadStudentsList();
-      } else {
-        showToast(res.message, 'error');
-      }
-    })
-    .withFailureHandler(err => {
-      hideLoader();
-      showToast(err.message, 'error');
-    })
-    .adminDeleteStudent(rollNo, program, semester);
-}
-
-// --- Omni Search Logic ---
-// --- Notifications Logic ---
-let appNotifications = [];
-
-function generateMockNotifications() {
-  appNotifications = [
-    { id: 1, type: 'essay', title: 'Essay Grading Required', desc: 'New submission from Victorian Age quiz', time: 'Just now', read: false },
-    { id: 2, type: 'system', title: 'System Update', desc: 'DigiQ v2.1 deployed successfully', time: '2 hours ago', read: false }
-  ];
-  renderNotifications();
-}
-
-function renderNotifications() {
-  const list = document.getElementById('notifList');
-  const badges = document.querySelectorAll('.notif-badge');
-  if (!list) return;
-  
-  let unreadCount = appNotifications.filter(n => !n.read).length;
-  badges.forEach(badge => {
-    if (unreadCount > 0) {
-      badge.style.display = 'block';
-    } else {
-      badge.style.display = 'none';
-    }
-  });
-  if (appNotifications.length === 0) {
-    list.innerHTML = `<div class="tb-dropdown-item" style="color: var(--color-text-muted); justify-content: center;">No new notifications</div>`;
-    return;
-  }
-
-  let html = '';
-  appNotifications.forEach(n => {
-    const icon = n.type === 'essay' ? 'ti-pencil' : 'ti-info-circle';
-    const bg = n.read ? 'transparent' : 'var(--color-bg-base)';
-    html += `
-      <div class="tb-dropdown-item" style="background: ${bg};" onclick="handleNotifClick(${n.id})">
-        <i class="ti ${icon}"></i>
-        <div class="tb-notif-content">
-          <div class="tb-notif-title" style="${n.read ? 'font-weight:400; color:var(--color-text-muted);' : ''}">${n.title}</div>
-          <div class="tb-notif-time">${n.desc} &bull; ${n.time}</div>
-        </div>
-      </div>
-    `;
-  });
-  list.innerHTML = html;
-}
-
-function handleNotifClick(id) {
-  const notif = appNotifications.find(n => n.id === id);
-  if (notif) {
-    notif.read = true;
-    renderNotifications();
-    
-    // Display the matter
-    if (notif.type === 'essay') {
-      showToast('Redirecting to Essays tab...', 'info');
-      switchTab('essays');
-    } else {
-      showToast(notif.desc, 'info');
-    }
-  }
-}
-
-function markAllNotificationsRead() {
-  appNotifications.forEach(n => n.read = true);
-  renderNotifications();
-  closeModal('notifModal'); showToast('All caught up!', 'success');
-}
-
-// ==========================================
-// ADMIN APP FEEDBACK LOGIC
-// ==========================================
-let apfbCurrentRating = 5;
-
-function openAdminFeedbackModal() {
-  document.getElementById('apfb-overlay').classList.add('active');
-  apfbSetRating(5);
-  document.getElementById('apfb-message').value = '';
-  document.querySelectorAll('.apfb-cat').forEach(c => c.classList.remove('selected'));
-  document.querySelector('.apfb-cat[data-cat="General"]').classList.add('selected');
-}
-
-function closeAdminFeedbackModal() {
-  document.getElementById('apfb-overlay').classList.remove('active');
-}
-
-function apfbSetRating(val) {
-  apfbCurrentRating = val;
-  const stars = document.getElementById('apfb-stars').children;
-  for (let i = 0; i < stars.length; i++) {
-    stars[i].classList.toggle('lit', i < val);
-  }
-}
-
-// Category Selection
-document.getElementById('apfb-cats').addEventListener('click', function(e) {
-  if (e.target.classList.contains('apfb-cat')) {
-    document.querySelectorAll('.apfb-cat').forEach(c => c.classList.remove('selected'));
-    e.target.classList.add('selected');
-  }
-});
-
-function submitAdminFeedback() {
-  const msg = document.getElementById('apfb-message').value.trim();
-  if (!msg) { showToast('Please enter a message.', 'error'); return; }
-  
-  const cat = document.querySelector('.apfb-cat.selected').dataset.cat;
-  const btn = document.getElementById('apfb-submit-btn');
-  btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Submitting...';
-  btn.disabled = true;
-
-  google.script.run.withSuccessHandler(res => {
-    btn.innerHTML = '<i class="ti ti-send"></i> Submit Feedback';
-    btn.disabled = false;
-    if (res.success) {
-      showToast('Thank you for your feedback!', 'success');
-      closeAdminFeedbackModal();
-    } else {
-      showToast('Error: ' + (res.error || res.message), 'error');
-    }
-  }).withFailureHandler(err => {
-    btn.innerHTML = '<i class="ti ti-send"></i> Submit Feedback';
-    btn.disabled = false;
-    showToast('Network error.', 'error');
-  }).submitAppFeedback({ userType: 'Admin', submittedBy: (window.activeRole && window.activeRole.email ? window.activeRole.email : 'admin'), rating: apfbCurrentRating, category: cat, message: msg });
-}
-
-
-// ==========================================
-// CREATE FORM BUILDER (CFB) LOGIC
-// ==========================================
-
-let cfbCurrentFormId = null;
-let cfbCurrentForm = null;
-let cfbQuestions = [];
-let cfbIsDirty = false;
-
-// ─── INIT & LIST ───
-
-// Ensure Forms load when tab is switched
-const originalSwitchTab = window.switchTab;
-window.switchTab = function(tabId, el) {
-  if (originalSwitchTab) originalSwitchTab(tabId, el);
-  if (tabId === 'forms') cfbLoadForms();
-};
-
-window.allCFBForms = [];
-
-function cfbLoadForms() {
-  const grid = document.getElementById('cfb-forms-list-grid');
-  grid.innerHTML = '<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-loader ti-spin"></i></div><div class="cfb-empty-title">Loading forms...</div></div>';
-  cfbSwitchToListView();
-
-  google.script.run.withSuccessHandler(res => {
-    if (!res.success) { grid.innerHTML = `<div class="cfb-empty">Error loading forms.</div>`; return; }
-    window.allCFBForms = res.data || [];
-    renderCFBForms(window.allCFBForms);
-  }).withFailureHandler(err => {
-    grid.innerHTML = `<div class="cfb-empty">Network error.</div>`;
-  }).getForms();
-}
-
-function renderCFBForms(forms) {
-  const grid = document.getElementById('cfb-forms-list-grid');
-  if (!forms || forms.length === 0) {
-    grid.innerHTML = `
-      <div class="cfb-empty" style="grid-column: 1/-1;">
-        <div class="cfb-empty-icon"><i class="ti ti-forms"></i></div>
-        <div class="cfb-empty-title">No Forms Found</div>
-        <div class="cfb-empty-sub">Click "New Form" to create one.</div>
-        <button class="cfb-btn cfb-btn-primary" style="margin-top:16px;" onclick="cfbNewForm()">New Form</button>
-      </div>`;
-    return;
-  }
-  let html = '';
-  forms.forEach(f => {
-    let pillClass = 'cfb-pill-draft';
-    if (f.status === 'published') pillClass = 'cfb-pill-published';
-    else if (f.status === 'closed') pillClass = 'cfb-pill-closed';
-    html += `
-      <div class="cfb-card" onclick="cfbEditForm('${f.id}')">
-        <div class="cfb-card-top">
-          <div class="cfb-card-title">${f.title || 'Untitled Form'}</div>
-          <div class="cfb-pill ${pillClass}">${f.status}</div>
-        </div>
-        <div class="cfb-card-desc">${(f.description || '').substring(0,80)}${f.description && f.description.length > 80 ? '...' : ''}</div>
-        <div class="cfb-card-meta">
-          <span><i class="ti ti-database"></i> ${f.responseCount || 0} Responses</span>
-          <span><i class="ti ti-calendar"></i> ${new Date(f.updatedAt).toLocaleDateString()}</span>
-        </div>
-      </div>`;
-  });
-  grid.innerHTML = html;
-}
-
-function filterCFBForms() {
-  const q = document.getElementById('cfb-search').value.toLowerCase();
-  const status = document.getElementById('cfb-status-filter').value;
-  const dFrom = document.getElementById('cfb-date-from').value;
-  const dTo = document.getElementById('cfb-date-to').value;
-  
-  let filtered = window.allCFBForms || [];
-  if (q) {
-    filtered = filtered.filter(f => (f.title || '').toLowerCase().includes(q) || (f.description || '').toLowerCase().includes(q));
-  }
-  if (status) {
-    filtered = filtered.filter(f => f.status === status);
-  }
-  if (dFrom) {
-    const fromTime = new Date(dFrom).setHours(0,0,0,0);
-    filtered = filtered.filter(f => new Date(f.updatedAt).setHours(0,0,0,0) >= fromTime);
-  }
-  if (dTo) {
-    const toTime = new Date(dTo).setHours(0,0,0,0);
-    filtered = filtered.filter(f => new Date(f.updatedAt).setHours(0,0,0,0) <= toTime);
-  }
-  renderCFBForms(filtered);
-}
-
-function clearCFBFilters() {
-  document.getElementById('cfb-search').value = '';
-  document.getElementById('cfb-status-filter').value = '';
-  document.getElementById('cfb-date-from').value = '';
-  document.getElementById('cfb-date-to').value = '';
-  renderCFBForms(window.allCFBForms);
-}
-
-// ─── NAVIGATION ───
-
-function cfbSwitchToListView() {
-  document.getElementById('cfb-view-list').style.display = 'block';
-  document.getElementById('cfb-view-editor').style.display = 'none';
-  document.getElementById('cfb-view-title').innerHTML = '<i class="ti ti-forms"></i> Create Forms';
-  document.getElementById('cfb-header-actions').innerHTML = `
-    <button class="cfb-btn cfb-btn-outline" onclick="cfbLoadForms()"><i class="ti ti-list"></i> My Forms</button>
-    <button class="cfb-btn cfb-btn-primary" onclick="cfbNewForm()"><i class="ti ti-plus"></i> New Form</button>
-  `;
-}
-
-function cfbSwitchToEditorView() {
-  document.getElementById('cfb-view-list').style.display = 'none';
-  document.getElementById('cfb-view-editor').style.display = 'block';
-  document.getElementById('cfb-view-title').innerHTML = '<i class="ti ti-pencil"></i> Edit Form';
-  document.getElementById('cfb-header-actions').innerHTML = `
-    <button class="cfb-btn cfb-btn-secondary" onclick="cfbCloseEditor()"><i class="ti ti-arrow-left"></i> Back</button>
-    <button class="cfb-btn cfb-btn-primary" id="cfb-top-save-btn" onclick="cfbSaveForm()"><i class="ti ti-device-floppy"></i> Save</button>
-  `;
-  cfbSwitchView('build'); // Default tab
-}
-
-function cfbSwitchView(paneId) {
-  document.querySelectorAll('.cfb-view-tab').forEach(t => t.classList.remove('active'));
-  document.querySelector(`.cfb-view-tab[data-view="${paneId}"]`).classList.add('active');
-  
-  document.getElementById('cfb-pane-build').style.display = 'none';
-  document.getElementById('cfb-pane-settings').style.display = 'none';
-  document.getElementById('cfb-pane-share').style.display = 'none';
-  document.getElementById('cfb-pane-responses').style.display = 'none';
-  document.getElementById('cfb-pane-analytics').style.display = 'none';
-  
-  const pane = document.getElementById('cfb-pane-' + paneId);
-  if (pane) pane.style.display = paneId === 'build' ? 'flex' : 'block';
-
-  // Lazy load data for tabs
-  if (paneId === 'responses') cfbLoadResponses();
-  if (paneId === 'analytics') cfbLoadAnalytics();
-}
-
-function cfbCloseEditor() {
-  if (cfbIsDirty) {
-    if (!confirm('You have unsaved changes. Discard?')) return;
-  }
-  cfbCurrentFormId = null;
-  cfbCurrentForm = null;
-  cfbQuestions = [];
-  cfbLoadForms();
-}
-
-function cfbMarkDirty() {
-  cfbIsDirty = true;
-  document.getElementById('cfb-top-save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> Save*';
-}
-
-function cfbClearDirty() {
-  cfbIsDirty = false;
-  document.getElementById('cfb-top-save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> Saved';
-}
-
-// ─── EDITOR CRUD ───
-
-function cfbNewForm() {
-  cfbCurrentFormId = null;
-  cfbCurrentForm = { status: 'draft' };
-  cfbQuestions = [
-    { id: 'q_' + Date.now(), type: 'short_answer', title: 'Untitled Question', required: false }
-  ];
-  document.getElementById('cfb-f-title').value = '';
-  document.getElementById('cfb-f-desc').value = '';
-  
-  // Default settings
-  document.getElementById('cfb-s-category').value = 'General';
-  document.getElementById('cfb-s-collectName').checked = false;
-  document.getElementById('cfb-s-collectEmail').checked = false;
-  document.getElementById('cfb-s-collectRoll').checked = false;
-  document.getElementById('cfb-s-multipleResp').checked = false;
-  document.getElementById('cfb-s-showConfirm').checked = true;
-  document.getElementById('cfb-s-confirmMsg').value = '';
-  
-  cfbSwitchToEditorView();
-  cfbRenderCanvas();
-  cfbClearDirty();
-}
-
-function cfbEditForm(id) {
-  showToast('Loading form...', 'info');
-  google.script.run.withSuccessHandler(res => {
-    if (!res.success) { showToast('Error loading form', 'error'); return; }
-    const f = res.data;
-    cfbCurrentFormId = f.id;
-    cfbCurrentForm = f;
-    cfbQuestions = f.questions || [];
-    
-    document.getElementById('cfb-f-title').value = f.title || '';
-    document.getElementById('cfb-f-desc').value = f.description || '';
-    
-    // Settings
-    const set = f.settings || {};
-    document.getElementById('cfb-s-category').value = set.category || 'General';
-    document.getElementById('cfb-s-collectName').checked = !!set.collectName;
-    document.getElementById('cfb-s-collectEmail').checked = !!set.collectEmail;
-    document.getElementById('cfb-s-collectRoll').checked = !!set.collectRoll;
-    document.getElementById('cfb-s-multipleResp').checked = !!set.allowMultiple;
-    document.getElementById('cfb-s-showConfirm').checked = set.showConfirmation !== false;
-    document.getElementById('cfb-s-confirmMsg').value = set.confirmationMessage || '';
-    
-    // Share link
-    document.getElementById('cfb-share-link').innerText = set.publishedUrl || 'Save and publish to get link';
-    
-    cfbSwitchToEditorView();
-    cfbRenderCanvas();
-    cfbClearDirty();
-  }).withFailureHandler(err => {
-    showToast('Network error.', 'error');
-  }).getFormById(id);
-}
-
-function cfbSaveForm() {
-  const btn = document.getElementById('cfb-top-save-btn');
-  btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Saving...';
-  btn.disabled = true;
-
-  // Sync inputs from DOM to questions array before saving
-  cfbSyncQuestionsFromDOM();
-
-  const title = document.getElementById('cfb-f-title').value.trim() || 'Untitled Form';
-  const desc = document.getElementById('cfb-f-desc').value.trim();
-  
-  const settings = {
-    category: document.getElementById('cfb-s-category').value,
-    collectName: document.getElementById('cfb-s-collectName').checked,
-    collectEmail: document.getElementById('cfb-s-collectEmail').checked,
-    collectRoll: document.getElementById('cfb-s-collectRoll').checked,
-    allowMultiple: document.getElementById('cfb-s-multipleResp').checked,
-    showConfirmation: document.getElementById('cfb-s-showConfirm').checked,
-    confirmationMessage: document.getElementById('cfb-s-confirmMsg').value.trim()
-  };
-
-  const formData = {
-    id: cfbCurrentFormId,
-    title: title,
-    description: desc,
-    settings: settings,
-    questions: cfbQuestions,
-    status: cfbCurrentForm ? cfbCurrentForm.status : 'draft'
-  };
-
-  const action = cfbCurrentFormId ? 'updateForm' : 'createForm';
-  
-  google.script.run.withSuccessHandler(res => {
-    btn.disabled = false;
-    if (res.success) {
-      cfbCurrentFormId = res.id;
-      if (res.publishedUrl) {
-         document.getElementById('cfb-share-link').innerText = res.publishedUrl;
-         if(cfbCurrentForm) cfbCurrentForm.settings = { ...cfbCurrentForm.settings, publishedUrl: res.publishedUrl };
-      }
-      cfbClearDirty();
-      showToast('Form saved!', 'success');
-      // If newly created, update UI
-      if (action === 'createForm' && res.data) {
-         cfbCurrentForm = res.data;
-      }
-    } else {
-      btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save';
-      showToast('Error: ' + res.error, 'error');
-    }
-  }).withFailureHandler(err => {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="ti ti-device-floppy"></i> Save';
-    showToast('Network error', 'error');
-  })[action](formData);
-}
-
-function cfbSetStatus(newStatus) {
-  if (!cfbCurrentFormId) {
-    showToast('Please save the form first.', 'info');
-    return;
-  }
-  showToast('Updating status...', 'info');
-  google.script.run.withSuccessHandler(res => {
-    if (res.success) {
-      cfbCurrentForm.status = newStatus;
-      showToast('Form status updated to ' + newStatus, 'success');
-    } else {
-      showToast('Error: ' + res.error, 'error');
-    }
-  }).withFailureHandler(err => { showToast('Network error', 'error'); }).setFormStatus(cfbCurrentFormId, newStatus);
-}
-
-function cfbCopyLink() {
-  const link = document.getElementById('cfb-share-link').innerText;
-  if (!link || link.includes('Save and publish')) return;
-  navigator.clipboard.writeText(link).then(() => {
-    showToast('Link copied!', 'success');
-  });
-}
-
-// ─── BUILDER CANVAS ───
-
-function cfbAddQuestion(type) {
-  cfbSyncQuestionsFromDOM();
-  const newQ = {
-    id: 'q_' + Date.now() + Math.floor(Math.random()*1000),
-    type: type,
-    title: '',
-    required: false
-  };
-  
-  if (['single_choice','multiple_choice','dropdown'].includes(type)) {
-    newQ.options = ['Option 1'];
-  } else if (type === 'linear_scale') {
-    newQ.scaleMin = 1;
-    newQ.scaleMax = 5;
-    newQ.labelMin = '';
-    newQ.labelMax = '';
-  }
-  
-  cfbQuestions.push(newQ);
-  cfbRenderCanvas();
-  cfbMarkDirty();
-  
-  // Scroll to bottom
-  const container = document.getElementById('cfb-canvas');
-  setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
-}
-
-// Ensure we grab latest titles before re-rendering or saving
-function cfbSyncQuestionsFromDOM() {
-  document.querySelectorAll('.cfb-q-card').forEach(card => {
-    const idx = parseInt(card.dataset.idx);
-    if (isNaN(idx) || !cfbQuestions[idx]) return;
-    
-    const titleInput = card.querySelector('.cfb-q-text-input');
-    if (titleInput) cfbQuestions[idx].title = titleInput.value;
-    
-    // Sync options if choice type
-    if (['single_choice','multiple_choice','dropdown'].includes(cfbQuestions[idx].type)) {
-      const optInputs = card.querySelectorAll('.cfb-opt-val');
-      const opts = [];
-      optInputs.forEach(inp => { if(inp.value.trim()) opts.push(inp.value.trim()); });
-      if (opts.length > 0) cfbQuestions[idx].options = opts;
-    }
-    // Sync scale
-    if (cfbQuestions[idx].type === 'linear_scale') {
-      const minI = card.querySelector('.cfb-scale-min');
-      const maxI = card.querySelector('.cfb-scale-max');
-      const minL = card.querySelector('.cfb-scale-lmin');
-      const maxL = card.querySelector('.cfb-scale-lmax');
-      if (minI) cfbQuestions[idx].scaleMin = parseInt(minI.value) || 1;
-      if (maxI) cfbQuestions[idx].scaleMax = parseInt(maxI.value) || 5;
-      if (minL) cfbQuestions[idx].labelMin = minL.value;
-      if (maxL) cfbQuestions[idx].labelMax = maxL.value;
-    }
-  });
-}
-
-function cfbRenderCanvas() {
-  const container = document.getElementById('cfb-questions-container');
-  let html = '';
-  
-  cfbQuestions.forEach((q, idx) => {
-    let typeLabel = q.type.replace('_', ' ').toUpperCase();
-    
-    let bodyHtml = '';
-    if (q.type === 'short_answer') {
-      bodyHtml = `<div style="border-bottom:1px dotted var(--main-border); width:60%; height:24px; margin-top:8px; color:var(--text-muted); font-size:0.85rem;">Short answer text</div>`;
-    } else if (q.type === 'long_answer') {
-      bodyHtml = `<div style="border-bottom:1px dotted var(--main-border); width:100%; height:24px; margin-top:8px; color:var(--text-muted); font-size:0.85rem;">Long answer text</div>
-                  <div style="border-bottom:1px dotted var(--main-border); width:100%; height:24px; margin-top:8px;"></div>`;
-    } else if (['single_choice','multiple_choice','dropdown'].includes(q.type)) {
-      let icon = q.type==='multiple_choice' ? 'ti-square' : 'ti-circle';
-      if(q.type==='dropdown') icon = 'ti-list-numbers';
-      
-      let opts = q.options || [''];
-      bodyHtml += `<div class="cfb-options-list">`;
-      opts.forEach((opt, oidx) => {
-        bodyHtml += `
-          <div class="cfb-option-row">
-            <i class="ti ${icon}" style="color:var(--text-muted);"></i>
-            <input type="text" class="cfb-opt-val" value="${escapeHtml(opt)}" placeholder="Option ${oidx+1}" oninput="cfbMarkDirty()">
-            <button class="cfb-option-del" onclick="cfbDelOpt(${idx}, ${oidx})"><i class="ti ti-x"></i></button>
+    let html = '';
+    filtered.forEach((q, index) => {
+      const typeLabel = q.type.replace(/_/g, ' ');
+      let innerHtml = '';
+      if (q.type === 'SINGLE_MCQ' || q.type === 'TRUE_FALSE') {
+        q.options.forEach((opt, i) => {
+          innerHtml += `<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <input type="radio" name="ans_${q.id}" ${q.correctIdx === i ? 'checked' : ''} onchange="mbUpdateQ('${q.id}','correctIdx',${i})">
+            <input type="text" class="mb-input" value="${opt.replace(/"/g,'&quot;')}" placeholder="Option ${i+1}" oninput="mbUpdateArr('${q.id}','options',${i},this.value)" ${q.type==='TRUE_FALSE'?'readonly':''}>
           </div>`;
-      });
-      bodyHtml += `</div>
-        <button class="cfb-add-option-btn" onclick="cfbAddOpt(${idx})"><i class="ti ti-plus"></i> Add Option</button>`;
-    } else if (q.type === 'star_rating') {
-      bodyHtml = `<div class="cfb-rating-preview"><i class="ti ti-star lit"></i><i class="ti ti-star lit"></i><i class="ti ti-star lit"></i><i class="ti ti-star"></i><i class="ti ti-star"></i></div>`;
-    } else if (q.type === 'linear_scale') {
-      let min = q.scaleMin || 1, max = q.scaleMax || 5;
-      let lMin = q.labelMin || '', lMax = q.labelMax || '';
-      bodyHtml = `
-        <div class="cfb-scale-row">
-          <span>Min:</span> <input type="number" class="cfb-scale-min" value="${min}" min="0" max="1" oninput="cfbMarkDirty()">
-          <span>to Max:</span> <input type="number" class="cfb-scale-max" value="${max}" min="2" max="10" oninput="cfbMarkDirty()">
-        </div>
-        <div class="cfb-scale-row">
-          <span>Label (Min):</span> <input type="text" class="cfb-scale-lmin" value="${escapeHtml(lMin)}" placeholder="e.g. Strongly Disagree" style="flex:1" oninput="cfbMarkDirty()">
-        </div>
-        <div class="cfb-scale-row">
-          <span>Label (Max):</span> <input type="text" class="cfb-scale-lmax" value="${escapeHtml(lMax)}" placeholder="e.g. Strongly Agree" style="flex:1" oninput="cfbMarkDirty()">
-        </div>
-      `;
-    } else if (q.type === 'yes_no') {
-      bodyHtml = `<div class="cfb-rating-preview"><button class="cfb-btn cfb-btn-secondary" disabled>Yes</button> <button class="cfb-btn cfb-btn-secondary" disabled>No</button></div>`;
-    } else if (q.type === 'date') {
-      bodyHtml = `<div style="border-bottom:1px dotted var(--main-border); width:200px; height:24px; margin-top:8px; color:var(--text-muted); font-size:0.85rem;"><i class="ti ti-calendar"></i> Month, Day, Year</div>`;
-    } else if (q.type === 'number') {
-      bodyHtml = `<div style="border-bottom:1px dotted var(--main-border); width:200px; height:24px; margin-top:8px; color:var(--text-muted); font-size:0.85rem;"><i class="ti ti-hash"></i> Number</div>`;
-    } else if (q.type === 'email') {
-      bodyHtml = `<div style="border-bottom:1px dotted var(--main-border); width:60%; height:24px; margin-top:8px; color:var(--text-muted); font-size:0.85rem;"><i class="ti ti-mail"></i> Valid Email Address</div>`;
-    } else if (q.type === 'section_break') {
-      bodyHtml = `<div style="padding:10px; background:#f8fafc; border-radius:6px; text-align:center; font-size:0.8rem; color:var(--text-muted); border:1px dashed var(--main-border);"><i class="ti ti-separator"></i> Next Section starts here</div>`;
-    }
-
-    html += `
-      <div class="cfb-q-card" data-idx="${idx}">
-        <div class="cfb-q-drag"><i class="ti ti-grip-vertical"></i></div>
-        <div class="cfb-q-body">
-          <div class="cfb-q-number">Question ${idx + 1}</div>
-          <input type="text" class="cfb-q-text-input" value="${escapeHtml(q.title)}" placeholder="${q.type==='section_break'?'Section Title':'Question Text'}" oninput="cfbMarkDirty()">
-          ${bodyHtml}
-          
-          <div class="cfb-q-actions">
-            <span class="cfb-q-type-badge">${typeLabel}</span>
-            <button class="cfb-btn cfb-btn-secondary cfb-btn-sm" onclick="cfbMoveQ(${idx}, -1)" title="Move Up" ${idx===0?'disabled':''}><i class="ti ti-arrow-up"></i></button>
-            <button class="cfb-btn cfb-btn-secondary cfb-btn-sm" onclick="cfbMoveQ(${idx}, 1)" title="Move Down" ${idx===cfbQuestions.length-1?'disabled':''}><i class="ti ti-arrow-down"></i></button>
-            <button class="cfb-btn cfb-btn-danger cfb-btn-sm" onclick="cfbDelQ(${idx})" title="Delete"><i class="ti ti-trash"></i></button>
-            
-            ${q.type !== 'section_break' ? `
-            <label class="cfb-q-required-toggle">
-              <input type="checkbox" onchange="cfbToggleReq(${idx}, this.checked)" ${q.required?'checked':''}> Required
-            </label>` : ''}
-          </div>
-        </div>
-      </div>
-    `;
-  });
-  
-  if (cfbQuestions.length === 0) {
-    html = `<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-forms"></i></div><div class="cfb-empty-title">Form is empty</div><div class="cfb-empty-sub">Add questions using the menu on the left.</div></div>`;
-  }
-  
-  container.innerHTML = html;
-}
-
-function cfbAddOpt(qIdx) {
-  cfbSyncQuestionsFromDOM();
-  if(!cfbQuestions[qIdx].options) cfbQuestions[qIdx].options = [];
-  cfbQuestions[qIdx].options.push(`Option ${cfbQuestions[qIdx].options.length + 1}`);
-  cfbRenderCanvas();
-  cfbMarkDirty();
-}
-function cfbDelOpt(qIdx, oIdx) {
-  cfbSyncQuestionsFromDOM();
-  if(cfbQuestions[qIdx].options && cfbQuestions[qIdx].options.length > 1) {
-    cfbQuestions[qIdx].options.splice(oIdx, 1);
-    cfbRenderCanvas();
-    cfbMarkDirty();
-  } else {
-    showToast('At least one option is required.', 'info');
-  }
-}
-function cfbToggleReq(qIdx, isReq) {
-  cfbSyncQuestionsFromDOM();
-  cfbQuestions[qIdx].required = isReq;
-  cfbMarkDirty();
-}
-function cfbMoveQ(idx, dir) {
-  cfbSyncQuestionsFromDOM();
-  if(idx + dir < 0 || idx + dir >= cfbQuestions.length) return;
-  const temp = cfbQuestions[idx];
-  cfbQuestions[idx] = cfbQuestions[idx + dir];
-  cfbQuestions[idx + dir] = temp;
-  cfbRenderCanvas();
-  cfbMarkDirty();
-}
-function cfbDelQ(idx) {
-  cfbSyncQuestionsFromDOM();
-  cfbQuestions.splice(idx, 1);
-  cfbRenderCanvas();
-  cfbMarkDirty();
-}
-
-function escapeHtml(str) {
-  if (typeof str !== 'string') return str;
-  return str.replace(/[&<>'"]/g, tag => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
-  }[tag]));
-}
-
-// ─── RESPONSES & EXPORT ───
-let cfbCurrentResponses = [];
-
-function cfbLoadResponses() {
-  if (!cfbCurrentFormId) return;
-  const cont = document.getElementById('cfb-responses-container');
-  cont.innerHTML = '<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-loader ti-spin"></i></div><div class="cfb-empty-title">Loading responses...</div></div>';
-  
-  google.script.run.withSuccessHandler(res => {
-    if (!res.success) { cont.innerHTML = `<div class="cfb-empty">Error: ${res.error}</div>`; return; }
-    
-    cfbCurrentResponses = res.data;
-    document.getElementById('cfb-resp-count').innerText = `(${cfbCurrentResponses.length})`;
-    
-    if (cfbCurrentResponses.length === 0) {
-      cont.innerHTML = `<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-database"></i></div><div class="cfb-empty-title">No responses yet.</div></div>`;
-      return;
-    }
-    
-    // Build Table
-    let html = `<div class="cfb-resp-table-wrap"><table class="cfb-resp-table"><thead><tr>`;
-    html += `<th>Timestamp</th>`;
-    // Find union of all keys (questions) from answers
-    let allKeys = new Set();
-    cfbCurrentResponses.forEach(r => {
-      Object.keys(r.answers).forEach(k => allKeys.add(k));
-    });
-    
-    // Try to map question IDs to Titles
-    let keyMap = {};
-    cfbQuestions.forEach(q => { keyMap[q.id] = q.title || q.id; });
-    
-    let columns = Array.from(allKeys);
-    columns.forEach(k => { html += `<th>${keyMap[k] || k}</th>`; });
-    html += `</tr></thead><tbody>`;
-    
-    cfbCurrentResponses.forEach(r => {
-      html += `<tr><td>${new Date(r.timestamp).toLocaleString()}</td>`;
-      columns.forEach(k => {
-        let val = r.answers[k];
-        if (Array.isArray(val)) val = val.join(', ');
-        if (val === undefined || val === null) val = '-';
-        html += `<td title="${escapeHtml(String(val))}">${escapeHtml(String(val))}</td>`;
-      });
-      html += `</tr>`;
-    });
-    html += `</tbody></table></div>`;
-    cont.innerHTML = html;
-  }).withFailureHandler(err => {
-    cont.innerHTML = `<div class="cfb-empty">Network error.</div>`;
-  }).getFormResponses(cfbCurrentFormId);
-}
-
-function cfbExportCSV() {
-  if (!cfbCurrentResponses || cfbCurrentResponses.length === 0) {
-    showToast('No data to export.', 'info');
-    return;
-  }
-  
-  // Headers
-  let allKeys = new Set();
-  cfbCurrentResponses.forEach(r => Object.keys(r.answers).forEach(k => allKeys.add(k)));
-  let keyMap = {};
-  cfbQuestions.forEach(q => { keyMap[q.id] = q.title || q.id; });
-  let columns = Array.from(allKeys);
-  
-  let csv = ['Timestamp', ...columns.map(k => `"${(keyMap[k] || k).replace(/"/g, '""')}"`)].join(',') + '\n';
-  
-  cfbCurrentResponses.forEach(r => {
-    let row = [`"${new Date(r.timestamp).toISOString()}"`];
-    columns.forEach(k => {
-      let val = r.answers[k];
-      if (Array.isArray(val)) val = val.join(', ');
-      val = val === undefined || val === null ? '' : String(val);
-      row.push(`"${val.replace(/"/g, '""')}"`);
-    });
-    csv += row.join(',') + '\n';
-  });
-  
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `form_${cfbCurrentFormId}_responses.csv`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-// ─── ANALYTICS ───
-
-function cfbLoadAnalytics() {
-  if (!cfbCurrentFormId) return;
-  const cont = document.getElementById('cfb-analytics-container');
-  cont.innerHTML = '<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-loader ti-spin"></i></div><div class="cfb-empty-title">Generating Analytics...</div></div>';
-  
-  const from = document.getElementById('cfb-filter-from').value;
-  const to = document.getElementById('cfb-filter-to').value;
-  
-  google.script.run.withSuccessHandler(res => {
-    if (!res.success) { cont.innerHTML = `<div class="cfb-empty">Error: ${res.error}</div>`; return; }
-    const a = res.data;
-    
-    if (a.totalResponses === 0) {
-      cont.innerHTML = `<div class="cfb-empty"><div class="cfb-empty-icon"><i class="ti ti-chart-bar"></i></div><div class="cfb-empty-title">No responses in selected period.</div></div>`;
-      return;
-    }
-    
-    let html = `
-      <div class="cfb-summary-row">
-        <div class="cfb-summary-card">
-          <div class="cfb-summary-num">${a.totalResponses}</div>
-          <div class="cfb-summary-label">Total Responses</div>
-        </div>
-      </div>
-      <div class="cfb-analytics-grid">
-    `;
-    
-    // Map question data to UI blocks
-    cfbQuestions.forEach(q => {
-      if (q.type === 'section_break') return;
-      const data = a.questions[q.id];
-      if (!data) return; // No responses for this specific question
-      
-      let typeLabel = q.type.replace('_', ' ').toUpperCase();
-      
-      html += `<div class="cfb-analytics-card">
-                 <h5>${escapeHtml(q.title)}</h5>
-                 <span class="cfb-q-type-badge">${typeLabel}</span>`;
-      
-      if (['single_choice','multiple_choice','dropdown','yes_no'].includes(q.type)) {
-         // Bar chart implementation in HTML/CSS
-         let totalCounts = Object.values(data.counts || {}).reduce((a,b)=>a+b, 0) || 1;
-         let sorted = Object.entries(data.counts || {}).sort((a,b) => b[1] - a[1]);
-         if(sorted.length === 0) html += `<div class="cfb-stat-row" style="color:var(--text-muted); font-size:0.8rem;">No data</div>`;
-         sorted.forEach(entry => {
-           let pct = Math.round((entry[1] / totalCounts) * 100);
-           html += `
-             <div class="cfb-stat-row">
-               <div class="cfb-stat-label" title="${escapeHtml(entry[0])}">${escapeHtml(entry[0])} (${entry[1]})</div>
-               <div class="cfb-stat-bar-wrap"><div class="cfb-stat-bar" style="width:${pct}%"></div></div>
-               <div class="cfb-stat-pct">${pct}%</div>
-             </div>`;
-         });
-      } else if (['star_rating', 'linear_scale', 'number'].includes(q.type)) {
-         // Average Display
-         let avg = typeof data.average === 'number' ? data.average.toFixed(1) : '-';
-         html += `
-           <div class="cfb-avg-display">
-             <div class="cfb-avg-num">${avg}</div>
-             <div class="cfb-avg-label">Average (Min: ${data.min !== null ? data.min : '-'}, Max: ${data.max !== null ? data.max : '-'})</div>
-           </div>`;
-      } else if (['short_answer', 'long_answer', 'email', 'date'].includes(q.type)) {
-         // Recent texts
-         html += `<div class="cfb-text-samples">`;
-         let texts = data.recentTexts || [];
-         if (texts.length === 0) html += `<div class="cfb-stat-row" style="color:var(--text-muted); font-size:0.8rem;">No text responses</div>`;
-         texts.forEach(txt => {
-           html += `<div class="cfb-text-sample">${escapeHtml(txt)}</div>`;
-         });
-         html += `</div>`;
+        });
+        if (q.type === 'SINGLE_MCQ') innerHtml += `<button class="cfb-add-option-btn" onclick="mbAddArrItem('${q.id}','options','')">+ Add Option</button>`;
       }
-      
-      html += `</div>`;
+      else if (q.type === 'MULTIPLE_MCQ') {
+        q.options.forEach((opt, i) => {
+          innerHtml += `<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <input type="checkbox" ${q.correctIndices.includes(i)?'checked':''} onchange="mbToggleArrItem('${q.id}','correctIndices',${i})">
+            <input type="text" class="mb-input" value="${opt.replace(/"/g,'&quot;')}" placeholder="Option ${i+1}" oninput="mbUpdateArr('${q.id}','options',${i},this.value)">
+          </div>`;
+        });
+        innerHtml += `<button class="cfb-add-option-btn" onclick="mbAddArrItem('${q.id}','options','')">+ Add Option</button>`;
+      }
+      else if (q.type === 'MATCHING') {
+        q.pairs.forEach((p, i) => {
+          innerHtml += `<div style="display:flex; gap:10px; margin-bottom:8px; align-items:center;">
+            <input type="text" class="mb-input" value="${p.left.replace(/"/g,'&quot;')}" placeholder="Left item" oninput="mbUpdateObjArr('${q.id}','pairs',${i},'left',this.value)">
+            <i class="ti ti-arrow-right" style="color:#94a3b8; flex-shrink:0;"></i>
+            <input type="text" class="mb-input" value="${p.right.replace(/"/g,'&quot;')}" placeholder="Right match" oninput="mbUpdateObjArr('${q.id}','pairs',${i},'right',this.value)">
+          </div>`;
+        });
+        innerHtml += `<button class="cfb-add-option-btn" onclick="mbAddObjItem('${q.id}','pairs',{left:'',right:''})">+ Add Pair</button>`;
+      }
+      else if (q.type === 'CHRONOLOGY') {
+        innerHtml += `<div style="font-size:0.8rem; color:#64748b; margin-bottom:8px;">Enter items in the correct order (top = first):</div>`;
+        q.items.forEach((item, i) => {
+          innerHtml += `<div style="display:flex; gap:10px; margin-bottom:8px; align-items:center;">
+            <span style="width:22px; text-align:center; font-weight:700; color:#94a3b8;">${i+1}.</span>
+            <input type="text" class="mb-input" value="${item.replace(/"/g,'&quot;')}" placeholder="Item" oninput="mbUpdateArr('${q.id}','items',${i},this.value)">
+          </div>`;
+        });
+        innerHtml += `<button class="cfb-add-option-btn" onclick="mbAddArrItem('${q.id}','items','')">+ Add Item</button>`;
+      }
+      else if (q.type === 'ASSERTION_REASON') {
+        innerHtml += `<div style="margin-bottom:10px;"><label class="mb-label">Assertion (A)</label><textarea class="mb-input" rows="2" oninput="mbUpdateQ('${q.id}','assertion',this.value)">${q.assertion}</textarea></div>
+          <div style="margin-bottom:10px;"><label class="mb-label">Reason (R)</label><textarea class="mb-input" rows="2" oninput="mbUpdateQ('${q.id}','reason',this.value)">${q.reason}</textarea></div>
+          <label class="mb-label">Correct Option</label>`;
+        q.options.forEach((opt, i) => {
+          innerHtml += `<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <input type="radio" name="ans_${q.id}" ${q.correctIdx===i?'checked':''} onchange="mbUpdateQ('${q.id}','correctIdx',${i})">
+            <input type="text" class="mb-input" value="${opt.replace(/"/g,'&quot;')}" oninput="mbUpdateArr('${q.id}','options',${i},this.value)">
+          </div>`;
+        });
+      }
+      else if (q.type === 'STATEMENT_BASED' || q.type === 'MULTIPLE_STATEMENT') {
+        innerHtml += `<label class="mb-label">Statements</label>`;
+        q.statements.forEach((st, i) => {
+          innerHtml += `<div style="display:flex; align-items:flex-start; gap:8px; margin-bottom:8px;">
+            <span style="padding-top:8px; font-weight:700; color:#94a3b8; width:24px;">S${i+1}.</span>
+            <textarea class="mb-input" rows="1" oninput="mbUpdateArr('${q.id}','statements',${i},this.value)">${st}</textarea>
+          </div>`;
+        });
+        innerHtml += `<button class="cfb-add-option-btn" style="margin-bottom:12px;" onclick="mbAddArrItem('${q.id}','statements','')">+ Add Statement</button>`;
+        innerHtml += `<label class="mb-label">Answer Options</label>`;
+        q.options.forEach((opt, i) => {
+          innerHtml += `<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+            <input type="radio" name="ans_${q.id}" ${q.correctIdx===i?'checked':''} onchange="mbUpdateQ('${q.id}','correctIdx',${i})">
+            <input type="text" class="mb-input" value="${opt.replace(/"/g,'&quot;')}" oninput="mbUpdateArr('${q.id}','options',${i},this.value)">
+          </div>`;
+        });
+        innerHtml += `<button class="cfb-add-option-btn" onclick="mbAddArrItem('${q.id}','options','')">+ Add Option</button>`;
+      }
+      else if (q.type === 'NUMERICAL') {
+        innerHtml += `<div class="mb-row"><div class="mb-col"><label class="mb-label">Correct Answer</label><input type="number" step="any" class="mb-input" value="${q.correctAns}" oninput="mbUpdateQ('${q.id}','correctAns',this.value)"></div>
+          <div class="mb-col"><label class="mb-label">Tolerance (±)</label><input type="number" step="any" class="mb-input" value="${q.tolerance}" oninput="mbUpdateQ('${q.id}','tolerance',this.value)"></div></div>`;
+      }
+      else if (q.type === 'FILL_BLANK') {
+        innerHtml += `<div class="mb-row"><div class="mb-col"><label class="mb-label">Correct Answer</label><input type="text" class="mb-input" value="${q.correctAns.replace(/"/g,'&quot;')}" oninput="mbUpdateQ('${q.id}','correctAns',this.value)"></div>
+          <div class="mb-col" style="display:flex; align-items:flex-end; padding-bottom:8px;">
+            <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" ${q.caseSensitive?'checked':''} onchange="mbUpdateQ('${q.id}','caseSensitive',this.checked)"> <span class="mb-label" style="margin:0;">Case Sensitive</span></label>
+          </div></div>`;
+      }
+
+      html += `
+      <div class="mb-card cfb-q-card" id="${q.id}">
+        <div class="mb-card-header">
+          <span>Q${index + 1} &nbsp;<span class="mb-type-badge">${typeLabel}</span></span>
+          <button class="mb-del-btn" onclick="mbDeleteQuestion('${q.id}')" title="Delete"><i class="ti ti-trash"></i></button>
+        </div>
+        <div class="mb-card-body">
+          <label class="mb-label">Question Text</label>
+          <div style="margin-bottom:14px;">
+            <div class="mb-rich-toolbar">
+              <button class="mb-rich-btn" onclick="execMBFormat('bold','${q.id}')" title="Bold"><i class="ti ti-bold"></i></button>
+              <button class="mb-rich-btn" onclick="execMBFormat('italic','${q.id}')" title="Italic"><i class="ti ti-italic"></i></button>
+              <button class="mb-rich-btn" onclick="execMBFormat('underline','${q.id}')" title="Underline"><i class="ti ti-underline"></i></button>
+              <button class="mb-rich-btn" onclick="execMBFormat('superscript','${q.id}')" title="Superscript"><i class="ti ti-superscript"></i></button>
+              <button class="mb-rich-btn" onclick="execMBFormat('subscript','${q.id}')" title="Subscript"><i class="ti ti-subscript"></i></button>
+            </div>
+            <div class="mb-rich-editor" id="editor_${q.id}" contenteditable="true" oninput="mbSyncEditor('${q.id}')">${q.qText}</div>
+          </div>
+          <div style="background:#f8fafc; padding:14px; border-radius:8px; border:1px solid var(--main-border); margin-bottom:14px;">
+            ${innerHtml}
+          </div>
+          <div class="mb-row">
+            <div class="mb-col"><label class="mb-label">Marks</label><input type="number" class="mb-input" value="${q.marks}" step="0.5" min="0" oninput="mbUpdateQ('${q.id}','marks',this.value)"></div>
+            <div class="mb-col"><label class="mb-label">Negative Marks</label><input type="number" class="mb-input" value="${q.negMarks}" step="0.5" min="0" oninput="mbUpdateQ('${q.id}','negMarks',this.value)"></div>
+            <div class="mb-col" style="display:flex; align-items:flex-end; padding-bottom:8px;">
+              <label class="cfb-q-required-toggle"><input type="checkbox" ${q.required?'checked':''} onchange="mbUpdateQ('${q.id}','required',this.checked)"> Required</label>
+            </div>
+          </div>
+        </div>
+      </div>`;
     });
-    
-    html += `</div>`;
     cont.innerHTML = html;
-  }).withFailureHandler(err => {
-    cont.innerHTML = `<div class="cfb-empty">Network error.</div>`;
-  }).getFormAnalytics(cfbCurrentFormId, from || null, to || null);
-}
-
-// ─── END CFB ───
-
-setTimeout(generateMockNotifications, 2000);
-  /* ═════════ MOBILE REDESIGN LOGIC (ADMIN) ═════════ */
-  function openMobAdminProfile() {
-    let nameElem = document.getElementById('sidebarUserName');
-    if (nameElem) document.getElementById('mob-admin-profile-name').innerText = nameElem.innerText;
-    document.getElementById('mob-admin-profile-email').innerText = (activeRole && activeRole.email) ? activeRole.email : 'admin@example.com';
-    document.getElementById('mob-profile-overlay').classList.add('active');
   }
 
-  function closeMobAdminProfile() {
-    document.getElementById('mob-profile-overlay').classList.remove('active');
+  function mbUpdateQ(qId, key, val) { const q = mbQuestions.find(x => x.id === qId); if(q) q[key] = val; }
+  function mbUpdateArr(qId, key, idx, val) { const q = mbQuestions.find(x => x.id === qId); if(q) q[key][idx] = val; }
+  function mbUpdateObjArr(qId, key, idx, prop, val) { const q = mbQuestions.find(x => x.id === qId); if(q) q[key][idx][prop] = val; }
+  function mbAddArrItem(qId, key, init) { const q = mbQuestions.find(x => x.id === qId); if(q){ q[key].push(init); mbRenderQuestions(); } }
+  function mbAddObjItem(qId, key, init) { const q = mbQuestions.find(x => x.id === qId); if(q){ q[key].push(init); mbRenderQuestions(); } }
+  function mbToggleArrItem(qId, key, val) {
+    const q = mbQuestions.find(x => x.id === qId);
+    if(q) { if(q[key].includes(val)) q[key] = q[key].filter(x => x !== val); else q[key].push(val); }
   }
 
-  function mobSwitchAdminTab(tabId, title) {
-    document.getElementById('mob-page-title-text').innerText = title;
-    
-    // Call existing desktop logic to handle content loading
-    let fakeNavElem = document.getElementById('nav-' + tabId);
-    if(fakeNavElem) {
-      switchTab(tabId, fakeNavElem);
-    } else {
-      switchTab(tabId);
-    }
-    
-    // Add mobile page active class to body
-    document.body.classList.add('mob-page-active');
-  }
+  function saveManualBuilder() {
+    if (mbQuestions.length === 0) { alert('Add at least one question.'); return; }
+    let finalQs = [];
+    mbQuestions.forEach(q => {
+      let qObj = {
+        Section: document.getElementById('mb-create-sections').checked ? (mbSections.find(s => s.id === q.section)?.name || 'Uncategorized') : 'Uncategorized',
+        Type: q.type, Marks: q.marks, NegativeMarks: q.negMarks, Required: q.required
+      };
+      let extra = {};
+      if (q.type === 'SINGLE_MCQ' || q.type === 'TRUE_FALSE') {
+        qObj.Question = q.qText; qObj.Option1 = q.options[0]||''; qObj.Option2 = q.options[1]||''; qObj.Option3 = q.options[2]||''; qObj.Option4 = q.options[3]||''; qObj.AnsIndex = q.correctIdx;
+      } else if (q.type === 'MULTIPLE_MCQ') {
+        qObj.Question = q.qText; qObj.Option1 = JSON.stringify(q.options); qObj.Option2 = JSON.stringify(q.options.filter((_,i) => q.correctIndices.includes(i))); qObj.AnsIndex = 0;
+      } else if (q.type === 'MATCHING') {
+        qObj.Question = q.qText; qObj.Option1 = JSON.stringify(q.pairs.map(p => p.left)); qObj.Option2 = JSON.stringify(q.pairs.map(p => p.right)); qObj.AnsIndex = 0;
+      } else if (q.type === 'CHRONOLOGY') {
+        qObj.Question = q.qText; qObj.Option1 = JSON.stringify(q.items); qObj.Option2 = JSON.stringify(q.items); qObj.AnsIndex = 0;
+      } else if (q.type === 'ASSERTION_REASON') {
+        qObj.Question = `<div class="ar-a"><strong>Assertion (A):</strong> ${q.assertion}</div><div class="ar-r"><strong>Reason (R):</strong> ${q.reason}</div>${q.qText?'<div class="ar-q">'+q.qText+'</div>':''}`;
+        qObj.Option1 = q.options[0]||''; qObj.Option2 = q.options[1]||''; qObj.Option3 = q.options[2]||''; qObj.Option4 = q.options[3]||''; qObj.AnsIndex = q.correctIdx;
+      } else if (q.type === 'STATEMENT_BASED' || q.type === 'MULTIPLE_STATEMENT') {
+        let stHtml = '<ol style="margin:8px 0;">' + q.statements.map(s=>`<li>${s}</li>`).join('') + '</ol>';
+        qObj.Question = `${q.qText?'<div class="sb-q">'+q.qText+'</div>':''}${stHtml}`;
+        qObj.Option1 = JSON.stringify(q.options); qObj.Option2 = q.options[q.correctIdx]||''; qObj.AnsIndex = 0;
+      } else if (q.type === 'NUMERICAL') {
+        qObj.Question = q.qText; qObj.Option1 = q.correctAns; qObj.Option2 = q.correctAns; qObj.AnsIndex = 0; extra.tolerance = q.tolerance;
+      } else if (q.type === 'FILL_BLANK') {
+        qObj.Question = q.qText; qObj.Option1 = q.correctAns; qObj.Option2 = q.correctAns; qObj.AnsIndex = 0; extra.caseSensitive = q.caseSensitive;
+      }
+      qObj.ExtraData = JSON.stringify(extra);
+      finalQs.push(qObj);
+    });
+    existingQuestionsForEdit = finalQs;
+    window.manualShuffleQs = document.getElementById('mb-shuffle-qs').checked ? 'Yes' : 'No';
+    window.manualShuffleOpts = document.getElementById('mb-shuffle-opts').checked ? 'Yes' : 'No';
 
-  function mobGoBackAdmin() {
-    document.body.classList.remove('mob-page-active');
-  }
-</script>
-<!-- Notifications Modal -->
-<div class="modal-overlay" id="notifModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Notifications</h3>
-      <button class="modal-close" onclick="closeModal('notifModal')"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="modal-body" style="max-height: 400px; overflow-y: auto;" id="notifList">
-      <div style="padding: 20px; text-align: center; color: #94a3b8;">No new notifications</div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-outline" style="padding: 6px 16px; border-radius: 8px; font-size:0.875rem;" onclick="closeModal('notifModal')">Close</button>
-      <button class="btn-primary" style="padding: 6px 16px; border-radius: 8px; font-size:0.875rem;" onclick="markAllNotificationsRead(); closeModal('notifModal');">Mark all as read</button>
-    </div>
-  </div>
-</div>
+    // Show success badge back on the form
+    let panel = document.getElementById('qmode-file-panel');
+    let old = panel.parentElement.querySelector('.manual-success-badge');
+    if (old) old.remove();
+    let badge = document.createElement('div');
+    badge.className = 'manual-success-badge';
+    badge.innerHTML = `<div style="padding:14px 16px; background:#ecfdf5; border:1px solid #6ee7b7; border-radius:10px; color:#065f46; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <i class="ti ti-circle-check" style="font-size:1.2rem;"></i>
+      <span><strong>${finalQs.length} question(s)</strong> added manually.</span>
+      <button class="btn-outline" onclick="openManualBuilder()" style="padding:5px 12px; font-size:0.8rem; border-color:#10b981; color:#059669; margin-left:auto;">Edit Questions</button>
+    </div>`;
+    panel.parentElement.appendChild(badge);
 
-<!-- Help & Support Modal -->
-<div class="modal-overlay" id="helpModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Help &amp; Support</h3>
-      <button class="modal-close" onclick="closeModal('helpModal')"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="modal-body">
-      <div style="padding:10px 0;">
-        <p style="margin-bottom:12px;"><strong>Need assistance?</strong><br>We're here to help you with any questions or issues you may have while using the platform.</p>
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
-          <i class="ti ti-mail" style="font-size:1.5rem; color:#f97316;"></i>
-          <div>
-            <div style="font-size:0.85rem; font-weight:600; color:#0f172a;">Email Support</div>
-            <div style="font-size:0.8rem; color:#94a3b8;">thedigiq@gmail.com</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
-          <i class="ti ti-phone" style="font-size:1.5rem; color:#10b981;"></i>
-          <div>
-            <div style="font-size:0.85rem; font-weight:600; color:#0f172a;">IT Helpdesk</div>
-            <div style="font-size:0.8rem; color:#94a3b8;">9924964372</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px;">
-          <i class="ti ti-book" style="font-size:1.5rem; color:#f59e0b;"></i>
-          <div>
-            <div style="font-size:0.85rem; font-weight:600; color:#0f172a;">Documentation</div>
-            <a href="digiQ_Manual.pdf" target="_blank" style="font-size:0.8rem; color:#f97316; text-decoration:none;">View User Guide</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-primary" style="padding: 6px 16px; border-radius: 8px; font-size:0.875rem;" onclick="closeModal('helpModal')">Close</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  function openModal(id) {
-    document.getElementById(id).classList.add('active');
-  }
-  function closeModal(id) {
-    document.getElementById(id).classList.remove('active');
+    closeMBView();
+    showToast(finalQs.length + ' question(s) saved from Manual Builder', 'success');
   }
 </script>
+
 </body>
-</html>
