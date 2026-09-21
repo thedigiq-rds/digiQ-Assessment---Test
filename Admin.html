@@ -8385,8 +8385,97 @@ function epbPrint() {
   function openManualBuilder() {
     document.getElementById('cq-view-form').style.display = 'none';
     document.getElementById('cq-view-manual-builder').style.display = 'block';
+    
+    if (mbQuestions.length === 0 && existingQuestionsForEdit && existingQuestionsForEdit.length > 0) {
+      _loadExistingIntoMB(existingQuestionsForEdit);
+    }
+    
     if (mbQuestions.length === 0) mbRenderQuestions();
     document.getElementById('cq-view-manual-builder').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function _loadExistingIntoMB(qs) {
+    mbQuestions = [];
+    mbSections = [];
+    const secSet = new Set();
+    
+    qs.forEach(q => {
+      const secName = q.Section || 'Uncategorized';
+      if (!secSet.has(secName)) {
+        secSet.add(secName);
+        mbSections.push({ id: 'sec_'+Math.random().toString(36).substr(2,9), name: secName });
+      }
+      const secId = mbSections.find(s => s.name === secName).id;
+      
+      let newQ = {
+        id: 'q_' + Math.random().toString(36).substr(2,9),
+        section: secId,
+        type: q.Type,
+        qText: q.Question || '',
+        marks: parseFloat(q.Marks) || 1,
+        negMarks: parseFloat(q.NegativeMarks) || 0,
+        required: q.Required !== false
+      };
+      
+      let extra = {};
+      try { extra = JSON.parse(q.ExtraData || "{}"); } catch(e){}
+      let rawQText = q.Question || '';
+      
+      if (q.Type === 'SINGLE_MCQ' || q.Type === 'TRUE_FALSE') {
+        newQ.options = [q.Option1||'', q.Option2||'', q.Option3||'', q.Option4||''];
+        newQ.correctIdx = parseInt(q.AnsIndex) || 0;
+      } else if (q.Type === 'MULTIPLE_MCQ') {
+        try { newQ.options = JSON.parse(q.Option1 || "[]"); } catch(e) { newQ.options = []; }
+        let correctTexts = [];
+        try { correctTexts = JSON.parse(q.Option2 || "[]"); } catch(e) {}
+        newQ.correctIndices = correctTexts.map(t => newQ.options.indexOf(t)).filter(i => i !== -1);
+      } else if (q.Type === 'MATCHING') {
+        let lefts = [], rights = [];
+        try { lefts = JSON.parse(q.Option1 || "[]"); } catch(e) {}
+        try { rights = JSON.parse(q.Option2 || "[]"); } catch(e) {}
+        newQ.pairs = lefts.map((l, i) => ({ left: l, right: rights[i] || '' }));
+      } else if (q.Type === 'CHRONOLOGY') {
+        try { newQ.items = JSON.parse(q.Option1 || "[]"); } catch(e) { newQ.items = []; }
+      } else if (q.Type === 'ASSERTION_REASON') {
+        const aMatch = rawQText.match(/<strong>Assertion \(A\):<\/strong>\s*(.*?)<\/div>/);
+        const rMatch = rawQText.match(/<strong>Reason \(R\):<\/strong>\s*(.*?)<\/div>/);
+        const qMatch = rawQText.match(/<div class="ar-q">(.*?)<\/div>/);
+        newQ.assertion = aMatch ? aMatch[1] : '';
+        newQ.reason = rMatch ? rMatch[1] : '';
+        newQ.qText = qMatch ? qMatch[1] : '';
+        newQ.options = [q.Option1||'', q.Option2||'', q.Option3||'', q.Option4||''];
+        newQ.correctIdx = parseInt(q.AnsIndex) || 0;
+      } else if (q.Type === 'STATEMENT_BASED' || q.Type === 'MULTIPLE_STATEMENT') {
+        const qMatch = rawQText.match(/<div class="sb-q">(.*?)<\/div>/);
+        newQ.qText = qMatch ? qMatch[1] : '';
+        const lis = [...rawQText.matchAll(/<li>(.*?)<\/li>/g)].map(m => m[1]);
+        newQ.statements = lis.length ? lis : [];
+        try { newQ.options = JSON.parse(q.Option1 || "[]"); } catch(e) { newQ.options = []; }
+        newQ.correctIdx = parseInt(q.AnsIndex) || 0;
+      } else if (q.Type === 'NUMERICAL') {
+        newQ.correctAns = q.Option1 || '';
+        newQ.tolerance = extra.tolerance || 0;
+      } else if (q.Type === 'FILL_BLANK') {
+        newQ.correctAns = q.Option1 || '';
+        newQ.caseSensitive = extra.caseSensitive !== false;
+      } else {
+        newQ.options = [q.Option1||'', q.Option2||'', q.Option3||'', q.Option4||''];
+        newQ.correctIdx = parseInt(q.AnsIndex) || 0;
+      }
+      mbQuestions.push(newQ);
+    });
+    
+    if (mbSections.length > 1 || (mbSections.length === 1 && mbSections[0].name !== 'Uncategorized')) {
+      document.getElementById('mb-create-sections').checked = true;
+      document.getElementById('mb-sections-container').style.display = 'block';
+      mbActiveSection = mbSections[0].id;
+    } else {
+      document.getElementById('mb-create-sections').checked = false;
+      document.getElementById('mb-sections-container').style.display = 'none';
+      mbActiveSection = mbSections.length > 0 ? mbSections[0].id : 'default';
+    }
+    mbRenderTabs();
+    mbRenderQuestions();
   }
 
   function closeMBView() {
@@ -8614,6 +8703,17 @@ function epbPrint() {
 
   function saveManualBuilder() {
     if (mbQuestions.length === 0) { alert('Add at least one question.'); return; }
+    
+    // Validate empty options
+    for (let q of mbQuestions) {
+      if ((q.type === 'SINGLE_MCQ' || q.type === 'TRUE_FALSE' || q.type === 'MULTIPLE_MCQ' || q.type === 'ASSERTION_REASON' || q.type === 'STATEMENT_BASED' || q.type === 'MULTIPLE_STATEMENT') && q.options) {
+        if (q.options.some(o => !String(o).trim())) {
+          alert('Please fill out all option fields. Blank options are not allowed.');
+          return;
+        }
+      }
+    }
+
     let finalQs = [];
     mbQuestions.forEach(q => {
       let qObj = {
