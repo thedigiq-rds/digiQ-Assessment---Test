@@ -2526,10 +2526,10 @@ function callBackend(action, args, onSuccess, onFailure) {
             </svg>
           </button>
           <div class="sd-profile-menu" id="desktopStudentProfileMenu" style="display:none; position:absolute; top:calc(100% + 10px); right:0; background:#fff; min-width:210px; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 12px 32px rgba(0,0,0,0.12); z-index:100; flex-direction:column; overflow:hidden;">
-            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-bell"></i> Notifications</div>
-            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-key"></i> Change Password</div>
-            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-message-star"></i> App Feedback</div>
-            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-help"></i> Help &amp; Support</div>
+            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); switchSettingsTab('notifications'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-bell"></i> Notifications</div>
+            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); switchSettingsTab('password'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-key"></i> Change Password</div>
+            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); switchSettingsTab('feedback'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-message-star"></i> App Feedback</div>
+            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); switchSettingsTab('help'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-help"></i> Help &amp; Support</div>
             <div class="sd-profile-item" onclick="logoutStudent(); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; color:#ef4444;"><i class="ti ti-logout"></i> Logout</div>
           </div>
         </div>
@@ -2606,15 +2606,35 @@ function callBackend(action, args, onSuccess, onFailure) {
         </div>
 
         <!-- Settings Tab -->
-        <div id="tab-sd-settings" style="display:none;">
+        <div id="tab-sd-settings" style="display:none; padding-bottom: 24px;">
           <div style="font-size:1.4rem; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px; margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;"><i class="ti ti-settings"></i> Profile &amp; Settings</div>
           
-          <div style="display: flex; flex-wrap: wrap; gap: 24px;">
-            <!-- Left Column: Password & Feedback -->
-            <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 24px;">
+          <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px;">
+            <!-- Sidebar -->
+            <div style="flex: 0 0 250px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--main-border); padding-right: 16px;">
+              <div class="settings-nav-item active" onclick="switchSettingsTab('notifications', this)" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--primary); background: var(--primary-xs); transition: all 0.2s;"><i class="ti ti-bell"></i> Notifications</div>
+              <div class="settings-nav-item" onclick="switchSettingsTab('password', this)" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--text-muted); transition: all 0.2s;"><i class="ti ti-key"></i> Change Password</div>
+              <div class="settings-nav-item" onclick="switchSettingsTab('feedback', this)" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--text-muted); transition: all 0.2s;"><i class="ti ti-message-star"></i> App Feedback</div>
+              <div class="settings-nav-item" onclick="switchSettingsTab('help', this)" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--text-muted); transition: all 0.2s;"><i class="ti ti-help"></i> Help &amp; Support</div>
+              <div class="settings-nav-item" onclick="logoutStudent()" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--danger); transition: all 0.2s; margin-top: auto;"><i class="ti ti-logout"></i> Log Out</div>
+            </div>
+
+            <!-- Content Area -->
+            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
               
-              <!-- Change Password -->
-              <div style="background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
+              <!-- Notifications Pane -->
+              <div id="settings-pane-notifications" class="settings-pane" style="display:block; background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                  <div style="font-size:1.1rem; font-weight:700; color:var(--text);"><i class="ti ti-bell"></i> Notifications</div>
+                  <button class="btn-sage" style="padding: 4px 10px; font-size:0.8rem; border-radius:4px; border:1px solid var(--border); background:var(--bg-surface); cursor:pointer;" onclick="markAllNotificationsRead();">Mark all read</button>
+                </div>
+                <div id="notifListContainer" style="max-height: 350px; overflow-y: auto; background:#f8fafc; border-radius:8px; border:1px solid var(--main-border);">
+                  <div style="padding: 20px; text-align: center; color: var(--text-muted);">No new notifications</div>
+                </div>
+              </div>
+
+              <!-- Change Password Pane -->
+              <div id="settings-pane-password" class="settings-pane" style="display:none; background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
                 <div style="font-size:1.1rem; font-weight:700; margin-bottom:16px; color:var(--text);"><i class="ti ti-key"></i> Change Password</div>
                 <div style="margin-bottom:15px;">
                   <label class="form-label">Current Password</label>
@@ -2640,8 +2660,8 @@ function callBackend(action, args, onSuccess, onFailure) {
                 <button class="btn-primary-auth" style="width:100%;" onclick="submitPasswordChange()">Update Password</button>
               </div>
 
-              <!-- App Feedback -->
-              <div style="background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
+              <!-- App Feedback Pane -->
+              <div id="settings-pane-feedback" class="settings-pane" style="display:none; background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
                 <div style="font-size:1.1rem; font-weight:700; margin-bottom:8px; color:var(--text);"><i class="ti ti-message-star"></i> App Feedback</div>
                 <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Help us improve digiQ — your feedback goes directly to the developer.</div>
                 <label class="form-label">Overall Rating</label>
@@ -2664,25 +2684,9 @@ function callBackend(action, args, onSuccess, onFailure) {
                 <textarea class="form-control" id="apfb-message" placeholder="Share what's on your mind..." maxlength="2000" style="resize:vertical; min-height:90px; margin-bottom:12px;"></textarea>
                 <button class="btn-primary-auth" id="apfb-submit-btn" onclick="submitStudentFeedback()" style="width:100%;"><i class="ti ti-send"></i> Submit Feedback</button>
               </div>
-              
-            </div>
 
-            <!-- Right Column: Notifications, Help, Logout -->
-            <div style="flex: 1; min-width: 320px; display: flex; flex-direction: column; gap: 24px;">
-              
-              <!-- Notifications -->
-              <div style="background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                  <div style="font-size:1.1rem; font-weight:700; color:var(--text);"><i class="ti ti-bell"></i> Notifications</div>
-                  <button class="btn-sage" style="padding: 4px 10px; font-size:0.8rem; border-radius:4px; border:1px solid var(--border); background:var(--bg-surface); cursor:pointer;" onclick="markAllNotificationsRead();">Mark all read</button>
-                </div>
-                <div id="notifListContainer" style="max-height: 250px; overflow-y: auto; background:#f8fafc; border-radius:8px; border:1px solid var(--main-border);">
-                  <div style="padding: 20px; text-align: center; color: var(--text-muted);">No new notifications</div>
-                </div>
-              </div>
-
-              <!-- Help & Support -->
-              <div style="background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
+              <!-- Help & Support Pane -->
+              <div id="settings-pane-help" class="settings-pane" style="display:none; background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
                 <div style="font-size:1.1rem; font-weight:700; margin-bottom:12px; color:var(--text);"><i class="ti ti-help"></i> Help &amp; Support</div>
                 <p style="font-size:0.85rem; margin-bottom:16px; color:var(--text-muted);">Need assistance? We're here to help you with any questions or issues.</p>
                 <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid var(--main-border);">
@@ -2699,13 +2703,6 @@ function callBackend(action, args, onSuccess, onFailure) {
                     <div style="font-size:0.8rem; color:var(--text-muted);">+1 (800) 123-4567</div>
                   </div>
                 </div>
-              </div>
-
-              <!-- Logout -->
-              <div style="background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--danger);">
-                <div style="font-size:1.1rem; font-weight:700; margin-bottom:12px; color:var(--danger);"><i class="ti ti-logout"></i> Log Out</div>
-                <p style="font-size:0.85rem; margin-bottom:16px; color:var(--text-muted);">Are you sure you want to end your current session?</p>
-                <button class="btn-primary-auth" style="width:100%; background:var(--danger); box-shadow:none;" onclick="logoutStudent()">Log Out</button>
               </div>
 
             </div>
@@ -2762,22 +2759,22 @@ function callBackend(action, args, onSuccess, onFailure) {
   </div>
   
   <div class="mob-profile-menu">
-    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); closeMobStudentProfile();">
+    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); switchSettingsTab('notifications'); closeMobStudentProfile();">
       <i class="ti ti-bell mob-profile-icon"></i>
       Notifications
       <i class="ti ti-chevron-right mob-profile-arrow"></i>
     </div>
-    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); closeMobStudentProfile();">
+    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); switchSettingsTab('password'); closeMobStudentProfile();">
       <i class="ti ti-settings mob-profile-icon"></i>
       Change Password
       <i class="ti ti-chevron-right mob-profile-arrow"></i>
     </div>
-    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); closeMobStudentProfile();">
+    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); switchSettingsTab('feedback'); closeMobStudentProfile();">
       <i class="ti ti-message-star mob-profile-icon"></i>
       App Feedback
       <i class="ti ti-chevron-right mob-profile-arrow"></i>
     </div>
-    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); closeMobStudentProfile();">
+    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); switchSettingsTab('help'); closeMobStudentProfile();">
       <i class="ti ti-help mob-profile-icon"></i>
       Help &amp; Support
       <i class="ti ti-chevron-right mob-profile-arrow"></i>
@@ -2993,6 +2990,38 @@ function callBackend(action, args, onSuccess, onFailure) {
   let timerInt, strikes = 0, globalDuration = 0, initialDuration = 0, examSendCert = true;
   let viewedQuestions = new Set();
   const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
+
+  /* ══════════════════════════════════════════════════
+     SETTINGS SUB-TAB LOGIC
+  ══════════════════════════════════════════════════ */
+  function switchSettingsTab(tabId, el = null) {
+    document.querySelectorAll('.settings-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.settings-nav-item').forEach(p => {
+      p.classList.remove('active');
+      p.style.color = 'var(--text-muted)';
+      p.style.background = 'transparent';
+    });
+    
+    if (el) {
+      el.classList.add('active');
+      el.style.color = 'var(--primary)';
+      el.style.background = 'var(--primary-xs)';
+    } else {
+      // Find the element by checking the onclick attribute text loosely if no element passed
+      const els = document.querySelectorAll('.settings-nav-item');
+      for (const e of els) {
+        if (e.getAttribute('onclick').includes(`'${tabId}'`)) {
+          e.classList.add('active');
+          e.style.color = 'var(--primary)';
+          e.style.background = 'var(--primary-xs)';
+          break;
+        }
+      }
+    }
+    
+    const targetPane = document.getElementById('settings-pane-' + tabId);
+    if (targetPane) targetPane.style.display = 'block';
+  }
 
   /* ══════════════════════════════════════════════════
      CUSTOM CENTRE DIALOGUE MODAL SYSTEM
