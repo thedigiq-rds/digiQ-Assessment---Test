@@ -2526,10 +2526,10 @@ function callBackend(action, args, onSuccess, onFailure) {
             </svg>
           </button>
           <div class="sd-profile-menu" id="desktopStudentProfileMenu" style="display:none; position:absolute; top:calc(100% + 10px); right:0; background:#fff; min-width:210px; border-radius:14px; border:1px solid #e2e8f0; box-shadow:0 12px 32px rgba(0,0,0,0.12); z-index:100; flex-direction:column; overflow:hidden;">
-            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); switchSettingsTab('notifications'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-bell"></i> Notifications</div>
-            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); switchSettingsTab('password'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-key"></i> Change Password</div>
-            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); switchSettingsTab('feedback'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-message-star"></i> App Feedback</div>
-            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); switchSettingsTab('help'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-help"></i> Help &amp; Support</div>
+            <div class="sd-profile-item" onclick="openModal('notifModal'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-bell"></i> Notifications</div>
+            <div class="sd-profile-item" onclick="switchStudentTab('settings', null); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-key"></i> Change Password</div>
+            <div class="sd-profile-item" onclick="openStudentFeedbackModal(); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-message-star"></i> App Feedback</div>
+            <div class="sd-profile-item" onclick="openModal('helpModal'); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; border-bottom:1px solid #f8fafc;"><i class="ti ti-help"></i> Help &amp; Support</div>
             <div class="sd-profile-item" onclick="logoutStudent(); toggleDesktopStudentProfile();" style="padding:12px 16px; cursor:pointer; display:flex; align-items:center; gap:10px; font-size:0.9rem; font-weight:500; color:#ef4444;"><i class="ti ti-logout"></i> Logout</div>
           </div>
         </div>
@@ -2607,105 +2607,30 @@ function callBackend(action, args, onSuccess, onFailure) {
 
         <!-- Settings Tab -->
         <div id="tab-sd-settings" style="display:none; padding-bottom: 24px;">
-          <div style="font-size:1.4rem; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px; margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;"><i class="ti ti-settings"></i> Profile &amp; Settings</div>
-          
-          <div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 24px;">
-            <!-- Sidebar -->
-            <div style="flex: 0 0 250px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid var(--main-border); padding-right: 16px;">
-              <div class="settings-nav-item active" onclick="switchSettingsTab('notifications', this)" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--primary); background: var(--primary-xs); transition: all 0.2s;"><i class="ti ti-bell"></i> Notifications</div>
-              <div class="settings-nav-item" onclick="switchSettingsTab('password', this)" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--text-muted); transition: all 0.2s;"><i class="ti ti-key"></i> Change Password</div>
-              <div class="settings-nav-item" onclick="switchSettingsTab('feedback', this)" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--text-muted); transition: all 0.2s;"><i class="ti ti-message-star"></i> App Feedback</div>
-              <div class="settings-nav-item" onclick="switchSettingsTab('help', this)" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--text-muted); transition: all 0.2s;"><i class="ti ti-help"></i> Help &amp; Support</div>
-              <div class="settings-nav-item" onclick="logoutStudent()" style="padding: 12px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--danger); transition: all 0.2s; margin-top: auto;"><i class="ti ti-logout"></i> Log Out</div>
+          <div style="font-size:1.4rem; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px; margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;"><i class="ti ti-settings"></i> Change Password</div>
+          <div style="max-width:400px; background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
+            <div style="margin-bottom:15px;">
+              <label class="form-label">Current Password</label>
+              <div style="position:relative;">
+                <input type="password" id="sd-old-pwd" class="form-control" placeholder="Enter current password" style="padding-right:36px;">
+                <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sd-old-pwd', this)"></i>
+              </div>
             </div>
-
-            <!-- Content Area -->
-            <div style="flex: 1; min-width: 300px; display: flex; flex-direction: column;">
-              
-              <!-- Notifications Pane -->
-              <div id="settings-pane-notifications" class="settings-pane" style="display:block; background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                  <div style="font-size:1.1rem; font-weight:700; color:var(--text);"><i class="ti ti-bell"></i> Notifications</div>
-                  <button class="btn-sage" style="padding: 4px 10px; font-size:0.8rem; border-radius:4px; border:1px solid var(--border); background:var(--bg-surface); cursor:pointer;" onclick="markAllNotificationsRead();">Mark all read</button>
-                </div>
-                <div id="notifListContainer" style="max-height: 350px; overflow-y: auto; background:#f8fafc; border-radius:8px; border:1px solid var(--main-border);">
-                  <div style="padding: 20px; text-align: center; color: var(--text-muted);">No new notifications</div>
-                </div>
+            <div style="margin-bottom:15px;">
+              <label class="form-label">New Password</label>
+              <div style="position:relative;">
+                <input type="password" id="sd-new-pwd" class="form-control" placeholder="Enter new password" style="padding-right:36px;">
+                <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sd-new-pwd', this)"></i>
               </div>
-
-              <!-- Change Password Pane -->
-              <div id="settings-pane-password" class="settings-pane" style="display:none; background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
-                <div style="font-size:1.1rem; font-weight:700; margin-bottom:16px; color:var(--text);"><i class="ti ti-key"></i> Change Password</div>
-                <div style="margin-bottom:15px;">
-                  <label class="form-label">Current Password</label>
-                  <div style="position:relative;">
-                    <input type="password" id="sd-old-pwd" class="form-control" placeholder="Enter current password" style="padding-right:36px;">
-                    <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sd-old-pwd', this)"></i>
-                  </div>
-                </div>
-                <div style="margin-bottom:15px;">
-                  <label class="form-label">New Password</label>
-                  <div style="position:relative;">
-                    <input type="password" id="sd-new-pwd" class="form-control" placeholder="Enter new password" style="padding-right:36px;">
-                    <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sd-new-pwd', this)"></i>
-                  </div>
-                </div>
-                <div style="margin-bottom:20px;">
-                  <label class="form-label">Confirm New Password</label>
-                  <div style="position:relative;">
-                    <input type="password" id="sd-confirm-pwd" class="form-control" placeholder="Confirm new password" style="padding-right:36px;">
-                    <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sd-confirm-pwd', this)"></i>
-                  </div>
-                </div>
-                <button class="btn-primary-auth" style="width:100%;" onclick="submitPasswordChange()">Update Password</button>
-              </div>
-
-              <!-- App Feedback Pane -->
-              <div id="settings-pane-feedback" class="settings-pane" style="display:none; background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
-                <div style="font-size:1.1rem; font-weight:700; margin-bottom:8px; color:var(--text);"><i class="ti ti-message-star"></i> App Feedback</div>
-                <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px;">Help us improve digiQ — your feedback goes directly to the developer.</div>
-                <label class="form-label">Overall Rating</label>
-                <div class="apfb-stars" id="apfb-stars" style="display:flex; gap:6px; margin-bottom:16px;">
-                  <span class="apfb-star" data-v="1" onclick="apfbSetRating(1)" style="font-size:1.8rem; color:#e5e7eb; cursor:pointer;">★</span>
-                  <span class="apfb-star" data-v="2" onclick="apfbSetRating(2)" style="font-size:1.8rem; color:#e5e7eb; cursor:pointer;">★</span>
-                  <span class="apfb-star" data-v="3" onclick="apfbSetRating(3)" style="font-size:1.8rem; color:#e5e7eb; cursor:pointer;">★</span>
-                  <span class="apfb-star" data-v="4" onclick="apfbSetRating(4)" style="font-size:1.8rem; color:#e5e7eb; cursor:pointer;">★</span>
-                  <span class="apfb-star" data-v="5" onclick="apfbSetRating(5)" style="font-size:1.8rem; color:#e5e7eb; cursor:pointer;">★</span>
-                </div>
-                <label class="form-label">Category</label>
-                <div class="apfb-cats" id="apfb-cats" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
-                  <div class="apfb-cat selected" data-cat="General" onclick="this.parentElement.querySelectorAll('.apfb-cat').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">General</div>
-                  <div class="apfb-cat" data-cat="Bug Report" onclick="this.parentElement.querySelectorAll('.apfb-cat').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">Bug Report</div>
-                  <div class="apfb-cat" data-cat="Feature Request" onclick="this.parentElement.querySelectorAll('.apfb-cat').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">Feature Request</div>
-                  <div class="apfb-cat" data-cat="UI Feedback" onclick="this.parentElement.querySelectorAll('.apfb-cat').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">UI Feedback</div>
-                  <div class="apfb-cat" data-cat="Performance" onclick="this.parentElement.querySelectorAll('.apfb-cat').forEach(el=>el.classList.remove('selected')); this.classList.add('selected');">Performance</div>
-                </div>
-                <label class="form-label">Your Message</label>
-                <textarea class="form-control" id="apfb-message" placeholder="Share what's on your mind..." maxlength="2000" style="resize:vertical; min-height:90px; margin-bottom:12px;"></textarea>
-                <button class="btn-primary-auth" id="apfb-submit-btn" onclick="submitStudentFeedback()" style="width:100%;"><i class="ti ti-send"></i> Submit Feedback</button>
-              </div>
-
-              <!-- Help & Support Pane -->
-              <div id="settings-pane-help" class="settings-pane" style="display:none; background:#fff; padding:24px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
-                <div style="font-size:1.1rem; font-weight:700; margin-bottom:12px; color:var(--text);"><i class="ti ti-help"></i> Help &amp; Support</div>
-                <p style="font-size:0.85rem; margin-bottom:16px; color:var(--text-muted);">Need assistance? We're here to help you with any questions or issues.</p>
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid var(--main-border);">
-                  <i class="ti ti-mail" style="font-size:1.5rem; color:var(--primary);"></i>
-                  <div>
-                    <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Email Support</div>
-                    <div style="font-size:0.8rem; color:var(--text-muted);">support@college.edu</div>
-                  </div>
-                </div>
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px; border:1px solid var(--main-border);">
-                  <i class="ti ti-phone" style="font-size:1.5rem; color:#10b981;"></i>
-                  <div>
-                    <div style="font-size:0.85rem; font-weight:600; color:var(--text);">IT Helpdesk</div>
-                    <div style="font-size:0.8rem; color:var(--text-muted);">+1 (800) 123-4567</div>
-                  </div>
-                </div>
-              </div>
-
             </div>
+            <div style="margin-bottom:20px;">
+              <label class="form-label">Confirm New Password</label>
+              <div style="position:relative;">
+                <input type="password" id="sd-confirm-pwd" class="form-control" placeholder="Confirm new password" style="padding-right:36px;">
+                <i class="ti ti-eye" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:var(--text-muted); z-index:10;" onclick="togglePasswordVisibility('sd-confirm-pwd', this)"></i>
+              </div>
+            </div>
+            <button class="btn-primary-auth" style="width:100%;" onclick="submitPasswordChange()">Update Password</button>
           </div>
         </div>
       </div>
@@ -2733,7 +2658,7 @@ function callBackend(action, args, onSuccess, onFailure) {
           <svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
           <span class="label">Settings</span>
       </div>
-      <div class="nav-item" id="sd-mtab-feedback" onclick="switchStudentTab('settings')">
+      <div class="nav-item" id="sd-mtab-feedback" onclick="openStudentFeedbackModal()">
           <svg class="icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
           <span class="label">Feedback</span>
       </div>
@@ -2759,22 +2684,22 @@ function callBackend(action, args, onSuccess, onFailure) {
   </div>
   
   <div class="mob-profile-menu">
-    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); switchSettingsTab('notifications'); closeMobStudentProfile();">
+    <div class="mob-profile-item" onclick="openModal('notifModal'); closeMobStudentProfile();">
       <i class="ti ti-bell mob-profile-icon"></i>
       Notifications
       <i class="ti ti-chevron-right mob-profile-arrow"></i>
     </div>
-    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); switchSettingsTab('password'); closeMobStudentProfile();">
+    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Change Password'); closeMobStudentProfile();">
       <i class="ti ti-settings mob-profile-icon"></i>
       Change Password
       <i class="ti ti-chevron-right mob-profile-arrow"></i>
     </div>
-    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); switchSettingsTab('feedback'); closeMobStudentProfile();">
+    <div class="mob-profile-item" onclick="openStudentFeedbackModal(); closeMobStudentProfile();">
       <i class="ti ti-message-star mob-profile-icon"></i>
       App Feedback
       <i class="ti ti-chevron-right mob-profile-arrow"></i>
     </div>
-    <div class="mob-profile-item" onclick="mobSwitchStudentTab('settings', 'Settings'); switchSettingsTab('help'); closeMobStudentProfile();">
+    <div class="mob-profile-item" onclick="openModal('helpModal'); closeMobStudentProfile();">
       <i class="ti ti-help mob-profile-icon"></i>
       Help &amp; Support
       <i class="ti ti-chevron-right mob-profile-arrow"></i>
@@ -2782,6 +2707,118 @@ function callBackend(action, args, onSuccess, onFailure) {
     <div class="mob-profile-item danger" onclick="logoutStudent()">
       <i class="ti ti-logout mob-profile-icon"></i>
       Logout
+    </div>
+  </div>
+</div>
+
+<!-- Notifications Modal -->
+<div class="modal-overlay" id="notifModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Notifications</h3>
+      <button class="modal-close" onclick="closeModal('notifModal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="notifListContainer">
+      <div style="padding: 20px; text-align: center; color: var(--text-muted);">No new notifications</div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-outline" style="padding: 6px 12px; border-radius:4px; margin-right:8px;" onclick="closeModal('notifModal')">Close</button>
+      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="markAllNotificationsRead(); closeModal('notifModal');">Mark all as read</button>
+    </div>
+  </div>
+</div>
+
+<!-- Help & Support Modal -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Help &amp; Support</h3>
+      <button class="modal-close" onclick="closeModal('helpModal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:10px 0;">
+        <p style="margin-bottom:12px;"><strong>Need assistance?</strong><br>We're here to help you with any questions or issues you may have while using the platform.</p>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-mail" style="font-size:1.5rem; color:var(--primary);"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Email Support</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">support@college.edu</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-phone" style="font-size:1.5rem; color:#10b981);"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">IT Helpdesk</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">+1 (800) 123-4567</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-book" style="font-size:1.5rem; color:#f59e0b;"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Documentation</div>
+            <a href="#" style="font-size:0.8rem; color:var(--primary); text-decoration:none;">View User Guide</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="closeModal('helpModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications Modal -->
+<div class="modal-overlay" id="notifModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Notifications</h3>
+      <button class="modal-close" onclick="closeModal('notifModal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="notifListContainer">
+      <div style="padding: 20px; text-align: center; color: var(--text-muted);">No new notifications</div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-outline" style="padding: 6px 12px; border-radius:4px; margin-right:8px;" onclick="closeModal('notifModal')">Close</button>
+      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="markAllNotificationsRead(); closeModal('notifModal');">Mark all as read</button>
+    </div>
+  </div>
+</div>
+
+<!-- Help & Support Modal -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Help &amp; Support</h3>
+      <button class="modal-close" onclick="closeModal('helpModal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:10px 0;">
+        <p style="margin-bottom:12px;"><strong>Need assistance?</strong><br>We're here to help you with any questions or issues you may have while using the platform.</p>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-mail" style="font-size:1.5rem; color:var(--primary);"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Email Support</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">support@college.edu</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-phone" style="font-size:1.5rem; color:#10b981);"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">IT Helpdesk</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">+1 (800) 123-4567</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-book" style="font-size:1.5rem; color:#f59e0b;"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Documentation</div>
+            <a href="#" style="font-size:0.8rem; color:var(--primary); text-decoration:none;">View User Guide</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="closeModal('helpModal')">Close</button>
     </div>
   </div>
 </div>
@@ -2991,37 +3028,7 @@ function callBackend(action, args, onSuccess, onFailure) {
   let viewedQuestions = new Set();
   const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
 
-  /* ══════════════════════════════════════════════════
-     SETTINGS SUB-TAB LOGIC
-  ══════════════════════════════════════════════════ */
-  function switchSettingsTab(tabId, el = null) {
-    document.querySelectorAll('.settings-pane').forEach(p => p.style.display = 'none');
-    document.querySelectorAll('.settings-nav-item').forEach(p => {
-      p.classList.remove('active');
-      p.style.color = 'var(--text-muted)';
-      p.style.background = 'transparent';
-    });
-    
-    if (el) {
-      el.classList.add('active');
-      el.style.color = 'var(--primary)';
-      el.style.background = 'var(--primary-xs)';
-    } else {
-      // Find the element by checking the onclick attribute text loosely if no element passed
-      const els = document.querySelectorAll('.settings-nav-item');
-      for (const e of els) {
-        if (e.getAttribute('onclick').includes(`'${tabId}'`)) {
-          e.classList.add('active');
-          e.style.color = 'var(--primary)';
-          e.style.background = 'var(--primary-xs)';
-          break;
-        }
-      }
-    }
-    
-    const targetPane = document.getElementById('settings-pane-' + tabId);
-    if (targetPane) targetPane.style.display = 'block';
-  }
+
 
   /* ══════════════════════════════════════════════════
      CUSTOM CENTRE DIALOGUE MODAL SYSTEM
