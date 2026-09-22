@@ -2569,7 +2569,7 @@ function callBackend(action, args, onSuccess, onFailure) {
                    <div class="mob-card-icon"><i class="ti ti-key"></i></div>
                    <div class="mob-card-title">Change Password</div>
                  </div>
-                 <div class="mob-card surface-yellow mob-card-small" onclick="mobSwitchStudentTab('settings', 'App Feedback')">
+                 <div class="mob-card surface-yellow mob-card-small" onclick="openStudentFeedbackModal()">
                    <div class="mob-card-icon"><i class="ti ti-message-star"></i></div>
                    <div class="mob-card-title">App Feedback</div>
                  </div>
@@ -2606,7 +2606,7 @@ function callBackend(action, args, onSuccess, onFailure) {
         </div>
 
         <!-- Settings Tab -->
-        <div id="tab-sd-settings" style="display:none; padding-bottom: 24px;">
+        <div id="tab-sd-settings" style="display:none;">
           <div style="font-size:1.4rem; font-weight:800; color:var(--text); display:flex; align-items:center; gap:8px; margin-bottom:16px; border-bottom:2px solid var(--main-border); padding-bottom:8px;"><i class="ti ti-settings"></i> Change Password</div>
           <div style="max-width:400px; background:#fff; padding:20px; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.03); border:1px solid var(--main-border);">
             <div style="margin-bottom:15px;">
@@ -2711,118 +2711,55 @@ function callBackend(action, args, onSuccess, onFailure) {
   </div>
 </div>
 
-<!-- Notifications Modal -->
-<div class="modal-overlay" id="notifModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Notifications</h3>
-      <button class="modal-close" onclick="closeModal('notifModal')"><i class="ti ti-x"></i></button>
+<!-- ══════════ STUDENT APP FEEDBACK MODAL ══════════ -->
+<style>
+.apfb-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); backdrop-filter:blur(4px); z-index:9999; display:none; align-items:center; justify-content:center; }
+.apfb-overlay.active { display:flex; }
+.apfb-card { background:#fff; border-radius:20px; padding:32px; width:100%; max-width:480px; box-shadow:0 24px 60px rgba(0,0,0,0.18); animation:fadeUp 0.3s ease; position:relative; }
+.apfb-close { position:absolute; top:16px; right:16px; background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--text-muted); }
+.apfb-title  { font-family:'Poppins',sans-serif; font-size:1.2rem; font-weight:700; color:var(--text); margin-bottom:4px; display:flex; align-items:center; gap:8px; }
+.apfb-sub    { font-size:0.85rem; color:var(--text-muted); margin-bottom:20px; }
+.apfb-label  { font-size:0.82rem; font-weight:600; color:var(--text); margin-bottom:5px; display:block; }
+.apfb-stars  { display:flex; gap:6px; margin-bottom:16px; }
+.apfb-star   { font-size:1.8rem; color:#e5e7eb; cursor:pointer; transition:color 0.1s; line-height:1; }
+.apfb-star.lit{ color:#f59e0b; }
+.apfb-cats   { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.apfb-cat    { padding:5px 14px; border-radius:20px; font-size:0.8rem; font-weight:600; cursor:pointer; border:1.5px solid var(--main-border); color:var(--text-muted); transition:0.15s; user-select:none; }
+.apfb-cat.selected { border-color:var(--primary,#6366f1); background:#f0f1ff; color:var(--primary,#6366f1); }
+.apfb-textarea { width:100%; border:1.5px solid var(--main-border); border-radius:10px; padding:10px 14px; font-size:0.88rem; font-family:inherit; resize:vertical; min-height:90px; outline:none; transition:border-color 0.15s; box-sizing:border-box; }
+.apfb-textarea:focus { border-color:var(--primary,#6366f1); }
+.apfb-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
+</style>
+
+<div class="apfb-overlay" id="apfb-overlay">
+  <div class="apfb-card">
+    <button class="apfb-close" onclick="closeStudentFeedbackModal()"><i class="ti ti-x"></i></button>
+    <div class="apfb-title"><i class="ti ti-message-star"></i> App Feedback</div>
+    <div class="apfb-sub">Help us improve digiQ — your feedback goes directly to the developer.</div>
+    <label class="apfb-label">Overall Rating</label>
+    <div class="apfb-stars" id="apfb-stars">
+      <span class="apfb-star" data-v="1" onclick="apfbSetRating(1)">★</span>
+      <span class="apfb-star" data-v="2" onclick="apfbSetRating(2)">★</span>
+      <span class="apfb-star" data-v="3" onclick="apfbSetRating(3)">★</span>
+      <span class="apfb-star" data-v="4" onclick="apfbSetRating(4)">★</span>
+      <span class="apfb-star" data-v="5" onclick="apfbSetRating(5)">★</span>
     </div>
-    <div class="modal-body" id="notifListContainer">
-      <div style="padding: 20px; text-align: center; color: var(--text-muted);">No new notifications</div>
+    <label class="apfb-label">Category</label>
+    <div class="apfb-cats" id="apfb-cats">
+      <div class="apfb-cat selected" data-cat="General">General</div>
+      <div class="apfb-cat" data-cat="Bug Report">Bug Report</div>
+      <div class="apfb-cat" data-cat="Feature Request">Feature Request</div>
+      <div class="apfb-cat" data-cat="UI Feedback">UI Feedback</div>
+      <div class="apfb-cat" data-cat="Performance">Performance</div>
     </div>
-    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
-      <button class="btn btn-outline" style="padding: 6px 12px; border-radius:4px; margin-right:8px;" onclick="closeModal('notifModal')">Close</button>
-      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="markAllNotificationsRead(); closeModal('notifModal');">Mark all as read</button>
+    <label class="apfb-label">Your Message</label>
+    <textarea class="apfb-textarea" id="apfb-message" placeholder="Share what's on your mind..." maxlength="2000"></textarea>
+    <div class="apfb-actions">
+      <button class="btn-secondary" onclick="closeStudentFeedbackModal()" style="padding:8px 16px; border-radius:8px;">Cancel</button>
+      <button class="btn-primary" id="apfb-submit-btn" onclick="submitStudentFeedback()" style="padding:8px 16px; border-radius:8px;"><i class="ti ti-send"></i> Submit</button>
     </div>
   </div>
 </div>
-
-<!-- Help & Support Modal -->
-<div class="modal-overlay" id="helpModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Help &amp; Support</h3>
-      <button class="modal-close" onclick="closeModal('helpModal')"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="modal-body">
-      <div style="padding:10px 0;">
-        <p style="margin-bottom:12px;"><strong>Need assistance?</strong><br>We're here to help you with any questions or issues you may have while using the platform.</p>
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
-          <i class="ti ti-mail" style="font-size:1.5rem; color:var(--primary);"></i>
-          <div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Email Support</div>
-            <div style="font-size:0.8rem; color:var(--text-muted);">support@college.edu</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
-          <i class="ti ti-phone" style="font-size:1.5rem; color:#10b981);"></i>
-          <div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">IT Helpdesk</div>
-            <div style="font-size:0.8rem; color:var(--text-muted);">+1 (800) 123-4567</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px;">
-          <i class="ti ti-book" style="font-size:1.5rem; color:#f59e0b;"></i>
-          <div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Documentation</div>
-            <a href="#" style="font-size:0.8rem; color:var(--primary); text-decoration:none;">View User Guide</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
-      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="closeModal('helpModal')">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- Notifications Modal -->
-<div class="modal-overlay" id="notifModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Notifications</h3>
-      <button class="modal-close" onclick="closeModal('notifModal')"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="modal-body" id="notifListContainer">
-      <div style="padding: 20px; text-align: center; color: var(--text-muted);">No new notifications</div>
-    </div>
-    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
-      <button class="btn btn-outline" style="padding: 6px 12px; border-radius:4px; margin-right:8px;" onclick="closeModal('notifModal')">Close</button>
-      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="markAllNotificationsRead(); closeModal('notifModal');">Mark all as read</button>
-    </div>
-  </div>
-</div>
-
-<!-- Help & Support Modal -->
-<div class="modal-overlay" id="helpModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Help &amp; Support</h3>
-      <button class="modal-close" onclick="closeModal('helpModal')"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="modal-body">
-      <div style="padding:10px 0;">
-        <p style="margin-bottom:12px;"><strong>Need assistance?</strong><br>We're here to help you with any questions or issues you may have while using the platform.</p>
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
-          <i class="ti ti-mail" style="font-size:1.5rem; color:var(--primary);"></i>
-          <div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Email Support</div>
-            <div style="font-size:0.8rem; color:var(--text-muted);">support@college.edu</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
-          <i class="ti ti-phone" style="font-size:1.5rem; color:#10b981);"></i>
-          <div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">IT Helpdesk</div>
-            <div style="font-size:0.8rem; color:var(--text-muted);">+1 (800) 123-4567</div>
-          </div>
-        </div>
-        <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px;">
-          <i class="ti ti-book" style="font-size:1.5rem; color:#f59e0b;"></i>
-          <div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Documentation</div>
-            <a href="#" style="font-size:0.8rem; color:var(--primary); text-decoration:none;">View User Guide</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
-      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="closeModal('helpModal')">Close</button>
-    </div>
-  </div>
-</div>
-
 <!-- ═══════════════════════════════════════════════════════ -->
 <!-- EXAM UI                                                 -->
 <!-- ═══════════════════════════════════════════════════════ -->
@@ -2993,7 +2930,61 @@ function callBackend(action, args, onSuccess, onFailure) {
   </div>
 </div>
 
-<!-- Removed Modals -->
+<!-- Notifications Modal -->
+<div class="modal-overlay" id="notifModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Notifications</h3>
+      <button class="modal-close" onclick="closeModal('notifModal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body" id="notifListContainer">
+      <div style="padding: 20px; text-align: center; color: var(--text-muted);">No new notifications</div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-outline" style="padding: 6px 12px; border-radius:4px; margin-right:8px;" onclick="closeModal('notifModal')">Close</button>
+      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="markAllNotificationsRead(); closeModal('notifModal');">Mark all as read</button>
+    </div>
+  </div>
+</div>
+
+<!-- Help & Support Modal -->
+<div class="modal-overlay" id="helpModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Help &amp; Support</h3>
+      <button class="modal-close" onclick="closeModal('helpModal')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="padding:10px 0;">
+        <p style="margin-bottom:12px;"><strong>Need assistance?</strong><br>We're here to help you with any questions or issues you may have while using the platform.</p>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-mail" style="font-size:1.5rem; color:var(--primary);"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Email Support</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">support@college.edu</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-phone" style="font-size:1.5rem; color:#10b981;"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">IT Helpdesk</div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">+1 (800) 123-4567</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#f8fafc; border-radius:8px;">
+          <i class="ti ti-book" style="font-size:1.5rem; color:#f59e0b;"></i>
+          <div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--text);">Documentation</div>
+            <a href="#" style="font-size:0.8rem; color:var(--primary); text-decoration:none;">View User Guide</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex; justify-content:flex-end;">
+      <button class="btn btn-primary" style="padding: 6px 12px; border-radius:4px;" onclick="closeModal('helpModal')">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -3027,8 +3018,6 @@ function callBackend(action, args, onSuccess, onFailure) {
   let timerInt, strikes = 0, globalDuration = 0, initialDuration = 0, examSendCert = true;
   let viewedQuestions = new Set();
   const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
-
-
 
   /* ══════════════════════════════════════════════════
      CUSTOM CENTRE DIALOGUE MODAL SYSTEM
