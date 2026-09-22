@@ -1122,27 +1122,27 @@ function callBackend(action, args, onSuccess, onFailure) {
     /* ═══════════════════════════════════════════════════════
        STAT CARDS
     ═══════════════════════════════════════════════════════ */
-    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card {
       background: var(--color-surface);
       border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg); padding: 24px;
+      border-radius: var(--radius-lg); padding: 16px;
       position: relative; overflow: hidden;
       box-shadow: var(--shadow-sm);
-      display: flex; flex-direction: column;
+      display: flex; flex-direction: row; flex-wrap: wrap; align-items: center;
     }
     .stat-card::before { display: none; }
     .sc-1 { background: #eff6ff !important; border: 2px solid #3b82f6 !important; }
     .sc-2 { background: #f0fdf4 !important; border: 2px solid #22c55e !important; }
     .sc-3 { background: #faf5ff !important; border: 2px solid #a855f7 !important; }
     .stat-icon {
-      font-size: 1.2rem; color: var(--color-text-muted); margin-bottom: 16px;
+      font-size: 1.2rem; color: var(--color-text-muted); margin-bottom: 0; margin-right: 12px;
       display: inline-flex; align-items: center; justify-content: center;
       width: 40px; height: 40px; border-radius: var(--radius-md);
       background: var(--color-bg-base); border: 1px solid var(--color-border);
     }
-    .stat-num  { font-family: var(--font-heading); font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 8px; color: var(--color-text-main); }
-    .stat-label { font-size: 0.85rem; font-weight: 500; color: var(--color-text-muted); }
+    .stat-num  { font-family: var(--font-heading); font-size: 1.8rem; font-weight: 700; line-height: 1; margin-bottom: 0; color: var(--color-text-main); }
+    .stat-label { width: 100%; margin-top: 8px; font-size: 0.85rem; font-weight: 500; color: var(--color-text-muted); }
 
     /* ═══════════════════════════════════════════════════════
        CHARTS
