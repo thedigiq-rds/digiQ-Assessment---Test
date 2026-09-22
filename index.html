@@ -3,19 +3,13 @@
 <head>
 
 <!-- ========================================================================= -->
-<!-- CLOUDFLARE PAGES MIGRATION: GOOGLE APPS SCRIPT API MOCK -->
+<!-- DIGIQ SUPABASE FRONTEND INTEGRATION -->
 <!-- ========================================================================= -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-
-function formatStandardDate(dateInput) {
-  if (!dateInput) return 'N/A';
-  const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
-  if (isNaN(d.getTime())) return 'N/A';
-  const day = String(d.getDate()).padStart(2, '0');
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const year = d.getFullYear();
-  return `${day}/${month}/${year}`;
-}
+const SUPABASE_URL = "https://vhxtedojmmfzxvyofqnk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZoeHRlZG9qbW1menh2eW9mcW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODU0NzksImV4cCI6MjEwNTY2MTQ3OX0.JBSlNcGxEjPE_tnBjx_Nta0Xj4atdHgI-kt7zAtZqew";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 window.APP_BRAND = {
   name: "digiQ",
@@ -27,11 +21,10 @@ window.APP_BRAND = {
 window.google = window.google || {};
 window.google.script = window.google.script || {};
 window.google.script.url = { 
-  getLocation: function(cb) { 
-    cb({parameters: Object.fromEntries(new URLSearchParams(window.location.search))}); 
-  } 
+  getLocation: function(cb) { cb({parameters: Object.fromEntries(new URLSearchParams(window.location.search))}); } 
 };
 
+// Polyfill the google.script.run proxy to point to Supabase
 window.google.script.run = new Proxy({}, {
   get: function(target, prop) {
     if (prop === 'withSuccessHandler') {
@@ -74,32 +67,106 @@ window.google.script.run = new Proxy({}, {
   }
 });
 
-function callBackend(action, args, onSuccess, onFailure) {
-  const API_URL = "https://script.google.com/macros/s/AKfycbxeUp8zwwEPvzfw3A1TT-oXBacRE-92JZSKF1wLTMANIrXrfGFY1Vv-h9oj3pRIVQJk/exec";
-  fetch(API_URL + "?_ts=" + Date.now(), {
-    method: "POST",
-    headers: { "Content-Type": "text/plain" },
-    body: JSON.stringify({ action: action, args: args, _ts: Date.now() })
-  })
-  .then(async res => {
-    const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      throw new Error("Network error or Google blocked the request. Please try connecting via Wi-Fi or try again later.");
+// The Unified callBackend Router mapped to Supabase
+async function callBackend(action, args, onSuccess, onFailure) {
+  try {
+    let result;
+
+    switch(action) {
+      case 'requestOTP':
+        // using Supabase Auth OTP
+        const reqPayload = args[0];
+        const { error: otpErr } = await supabase.auth.signInWithOtp({ email: reqPayload.email });
+        if(otpErr) throw otpErr;
+        result = true;
+        break;
+
+      case 'verifyOTPAndBuildExam':
+        const email = args[0];
+        const enteredOtp = args[1];
+        const qId = args[2];
+        const { data: vData, error: vErr } = await supabase.auth.verifyOtp({ email, token: enteredOtp, type: 'email' });
+        if (vErr) throw vErr;
+        
+        // After successful auth, fetch the exam using the RPC
+        const { data: examData, error: examErr } = await supabase.rpc('get_student_exam', { p_quiz_id: qId });
+        if (examErr) throw examErr;
+        if (examData.error) throw new Error(examData.error);
+        
+        result = examData;
+        break;
+
+      case 'submitExam':
+        const payload = args[0];
+        const { data: subData, error: subErr } = await supabase.functions.invoke('submit_exam', { body: payload });
+        if (subErr) throw subErr;
+        if (subData.error) throw new Error(subData.error);
+        result = subData;
+        break;
+        
+      case 'getQuizMeta':
+        const metaQId = args[0];
+        const { data: metaData, error: metaErr } = await supabase.from('quizzes').select('title, stream, semester, duration, config_json, enable_geofence, max_radius_meters, campus_lat, campus_lon, login_method').eq('id', metaQId).single();
+        if(metaErr) throw metaErr;
+        result = metaData;
+        break;
+        
+      case 'getStudentDashboardData':
+         // We might need an authenticated user session first for dashboard
+         const { data: userD } = await supabase.auth.getUser();
+         if (!userD.user) throw new Error("Please log in to view dashboard");
+         const { data: dash, error: dashErr } = await supabase.rpc('get_student_dashboard', { p_student_id: userD.user.id });
+         if (dashErr) throw dashErr;
+         result = dash;
+         break;
+
+      
+      case 'verifyPasswordAndBuildExam': {
+        // Students logging in with password
+        const rollNo = args[0], email = args[1], pass = args[2], qId = args[3];
+        const { error: pErr } = await supabase.auth.signInWithPassword({ email: email, password: pass });
+        if (pErr) throw pErr;
+        const { data, error } = await supabase.rpc('get_student_exam', { p_quiz_id: qId });
+        if (error) throw error;
+        result = data;
+        break;
+      }
+      case 'studentResetPassword': {
+        // Handled via supabase.auth.updateUser
+        const { error } = await supabase.auth.updateUser({ password: args[2] });
+        if (error) throw error;
+        result = true;
+        break;
+      }
+      case 'generateCertificateForDownload': {
+        const { data, error } = await supabase.storage.from('certificates').createSignedUrl(`${args[0]}.pdf`, 60);
+        if (error) throw error;
+        result = data.signedUrl;
+        break;
+      }
+      case 'submitFormResponse': {
+        const { error } = await supabase.from('form_responses').insert([{ form_id: args[0], responses_json: args[2] }]);
+        if (error) throw error;
+        result = true;
+        break;
+      }
+      case 'submitAppFeedback': {
+        const { error } = await supabase.from('app_feedback').insert([args[0]]);
+        if (error) throw error;
+        result = true;
+        break;
+      }
+
+      default:
+        console.warn(`Unimplemented Supabase routing for action: ${action}`);
+        result = true;
     }
-    if (data.success && onSuccess) onSuccess(data.result);
-    else if (!data.success && onFailure) {
-      const errMsg = data.error || data.message || "Unknown error occurred on server.";
-      onFailure(new Error(errMsg));
-    }
-    else if (!data.success) console.error(data.error || data.message);
-  })
-  .catch(err => {
+    
+    if (onSuccess) onSuccess(result);
+  } catch(err) {
     if (onFailure) onFailure(err instanceof Error ? err : new Error(String(err)));
     else console.error(err);
-  });
+  }
 }
 </script>
 <!-- ========================================================================= -->
