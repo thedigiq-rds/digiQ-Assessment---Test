@@ -203,7 +203,7 @@ window.google.script.url = {
     
     if (onSuccess) onSuccess(result);
   } catch(err) {
-    if (onFailure) onFailure(err instanceof Error ? err : new Error(String(err)));
+    if (onFailure) onFailure(err instanceof Error ? err : new Error(err && err.message ? err.message : JSON.stringify(err)));
     else console.error(err);
   }
 }
@@ -4676,7 +4676,7 @@ window.google.script.url = {
           pastGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem; grid-column: 1 / -1;">No past submissions found.</div>';
         }
       }, err => {
-        document.getElementById('sd-live-grid').innerHTML = '<div style="color:var(--danger); grid-column: 1 / -1;">Failed to load data.</div>';
+        document.getElementById('sd-live-grid').innerHTML = `<div style="color:var(--danger); grid-column: 1 / -1;">Failed to load data: ${err.message || JSON.stringify(err)}</div>`;
         document.getElementById('sd-past-grid').innerHTML = '';
       });
   }
