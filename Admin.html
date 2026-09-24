@@ -86,6 +86,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
         const mappedResponses = rRes.data || [];
 
         result = {
+          scriptUrl: "https://digiq-assessment.thedigiq.workers.dev/",
           quizzes: mappedQuizzes,
           subAdmins: mappedSubAdmins,
           responses: mappedResponses,
