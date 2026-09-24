@@ -9,7 +9,7 @@
 <script>
 const SUPABASE_URL = "https://vhxtedojmmfzxvyofqnk.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZoeHRlZG9qbW1menh2eW9mcW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODU0NzksImV4cCI6MjEwNTY2MTQ3OX0.JBSlNcGxEjPE_tnBjx_Nta0Xj4atdHgI-kt7zAtZqew";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 window.APP_BRAND = {
   name: "digiQ",
@@ -145,7 +145,22 @@ async function callBackend(action, args, onSuccess, onFailure) {
         break;
       }
       case 'submitFormResponse': {
-        const { error } = await supabase.from('form_responses').insert([{ form_id: args[0], responses_json: args[2] }]);
+        const formId = args[0];
+        const shareToken = args[1];
+        const formData = args[2] || {};
+        
+        const { data: fData, error: fErr } = await supabase.from('forms').select('share_token').eq('id', formId).single();
+        if (fErr || !fData) throw new Error("Form not found");
+        if (fData.share_token !== shareToken) throw new Error("Invalid form token");
+        
+        const { error } = await supabase.from('form_responses').insert([{ 
+          form_id: formId, 
+          respondent_name: formData.name || '',
+          respondent_email: formData.email || '',
+          respondent_roll: formData.rollNo || '',
+          answers_json: formData.answers || {},
+          metadata_json: formData.metadata || {}
+        }]);
         if (error) throw error;
         result = true;
         break;
