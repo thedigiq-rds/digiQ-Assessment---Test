@@ -275,22 +275,25 @@ async function callBackend(action, args, onSuccess, onFailure) {
           await supabase.from('questions').delete().eq('quiz_id', qId);
         }
 
-        const rows = qArr.map((q, index) => ({
-          quiz_id: qId,
-          type: q.type || 'MCQ',
-          question_text: q.question,
-          option1: q.options && q.options[0] ? q.options[0] : null,
-          option2: q.options && q.options[1] ? q.options[1] : null,
-          option3: q.options && q.options[2] ? q.options[2] : null,
-          option4: q.options && q.options[3] ? q.options[3] : null,
-          ans_index: parseInt(q.answer) || 0,
-          marks: parseFloat(q.marks) || 1,
-          negative_marks: parseFloat(q.negMarks) || 0,
-          extra_data: q.extra || {},
-          question_order: index + 1,
-          section: q.section || null,
-          correct_answer: null
-        }));
+        const rows = qArr.map((q, index) => {
+          let optionsArr = q.options || [q.Option1 || q.option1, q.Option2 || q.option2, q.Option3 || q.option3, q.Option4 || q.option4];
+          return {
+            quiz_id: qId,
+            type: q.type || q.Type || q.QuestionType || 'MCQ',
+            question_text: q.question || q.Question || q.question_text || '',
+            option1: optionsArr[0] || null,
+            option2: optionsArr[1] || null,
+            option3: optionsArr[2] || null,
+            option4: optionsArr[3] || null,
+            ans_index: parseInt(q.answer !== undefined ? q.answer : q.AnsIndex) || 0,
+            marks: parseFloat(q.marks || q.Marks) || 1,
+            negative_marks: parseFloat(q.negMarks || q.NegativeMarks) || 0,
+            extra_data: q.extra || q.Extra || {},
+            question_order: index + 1,
+            section: q.section || q.Section || null,
+            correct_answer: null
+          };
+        });
 
         const { error } = await supabase.from('questions').insert(rows);
         if (error) throw error;
@@ -451,6 +454,38 @@ async function callBackend(action, args, onSuccess, onFailure) {
         const { data, error } = await supabase.from('app_feedback').select('*');
         if (error) throw error;
         result = data;
+        break;
+      }
+
+      case 'bulkCreateQuestions': {
+        const payloads = args[0];
+        const rows = payloads.map(p => ({
+          created_by: user.id,
+          type: p.QuestionType || 'MCQ',
+          programme: p.Programme || null,
+          semester: p.Semester || null,
+          subject: p.Subject || null,
+          section: p.Section || null,
+          title_of_paper: p['Title of Paper'] || null,
+          unit: p.Unit || null,
+          topic: p.Topic || null,
+          question_text: p.Question || '',
+          option1: p.Option1 || null,
+          option2: p.Option2 || null,
+          option3: p.Option3 || null,
+          option4: p.Option4 || null,
+          ans_index: parseInt(p.AnsIndex) || 0,
+          explanation: p.Explanation || null,
+          difficulty: p.Difficulty || 'Medium',
+          marks: parseFloat(p.Marks) || 1.0,
+          negative_marks: parseFloat(p.NegativeMarks) || 0.0,
+          status: p.Status || 'Active',
+          keywords: p.KeyWords || null
+        }));
+        
+        const { data, error } = await supabase.from('question_bank').insert(rows).select('id');
+        if (error) throw error;
+        result = { success: true, count: data ? data.length : rows.length };
         break;
       }
 
