@@ -373,6 +373,26 @@ async function callBackend(action, args, onSuccess, onFailure) {
         result = data;
         break;
       }
+      case 'resetAdminPassword': {
+        const email = args[0];
+        const newPass = args[1];
+        
+        if (user.email === email) {
+          // Admin changing their own password
+          const { error } = await supabase.auth.updateUser({ password: newPass });
+          if (error) throw error;
+          result = { success: true, message: 'Password updated successfully' };
+        } else {
+          // Master Admin changing another user's password
+          const { data, error } = await supabase.functions.invoke('admin_ops', {
+             body: { action: 'changePassword', payload: { email, newPass } }
+          });
+          if (error) throw error;
+          if (data.error) throw new Error(data.error);
+          result = { success: true, message: 'Password updated successfully' };
+        }
+        break;
+      }
       case 'adminDeleteStudent': {
         const payload = args[0]; // expect email or id, let's say it's { email: student_email }
         const { data, error } = await supabase.functions.invoke('admin_ops', {
