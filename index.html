@@ -145,7 +145,8 @@ window.google.script.url = {
         if (pErr) throw pErr;
         const { data, error } = await supabase.rpc('get_student_exam', { p_quiz_id: qId });
         if (error) throw error;
-        result = data;
+        if (data && data.error) throw new Error(data.error);
+        result = { success: true, ...data };
         break;
       }
       case 'studentResetPassword': {
