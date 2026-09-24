@@ -314,7 +314,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
         });
         if (error) throw error;
         if (data.error) throw new Error(data.error);
-        result = true;
+        result = data;
         break;
       }
       case 'deleteSubAdmin': {
@@ -370,7 +370,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
         });
         if (error) throw error;
         if (data.error) throw new Error(data.error);
-        result = true;
+        result = data;
         break;
       }
       case 'adminDeleteStudent': {
@@ -486,6 +486,20 @@ async function callBackend(action, args, onSuccess, onFailure) {
         const { data, error } = await supabase.from('question_bank').insert(rows).select('id');
         if (error) throw error;
         result = { success: true, count: data ? data.length : rows.length };
+        break;
+      }
+      
+      case 'submitAppFeedback': {
+        const [role, name, email, rating, category, message] = args;
+        const { data, error } = await supabase.from('app_feedback').insert([{
+          category: category || 'General',
+          rating: parseInt(rating) || 0,
+          message: message,
+          submitted_by: `${name} (${email})`,
+          user_type: role || 'Admin'
+        }]);
+        if (error) throw error;
+        result = true;
         break;
       }
 
@@ -7148,6 +7162,40 @@ function copyLink() { navigator.clipboard.writeText(document.getElementById('gen
 function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => showToast('Link copied!', 'success')); }
 
 /* ════════════════════════════════════════
+   STUDENT MANAGEMENT
+════════════════════════════════════════ */
+function submitStudentForm() {
+  const name = document.getElementById('stdName').value.trim();
+  const rollNo = document.getElementById('stdRoll').value.trim();
+  const email = document.getElementById('stdEmail').value.trim();
+  const stream = document.getElementById('stdProgram').value;
+  const sem = document.getElementById('stdSemester').value;
+
+  if (!name || !rollNo || !email || !stream || !sem) {
+    showToast('Please fill all required fields.', 'warning');
+    return;
+  }
+
+  const payload = { name, email, rollNo, stream, sem };
+  showLoader('ADDING STUDENT');
+  google.script.run
+    .withSuccessHandler((res) => {
+      hideLoader();
+      const pwd = res && res.password ? res.password : 'unknown';
+      showToast('Student created successfully!', 'success', 5000);
+      alert(`Student Created Successfully!\n\nName: ${name}\nEmail: ${email}\nPassword: ${pwd}\n\nPlease copy and share this password securely. It will not be shown again.`);
+      document.getElementById('stdName').value = '';
+      document.getElementById('stdRoll').value = '';
+      document.getElementById('stdEmail').value = '';
+      document.getElementById('stdProgram').value = '';
+      document.getElementById('stdSemester').value = '';
+      if(typeof loadDashboard === 'function') loadDashboard();
+    })
+    .withFailureHandler(err => { hideLoader(); showToast('Error: ' + err.message, 'error'); })
+    .adminCreateStudent(payload);
+}
+
+/* ════════════════════════════════════════
    SUB-ADMIN MANAGEMENT
 ════════════════════════════════════════ */
 function registerSubAdmin() {
@@ -7161,9 +7209,11 @@ function registerSubAdmin() {
   const payload = { name, email, stream: selectedStreams.join(', '), sem: selectedSems.join(', ') };
   showLoader('ADDING SUB ADMIN');
   google.script.run
-    .withSuccessHandler(() => {
+    .withSuccessHandler((res) => {
       hideLoader();
-      showToast(`Sub-Admin "${name}" registered! Email sent.`, 'success', 5000);
+      const pwd = res && res.password ? res.password : 'unknown';
+      showToast(`Sub-Admin "${name}" registered!`, 'success', 5000);
+      alert(`Sub-Admin Created Successfully!\n\nName: ${name}\nEmail: ${email}\nPassword: ${pwd}\n\nPlease copy and share this password securely. It will not be shown again.`);
       document.getElementById('saName').value = ''; document.getElementById('saEmail').value = '';
       document.querySelectorAll('#sa-streams-pills .pill-item, #sa-sems-pills .pill-item').forEach(p => p.classList.remove('selected'));
       loadDashboard();
@@ -9373,4 +9423,130 @@ function epbPrint() {
   }
 </script>
 
+<script>
+/* ════════════════════════════════════════
+   CFB - CREATE FORM BUILDER (LOGIC)
+════════════════════════════════════════ */
+let cfbQuestions = [];
+
+function cfbNewForm() {
+  const listEl = document.getElementById('cfb-view-list');
+  const editEl = document.getElementById('cfb-view-editor');
+  if (listEl) listEl.style.display = 'none';
+  if (editEl) editEl.style.display = 'block';
+  
+  const titleEl = document.getElementById('cfb-view-title');
+  if (titleEl) titleEl.innerHTML = '<i class="ti ti-plus"></i> New Form';
+  
+  cfbSwitchView('build');
+  
+  const tInput = document.getElementById('cfb-f-title');
+  const dInput = document.getElementById('cfb-f-desc');
+  if (tInput) tInput.value = '';
+  if (dInput) dInput.value = '';
+  
+  cfbQuestions = [];
+  cfbRenderCanvas();
+}
+
+function cfbLoadForms() {
+  const listEl = document.getElementById('cfb-view-list');
+  const editEl = document.getElementById('cfb-view-editor');
+  if (editEl) editEl.style.display = 'none';
+  if (listEl) listEl.style.display = 'block';
+  
+  const titleEl = document.getElementById('cfb-view-title');
+  if (titleEl) titleEl.innerHTML = '<i class="ti ti-forms"></i> Create Forms';
+}
+
+function cfbSwitchView(viewName) {
+  const panes = ['build', 'settings', 'share', 'responses', 'analytics'];
+  panes.forEach(p => {
+    const el = document.getElementById('cfb-pane-' + p);
+    if(el) el.style.display = 'none';
+  });
+  
+  document.querySelectorAll('.cfb-view-tab').forEach(t => t.classList.remove('active'));
+  
+  const targetEl = document.getElementById('cfb-pane-' + viewName);
+  if(targetEl) targetEl.style.display = 'block';
+  
+  const targetTab = document.querySelector(`.cfb-view-tab[data-view="${viewName}"]`);
+  if(targetTab) targetTab.classList.add('active');
+}
+
+function filterCFBForms() {
+  console.log("filterCFBForms called (stub)");
+}
+
+function clearCFBFilters() {
+  console.log("clearCFBFilters called (stub)");
+  const searchInput = document.getElementById('cfb-search');
+  const statusFilter = document.getElementById('cfb-status-filter');
+  const dateFrom = document.getElementById('cfb-date-from');
+  const dateTo = document.getElementById('cfb-date-to');
+  
+  if (searchInput) searchInput.value = '';
+  if (statusFilter) statusFilter.value = '';
+  if (dateFrom) dateFrom.value = '';
+  if (dateTo) dateTo.value = '';
+}
+
+function cfbMarkDirty() {
+  console.log("cfbMarkDirty called (stub)");
+}
+
+function cfbAddQuestion(type) {
+  cfbQuestions.push({
+    id: 'q_' + Math.random().toString(36).substr(2,9),
+    type: type || 'short_answer',
+    qText: '',
+    required: false
+  });
+  cfbRenderCanvas();
+}
+
+function cfbRemoveQuestion(idx) {
+  cfbQuestions.splice(idx, 1);
+  cfbRenderCanvas();
+}
+
+function cfbRenderCanvas() {
+  const container = document.getElementById('cfb-questions-container');
+  if (!container) return;
+  
+  if (cfbQuestions.length === 0) {
+    container.innerHTML = '<div style="padding:20px; text-align:center; color:#64748b;">No questions added yet. Click a question type on the left to add.</div>';
+    return;
+  }
+  
+  container.innerHTML = '';
+  cfbQuestions.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'cfb-q-card';
+    card.style.border = '1px solid #e2e8f0';
+    card.style.padding = '16px';
+    card.style.borderRadius = '8px';
+    card.style.background = '#fff';
+    card.style.marginBottom = '12px';
+    card.style.position = 'relative';
+    
+    let typeLabel = q.type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    
+    card.innerHTML = `
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+        <strong style="color:var(--primary);"><i class="ti ti-grip-vertical" style="color:#cbd5e1; cursor:grab; margin-right:4px;"></i> Question ${idx + 1} &mdash; ${typeLabel}</strong>
+        <button class="cfb-btn cfb-btn-sm" style="color:#ef4444; background:none; border:none; cursor:pointer;" onclick="cfbRemoveQuestion(${idx})" title="Remove Question"><i class="ti ti-trash"></i> Remove</button>
+      </div>
+      <input type="text" class="f-input" style="width:100%; box-sizing:border-box; margin-bottom:10px;" placeholder="Question text..." value="${q.qText}" onchange="cfbQuestions[${idx}].qText = this.value">
+      <div style="font-size:0.85rem; color:#64748b; font-style:italic;">[Options placeholder for ${typeLabel}]</div>
+      <div style="margin-top:10px; display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" id="req_${idx}" ${q.required ? 'checked' : ''} onchange="cfbQuestions[${idx}].required = this.checked">
+        <label for="req_${idx}" style="font-size:0.85rem; color:#475569;">Required</label>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+</script>
 </body>
