@@ -7091,6 +7091,158 @@ function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => 
    STUDENT MANAGEMENT
 ════════════════════════════════════════ */
 
+let allStudents = [];
+
+function loadStudentsList() {
+  if (typeof updateStudentSemesterOptions === 'function') updateStudentSemesterOptions();
+  
+  const tbody = document.querySelector('#studentsTable tbody');
+  if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8;">Loading students...</td></tr>`;
+  
+  callBackend('getAllStudents', [], res => {
+    if (!res) {
+      if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--danger);">Error loading students.</td></tr>`;
+      return;
+    }
+    allStudents = res;
+    
+    // Auto-populate filter options based on available students
+    const programs = new Set();
+    const sems = new Set();
+    allStudents.forEach(s => {
+      if (s.program) programs.add(s.program);
+      if (s.semester) sems.add(s.semester);
+    });
+    
+    const progSel = document.getElementById('filterStdProgram');
+    if (progSel) {
+      progSel.innerHTML = `<option value="">All Programs</option>` + 
+        Array.from(programs).sort().map(p => `<option value="${p}">${p}</option>`).join('');
+    }
+    const semSel = document.getElementById('filterStdSemester');
+    if (semSel) {
+      semSel.innerHTML = `<option value="">All Semesters</option>` + 
+        Array.from(sems).sort((a,b) => a.localeCompare(b, undefined, {numeric: true})).map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+    
+    renderStudentsTable();
+  });
+}
+
+function renderStudentsTable() {
+  const progFilter = document.getElementById('filterStdProgram')?.value || '';
+  const semFilter = document.getElementById('filterStdSemester')?.value || '';
+  const sortFilter = document.getElementById('filterStdSort')?.value || 'name';
+  const tbody = document.querySelector('#studentsTable tbody');
+  
+  if (!tbody) return;
+  
+  let filtered = allStudents.filter(s => {
+    if (progFilter && s.program !== progFilter) return false;
+    if (semFilter && s.semester !== semFilter) return false;
+    return true;
+  });
+  
+  if (sortFilter === 'name') {
+    filtered.sort((a,b) => (a.profiles?.full_name || '').localeCompare(b.profiles?.full_name || ''));
+  } else if (sortFilter === 'nameDesc') {
+    filtered.sort((a,b) => (b.profiles?.full_name || '').localeCompare(a.profiles?.full_name || ''));
+  } else if (sortFilter === 'roll') {
+    filtered.sort((a,b) => (a.roll_no || '').localeCompare(b.roll_no || '', undefined, {numeric: true}));
+  }
+  
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8;">No students found matching filters.</td></tr>`;
+    return;
+  }
+  
+  tbody.innerHTML = filtered.map(s => {
+    const created = new Date(s.created_at).toLocaleDateString();
+    return `
+      <tr>
+        <td style="text-align:center;"><input type="checkbox" class="student-checkbox" value="${s.profiles?.email}"></td>
+        <td><div style="font-weight:600; color:var(--text);">${s.profiles?.full_name || '-'}</div></td>
+        <td><span class="f-badge f-badge-gray">${s.roll_no || '-'}</span></td>
+        <td>${s.profiles?.email || '-'}</td>
+        <td>${s.program || '-'}</td>
+        <td>${s.semester || '-'}</td>
+        <td><span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">Managed in Auth</span></td>
+        <td>${created}</td>
+        <td><button class="btn-icon" style="color:var(--danger);" onclick="deleteStudent('${s.profiles?.email}')" title="Delete Student"><i class="ti ti-trash"></i></button></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function toggleSelectAllStudents() {
+  const selectAll = document.getElementById('selectAllStudents');
+  const checkboxes = document.querySelectorAll('.student-checkbox');
+  checkboxes.forEach(cb => cb.checked = selectAll.checked);
+  
+  const btnDelete = document.getElementById('btnBulkDeleteStudents');
+  if (btnDelete) {
+    btnDelete.style.display = Array.from(checkboxes).some(cb => cb.checked) ? 'flex' : 'none';
+  }
+}
+
+// Ensure toggleSelectAllStudents events trigger properly
+document.addEventListener('change', e => {
+  if (e.target.classList.contains('student-checkbox')) {
+    const checkboxes = document.querySelectorAll('.student-checkbox');
+    const btnDelete = document.getElementById('btnBulkDeleteStudents');
+    if (btnDelete) {
+      btnDelete.style.display = Array.from(checkboxes).some(cb => cb.checked) ? 'flex' : 'none';
+    }
+  }
+});
+
+function bulkDeleteStudents() {
+  const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+  if (checkboxes.length === 0) return;
+  if (!confirm(`Are you sure you want to delete ${checkboxes.length} selected student(s)?`)) return;
+  
+  // Collect emails
+  const emails = Array.from(checkboxes).map(cb => cb.value);
+  
+  // Note: bulk delete would require a new edge function endpoint, 
+  // but we can just loop the single delete for now since it's an admin op.
+  showLoader(`Deleting ${checkboxes.length} student(s)...`);
+  let deletedCount = 0;
+  
+  const deleteNext = () => {
+    if (emails.length === 0) {
+      document.getElementById('loader').style.display = 'none';
+      showToast(`Successfully deleted ${deletedCount} student(s).`, 'success');
+      loadStudentsList();
+      return;
+    }
+    const email = emails.pop();
+    callBackend('adminDeleteStudent', { email: email }, res => {
+      deletedCount++;
+      deleteNext();
+    }, err => {
+      showToast(`Error deleting ${email}: ${err.message}`, 'error');
+      deleteNext();
+    });
+  };
+  
+  deleteNext();
+}
+
+function deleteStudent(email) {
+  if (!confirm(`Are you sure you want to delete the student with email ${email}?`)) return;
+  showLoader('Deleting student...');
+  callBackend('adminDeleteStudent', { email: email }, res => {
+    document.getElementById('loader').style.display = 'none';
+    showToast('Student deleted successfully', 'success');
+    loadStudentsList();
+  }, err => {
+    document.getElementById('loader').style.display = 'none';
+    showToast(`Error: ${err.message}`, 'error');
+  });
+}
+
+
 function updateStudentSemesterOptions() {
   const stream = document.getElementById('stdProgram').value;
   const sems = SEM_MAP_FULL[stream] || ['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5','Sem 6'];
