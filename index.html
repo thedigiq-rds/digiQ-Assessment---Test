@@ -171,6 +171,13 @@ async function callBackend(action, args, onSuccess, onFailure) {
         result = true;
         break;
       }
+      case 'changeStudentPassword': {
+        const newPwd = args[3];
+        const { error } = await supabase.auth.updateUser({ password: newPwd });
+        if (error) throw error;
+        result = { success: true, message: 'Password updated successfully' };
+        break;
+      }
 
       default:
         console.warn(`Unimplemented Supabase routing for action: ${action}`);
