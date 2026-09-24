@@ -7217,7 +7217,7 @@ function bulkDeleteStudents() {
       return;
     }
     const email = emails.pop();
-    callBackend('adminDeleteStudent', { email: email }, res => {
+    callBackend('adminDeleteStudent', [email], res => {
       deletedCount++;
       deleteNext();
     }, err => {
@@ -7232,7 +7232,7 @@ function bulkDeleteStudents() {
 function deleteStudent(email) {
   if (!confirm(`Are you sure you want to delete the student with email ${email}?`)) return;
   showLoader('Deleting student...');
-  callBackend('adminDeleteStudent', { email: email }, res => {
+  callBackend('adminDeleteStudent', [email], res => {
     document.getElementById('loader').style.display = 'none';
     showToast('Student deleted successfully', 'success');
     loadStudentsList();
