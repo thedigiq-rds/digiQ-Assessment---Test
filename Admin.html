@@ -230,9 +230,35 @@ async function callBackend(action, args, onSuccess, onFailure) {
       }
       case 'getQuizDetails': {
         const qId = args[0];
-        const { data, error } = await supabase.from('questions').select('*').eq('quiz_id', qId);
-        if (error) throw error;
-        result = data;
+        const { data: qData, error: qErr } = await supabase.from('quizzes').select('*').eq('id', qId).single();
+        if (qErr) throw qErr;
+        
+        const { data: questions, error: qnsErr } = await supabase.from('questions').select('*').eq('quiz_id', qId);
+        if (qnsErr) throw qnsErr;
+
+        result = {
+          quizId: qData.id,
+          title: qData.title,
+          stream: qData.stream,
+          sem: qData.semester,
+          duration: qData.duration,
+          passPercent: qData.pass_percent,
+          customMsg: qData.custom_msg,
+          sendCert: qData.send_certificate,
+          certDocId: qData.cert_doc_id,
+          enableGeofence: qData.enable_geofence,
+          maxRadiusMeters: qData.max_radius_meters,
+          campusLat: qData.campus_lat,
+          campusLon: qData.campus_lon,
+          campusName: qData.campus_name,
+          enableSchedule: qData.enable_schedule,
+          startTime: qData.start_time,
+          endTime: qData.end_time,
+          shuffleQuestions: qData.shuffle_questions,
+          shuffleOptions: qData.shuffle_options,
+          sendResultEmail: qData.send_result_email,
+          questions: questions
+        };
         break;
       }
       case 'addSubAdmin': {
