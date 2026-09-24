@@ -24,48 +24,7 @@ window.google.script.url = {
   getLocation: function(cb) { cb({parameters: Object.fromEntries(new URLSearchParams(window.location.search))}); } 
 };
 
-// Polyfill the google.script.run proxy to point to Supabase
-window.google.script.run = new Proxy({}, {
-  get: function(target, prop) {
-    if (prop === 'withSuccessHandler') {
-      return function(successHandler) {
-        return new Proxy({}, {
-          get: function(t, method) {
-            if (method === 'withFailureHandler') {
-              return function(failureHandler) {
-                 return new Proxy({}, {
-                    get: function(t2, actualMethod) {
-                       return function(...args) { callBackend(actualMethod, args, successHandler, failureHandler); }
-                    }
-                 });
-              }
-            }
-            return function(...args) { callBackend(method, args, successHandler, null); }
-          }
-        });
-      };
-    }
-    if (prop === 'withFailureHandler') {
-      return function(failureHandler) {
-        return new Proxy({}, {
-          get: function(t, method) {
-             if (method === 'withSuccessHandler') {
-                return function(successHandler) {
-                    return new Proxy({}, {
-                        get: function(t2, actualMethod) {
-                            return function(...args) { callBackend(actualMethod, args, successHandler, failureHandler); }
-                        }
-                    });
-                }
-             }
-             return function(...args) { callBackend(method, args, null, failureHandler); }
-          }
-        });
-      }
-    }
-    return function(...args) { callBackend(prop, args, null, null); }
-  }
-});
+
 
 // The Unified callBackend Router mapped to Supabase
 async function callBackend(action, args, onSuccess, onFailure) {
@@ -3251,8 +3210,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
       if (otpToggle) otpToggle.style.display = 'none'; // Only password login for portal
       return;
     }
-    google.script.run
-      .withSuccessHandler(res => {
+    callBackend('getQuizMeta', [QUIZ_ID], res => {
         document.getElementById('loader').style.display = 'none';
         if (res.error) {
           document.getElementById('auth-portal').style.display = 'flex';
@@ -3267,12 +3225,10 @@ async function callBackend(action, args, onSuccess, onFailure) {
         examSendCert = res.sendCert;
         document.getElementById('quiz-title-display').innerText = res.title;
         document.getElementById('auth-portal').style.display = 'flex';
-      })
-      .withFailureHandler(err => {
+      }, err => {
         document.getElementById('loader').innerHTML =
           `<h4 style="color:var(--danger);">Connection Error</h4><p style="color:var(--text-muted);">${err.message}</p>`;
-      })
-      .getQuizMeta(QUIZ_ID);
+      });
   };
 
   /* ──────────────────────────────────────────────────────── */
@@ -3293,8 +3249,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
     btn.innerHTML = '<span class="inline-spinner"></span>Sending OTP…';
     showToast('Sending OTP...', 'info', 3000);
 
-    google.script.run
-      .withSuccessHandler(res => {
+    callBackend('requestOTP', [payload, QUIZ_ID], res => {
         if (res.success) {
           document.getElementById('step-1').style.display = 'none';
           document.getElementById('step-2').style.display = 'block';
@@ -3304,13 +3259,11 @@ async function callBackend(action, args, onSuccess, onFailure) {
           btn.innerHTML = '<svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg> Request Access (OTP via Email)';
           showModal('Access Denied', res.message, 'error');
         }
-      })
-      .withFailureHandler(err => {
+      }, err => {
         btn.disabled = false;
         btn.innerHTML = '<svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg> Request Access (OTP via Email)';
         showModal('Connection Error', 'Unable to connect to server. Please check your internet connection.<br><small style="color:#94a3b8">Details: ' + err.message + '</small>', 'error');
-      })
-      .requestOTP(payload, QUIZ_ID);
+      });
   }
 
   function showLoader(text) {
@@ -3348,8 +3301,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
       return;
     }
 
-    google.script.run
-      .withSuccessHandler(res => {
+    callBackend('verifyOTPAndBuildExam', [email, otp, QUIZ_ID], res => {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           window.loginMethodStr = 'otp';
@@ -3392,13 +3344,11 @@ async function callBackend(action, args, onSuccess, onFailure) {
           showModal('Verification Failed', res.message, 'error');
           document.getElementById('auth-portal').style.display = 'flex';
         }
-      })
-      .withFailureHandler(err => {
+      }, err => {
         document.getElementById('loader').style.display = 'none';
         document.getElementById('auth-portal').style.display = 'flex';
         showModal('Connection Error', 'Unable to verify OTP. Please try again.<br><small style="color:#94a3b8">Details: ' + err.message + '</small>', 'error');
-      })
-      .verifyOTPAndBuildExam(email, otp, QUIZ_ID);
+      });
   }
 
   /* ────────────────────────────────────────────────────────
@@ -4060,8 +4010,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
       loginMethod:   window.loginMethodStr || 'otp'
     };
 
-    google.script.run
-      .withSuccessHandler(res => {
+    callBackend('submitExam', [payload], res => {
         document.getElementById('loader').style.display = 'none';
         
         window.isGuestUser = res.isGuest;
@@ -4112,14 +4061,12 @@ async function callBackend(action, args, onSuccess, onFailure) {
 
         // Confetti for pass
         if (passed) launchConfetti();
-      })
-      .withFailureHandler(err => {
+      }, err => {
         document.getElementById('loader').style.display = 'none';
         showModal('Submission Error', 'Failed to submit exam.<br><strong>Please contact your instructor immediately.</strong><br><small style="color:#94a3b8">Details: ' + err.message + '</small>', 'error');
         document.getElementById('exam-ui').style.display = 'block';
         isExamLive = true;
-      })
-      .submitExam(payload);
+      });
   }
 
   /* ──────────────────────────────────────────────────────── */
@@ -4256,8 +4203,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
     document.getElementById('loader').style.display = 'flex';
     showToast('Loading assessment...', 'info', 3000);
 
-    google.script.run
-      .withSuccessHandler(res => {
+    callBackend('verifyPasswordAndBuildExam', [rollNo, email, password, QUIZ_ID], res => {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           window.loginMethodStr = 'password';
@@ -4305,13 +4251,11 @@ async function callBackend(action, args, onSuccess, onFailure) {
           _cModalShow('Access Denied', res.message);
           document.getElementById('student-dashboard').style.display = 'flex';
         }
-      })
-      .withFailureHandler(err => {
+      }, err => {
         document.getElementById('loader').style.display = 'none';
         _cModalShow('Connection Error', err.message);
         document.getElementById('student-dashboard').style.display = 'flex';
-      })
-      .verifyPasswordAndBuildExam(rollNo, email, password, QUIZ_ID);
+      });
   }
 
   function loginWithPassword() {
@@ -4329,8 +4273,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
 
     if (QUIZ_ID) {
       // Direct login to a quiz via password
-      google.script.run
-        .withSuccessHandler(res => {
+      callBackend('verifyPasswordAndBuildExam', [rollNo, email, password, QUIZ_ID], res => {
           document.getElementById('loader').style.display = 'none';
           if (res.success) {
             examData       = res.exam;
@@ -4377,16 +4320,13 @@ async function callBackend(action, args, onSuccess, onFailure) {
           } else {
             showToast(res.message, 'error');
           }
-        })
-        .withFailureHandler(err => {
+        }, err => {
           document.getElementById('loader').style.display = 'none';
           showToast(err.message, 'error');
-        })
-        .verifyPasswordAndBuildExam(rollNo, email, password, QUIZ_ID);
+        });
     } else {
       // Regular login to student dashboard
-      google.script.run
-        .withSuccessHandler(res => {
+      callBackend('loginStudentPassword', [rollNo, email, password], res => {
           document.getElementById('loader').style.display = 'none';
           if (res.success) {
             window.loginMethodStr = 'password';
@@ -4427,12 +4367,10 @@ async function callBackend(action, args, onSuccess, onFailure) {
           } else {
             showToast(res.message, 'error');
           }
-        })
-        .withFailureHandler(err => {
+        }, err => {
           document.getElementById('loader').style.display = 'none';
           showToast(err.message, 'error');
-        })
-        .loginStudentPassword(rollNo, email, password);
+        });
     }
   }
 
@@ -4462,8 +4400,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
     }
     
     showLoader('SENDING OTP');
-    google.script.run
-      .withSuccessHandler(res => {
+    callBackend('studentForgotPassword', [email], res => {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           showToast(res.message, 'success');
@@ -4472,12 +4409,10 @@ async function callBackend(action, args, onSuccess, onFailure) {
         } else {
           showToast(res.message, 'error');
         }
-      })
-      .withFailureHandler(err => {
+      }, err => {
         document.getElementById('loader').style.display = 'none';
         showToast('Failed to send OTP: ' + err.message, 'error');
-      })
-      .studentForgotPassword(email);
+      });
   }
 
   function studentResetPasswordAction() {
@@ -4491,8 +4426,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
     }
     
     showLoader('RESETTING PASSWORD');
-    google.script.run
-      .withSuccessHandler(res => {
+    callBackend('studentResetPassword', [email, otp, newPass], res => {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           showToast(res.message, 'success');
@@ -4505,12 +4439,10 @@ async function callBackend(action, args, onSuccess, onFailure) {
         } else {
           showToast(res.message, 'error');
         }
-      })
-      .withFailureHandler(err => {
+      }, err => {
         document.getElementById('loader').style.display = 'none';
         showToast('Failed to reset password: ' + err.message, 'error');
-      })
-      .studentResetPassword(email, otp, newPass);
+      });
   }
 
   function switchStudentTab(tabId, el) {
@@ -4600,8 +4532,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
       setTimeout(() => activeRefreshToast && activeRefreshToast.remove(), 340);
     }
     activeRefreshToast = showToast("Refreshing Data...", "info", 0);
-    google.script.run
-      .withSuccessHandler(data => {
+    callBackend('getStudentDashboardData', [studentEmailStr, rollNoStr], data => {
         if (activeRefreshToast) {
           activeRefreshToast.classList.add('hide');
           setTimeout(() => activeRefreshToast && activeRefreshToast.remove(), 340);
@@ -4686,12 +4617,10 @@ async function callBackend(action, args, onSuccess, onFailure) {
         } else {
           pastGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem; grid-column: 1 / -1;">No past submissions found.</div>';
         }
-      })
-      .withFailureHandler(err => {
+      }, err => {
         document.getElementById('sd-live-grid').innerHTML = '<div style="color:var(--danger); grid-column: 1 / -1;">Failed to load data.</div>';
         document.getElementById('sd-past-grid').innerHTML = '';
-      })
-      .getStudentDashboardData(studentEmailStr, rollNoStr);
+      });
   }
 
   function logoutStudent() {
@@ -4719,8 +4648,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
 
     document.getElementById('loader').style.display = 'flex';
     showToast('Changing password...', 'info');
-    google.script.run
-      .withSuccessHandler(res => {
+    callBackend('changeStudentPassword', [rollNoStr, studentEmailStr, oldPwd, newPwd], res => {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           showToast('Successfully Updated Password', 'success');
@@ -4730,12 +4658,10 @@ async function callBackend(action, args, onSuccess, onFailure) {
         } else {
           showToast(res.message, 'error');
         }
-      })
-      .withFailureHandler(err => {
+      }, err => {
         document.getElementById('loader').style.display = 'none';
         showToast(err.message, 'error');
-      })
-      .changeStudentPassword(rollNoStr, studentEmailStr, oldPwd, newPwd);
+      });
   }
 
   function downloadCert(btnEl, certDocId, name, rollNo, score, total, perc, timestampStr) {
@@ -4743,8 +4669,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
     btnEl.innerHTML = '<i class="ti ti-loader anim-spin"></i> Generating...';
     btnEl.disabled = true;
 
-    google.script.run
-      .withSuccessHandler(res => {
+    callBackend('generateCertificateForDownload', [certDocId, name, rollNo, score, total, perc, timestampStr], res => {
         btnEl.innerHTML = originalText;
         btnEl.disabled = false;
         
@@ -4774,13 +4699,11 @@ async function callBackend(action, args, onSuccess, onFailure) {
         } catch (e) {
           showModal('Error', 'Failed to process certificate file.', 'error');
         }
-      })
-      .withFailureHandler(err => {
+      }, err => {
         btnEl.innerHTML = originalText;
         btnEl.disabled = false;
         showModal('Server Error', 'Failed to generate certificate: ' + err.message, 'error');
-      })
-      .generateCertificateForDownload(certDocId, name, rollNo, score, total, perc, timestampStr);
+      });
   }
 
   // ═══════════════════════════════════════════════════════
@@ -4853,19 +4776,16 @@ async function callBackend(action, args, onSuccess, onFailure) {
     if(typeof window.studentEmail !== 'undefined') sEmail = window.studentEmail;
     else if(document.getElementById('sd-email')) sEmail = document.getElementById('sd-email').innerText; // If there's an email element
     
-    google.script.run
-      .withSuccessHandler(res => {
+    callBackend('submitAppFeedback', ['Student', sName, sEmail, apfbCurrentRating, category, message], res => {
         btn.innerHTML = originalText;
         btn.disabled = false;
         closeStudentFeedbackModal();
         showToast('Feedback submitted successfully. Thank you!', 'success');
-      })
-      .withFailureHandler(err => {
+      }, err => {
         btn.innerHTML = originalText;
         btn.disabled = false;
         showModal('Error', 'Failed to submit feedback: ' + err.message, 'error');
-      })
-      .submitAppFeedback('Student', sName, sEmail, apfbCurrentRating, category, message);
+      });
   }
   /* ═════════ MOBILE REDESIGN LOGIC ═════════ */
   function openMobStudentProfile() {
