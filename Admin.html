@@ -7142,14 +7142,23 @@ function uploadStudentsCSV() {
       (async function processBatch() {
           for (let i = 0; i < rawJson.length; i++) {
               const row = rawJson[i];
-              const name = row['Name'] || row['name'];
-              const rollNo = row['Roll Number'] || row['Roll'] || row['rollNo'];
-              const email = row['Email'] || row['email'];
-              const stream = row['Program'] || row['stream'];
-              const sem = row['Semester'] || row['sem'];
+              // Case-insensitive header matching
+              const keys = Object.keys(row);
+              const getVal = (possibleKeys) => {
+                  for (const k of keys) {
+                      if (possibleKeys.includes(k.toLowerCase().trim())) return row[k];
+                  }
+                  return null;
+              };
+              
+              const name = getVal(['name', 'full name', 'student name']);
+              const rollNo = getVal(['roll number', 'roll', 'rollno', 'roll no']);
+              const email = getVal(['email', 'email id', 'email address']);
+              const stream = getVal(['program', 'stream', 'programme']);
+              const sem = getVal(['semester', 'sem']);
               
               if (!name || !rollNo || !email || !stream || !sem) {
-                  resultsDiv.innerHTML += `<span style="color:red;">Row ${i+2}: Missing required fields</span><br>`;
+                  resultsDiv.innerHTML += `<span style="color:red;">Row ${i+2}: Missing required fields. Found columns: [${Object.keys(row).join(', ')}]</span><br>`;
                   errorCount++;
                   continue;
               }
