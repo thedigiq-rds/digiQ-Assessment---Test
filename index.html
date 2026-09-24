@@ -89,6 +89,33 @@ window.google.script.url = {
          break;
 
       
+      case 'loginStudentPassword': {
+        const rollNo = args[0], email = args[1], pass = args[2];
+        const { error: pErr } = await supabase.auth.signInWithPassword({ email: email, password: pass });
+        if (pErr) throw pErr;
+        
+        const { data: prof, error: profErr } = await supabase
+            .from('student_profiles')
+            .select(`roll_no, program, semester, profiles(full_name, email)`)
+            .eq('roll_no', rollNo)
+            .single();
+            
+        if (profErr || !prof) throw new Error("Student profile not found or roll number mismatch.");
+        if (prof.profiles.email.toLowerCase() !== email.toLowerCase()) throw new Error("Email does not match the provided Roll Number.");
+        
+        result = {
+            success: true,
+            student: {
+                rollNo: prof.roll_no,
+                email: prof.profiles.email,
+                name: prof.profiles.full_name,
+                program: prof.program,
+                semester: prof.semester
+            }
+        };
+        break;
+      }
+      
       case 'verifyPasswordAndBuildExam': {
         // Students logging in with password
         const rollNo = args[0], email = args[1], pass = args[2], qId = args[3];
