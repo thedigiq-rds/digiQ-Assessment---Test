@@ -27,7 +27,16 @@ window.google.script.url = {
 
 
 // The Unified callBackend Router mapped to Supabase
-async function callBackend(action, args, onSuccess, onFailure) {
+
+  async function resolveQuizId(qId) {
+     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+     if (uuidRegex.test(qId)) return qId;
+     const { data, error } = await supabase.from('quizzes').select('id').eq('legacy_id', qId).single();
+     if (error || !data) throw new Error("Quiz not found.");
+     return data.id;
+  }
+
+  async function callBackend(action, args, onSuccess, onFailure) {
   try {
     let result;
 
