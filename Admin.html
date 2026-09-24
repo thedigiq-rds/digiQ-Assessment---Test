@@ -18,7 +18,7 @@
 <script>
 const SUPABASE_URL = "https://vhxtedojmmfzxvyofqnk.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZoeHRlZG9qbW1menh2eW9mcW5rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwODU0NzksImV4cCI6MjEwNTY2MTQ3OX0.JBSlNcGxEjPE_tnBjx_Nta0Xj4atdHgI-kt7zAtZqew";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 window.APP_BRAND = {
   name: "digiQ",
@@ -27,55 +27,6 @@ window.APP_BRAND = {
   clientShortName: "M. N. College"
 };
 
-// Handle Authentication via Supabase
-async function ensureAuthenticated() {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    showLoginModal();
-  } else {
-    // Determine role from profiles table
-    const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single();
-    if(profile && (profile.role === 'MASTER' || profile.role === 'SUBADMIN')) {
-      window.currentUserRole = profile.role;
-      window.currentUserName = profile.full_name;
-      // Trigger the legacy UI transition
-      if (typeof hideLoader === 'function') hideLoader();
-      if (typeof _restoreAdminSession === 'function') {
-        _restoreAdminSession({ role: profile.role, name: profile.full_name });
-      }
-    } else {
-      alert("Unauthorized Access. Only Master or SubAdmins can access this portal.");
-      await supabase.auth.signOut();
-      showLoginModal();
-    }
-  }
-}
-
-function showLoginModal() {
-  if (document.getElementById('sb-auth-modal')) return;
-  document.body.innerHTML += `
-    <div id="sb-auth-modal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:99999;display:flex;justify-content:center;align-items:center;">
-      <div style="background:#fff;padding:30px;border-radius:8px;width:350px;">
-        <h3 class="mb-3 text-center">Admin Login</h3>
-        <input type="email" id="sb-email" class="form-control mb-3" placeholder="Email Address" autocapitalize="none" autocorrect="off">
-        <input type="password" id="sb-password" class="form-control mb-3" placeholder="Password" autocapitalize="none" autocorrect="off">
-        <button class="btn btn-primary w-100" onclick="handleSbLogin()">Secure Login</button>
-      </div>
-    </div>
-  `;
-}
-
-window.handleSbLogin = async function() {
-  const email = document.getElementById('sb-email').value;
-  const password = document.getElementById('sb-password').value;
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) {
-    alert("Login Failed: " + error.message);
-  } else {
-    document.getElementById('sb-auth-modal').remove();
-    ensureAuthenticated(); // Verify role
-  }
-};
 
 window.google = window.google || {};
 window.google.script = window.google.script || {};
@@ -130,25 +81,101 @@ window.google.script.run = new Proxy({}, {
 async function callBackend(action, args, onSuccess, onFailure) {
   try {
     let result;
+
+    // loginAdmin is handled BEFORE the auth guard since the user isn't logged in yet
+    if (action === 'loginAdmin') {
+      const [email, pass] = args;
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+      if (error) throw error;
+      const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', data.user.id).single();
+      if (!profile || (profile.role !== 'MASTER' && profile.role !== 'SUBADMIN')) {
+        await supabase.auth.signOut();
+        throw new Error('Unauthorized: Only Master or SubAdmins can access this portal.');
+      }
+      window.currentUserRole = profile.role;
+      window.currentUserName = profile.full_name;
+      result = { success: true, role: profile.role, name: profile.full_name };
+      if (onSuccess) onSuccess(result);
+      return;
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
     switch(action) {
-      case 'getAdminDashboardData':
+      case 'getAdminDashboardData': {
         // Fetch quizzes, admins, forms, etc.
-        const [qRes, aRes, fRes] = await Promise.all([
-          supabase.from('quizzes').select('*'),
-          window.currentUserRole === 'MASTER' ? supabase.from('profiles').select('*') : Promise.resolve({data: []}),
-          supabase.from('forms').select('*')
+        const [qRes, aRes, fRes, rRes] = await Promise.all([
+          window.currentUserRole === 'MASTER' ? supabase.from('quizzes').select('*') : supabase.from('quizzes').select('*').eq('created_by', user.id),
+          window.currentUserRole === 'MASTER' ? supabase.from('profiles').select('*, subadmin_profiles(assigned_streams, assigned_sems)').eq('role', 'SUBADMIN') : Promise.resolve({data: []}),
+          window.currentUserRole === 'MASTER' ? supabase.from('forms').select('*') : supabase.from('forms').select('*').eq('created_by', user.id),
+          supabase.from('responses').select('*') // For total responses and filtered reports (RLS handles permissions perfectly)
         ]);
         if(qRes.error) throw qRes.error;
+        
+        // Map Supabase Quiz Objects to legacy 2D array expected by frontend
+        const mappedQuizzes = (qRes.data || []).map(q => [
+          q.id,                                // 0
+          q.title || '',                       // 1
+          q.stream || '',                      // 2
+          q.semester || '',                    // 3
+          'NA',                                // 4
+          q.duration || 0,                     // 5
+          q.pass_percent || 0,                 // 6
+          q.config_json || {},                 // 7
+          q.custom_msg || '',                  // 8
+          q.status || 'Closed',                // 9
+          q.created_by || '',                  // 10
+          q.send_certificate ? 'Yes' : 'No',   // 11
+          q.cert_doc_id || '',                 // 12
+          q.enable_geofence ? 'Yes' : 'No',    // 13
+          q.max_radius_meters || '',           // 14
+          q.campus_lat || '',                  // 15
+          q.campus_lon || '',                  // 16
+          q.enable_schedule ? 'Yes' : 'No',    // 17
+          q.start_time || '',                  // 18
+          q.end_time || '',                    // 19
+          q.created_at || '',                  // 20
+          q.campus_name || '',                 // 21
+          q.send_result_email ? 'Yes' : 'No',  // 22
+          q.shuffle_questions ? 'Yes' : 'No',  // 23
+          q.shuffle_options ? 'Yes' : 'No'     // 24
+        ]);
+
+        // Map SubAdmins
+        const mappedSubAdmins = (aRes.data || []).map(a => [
+          a.email, 
+          a.subadmin_profiles?.assigned_streams || '', 
+          a.subadmin_profiles?.assigned_sems || '',
+          a.full_name
+        ]);
+
+        const mappedResponses = (rRes.data || []).map(r => [
+          r.created_at || '',
+          r.quiz_id || '',
+          r.roll_no || '',             // 2: RollNo
+          r.student_name || '',        // 3: Name
+          r.student_email || '',       // 4: Email
+          r.score || 0,                // 5: Score
+          r.total_marks || 0,          // 6: Total
+          r.percentage || 0,           // 7: Perc
+          r.passed === 'Yes' ? 'Yes' : (r.passed === 'No' ? 'No' : 'N/A') // 8: Passed
+        ]);
+
         result = {
-          quizzes: qRes.data,
-          admins: window.currentUserRole === 'MASTER' ? aRes.data : [],
+          quizzes: mappedQuizzes,
+          subAdmins: mappedSubAdmins,
+          responses: mappedResponses,
           forms: fRes.data || [],
-          roleData: { role: window.currentUserRole, email: user.email }
+          roleData: { role: window.currentUserRole, email: user.email },
+          stats: {
+            totalQuizzes: mappedQuizzes.length,
+            activeQuizzes: mappedQuizzes.filter(q => q[9] === 'Open').length,
+            totalResponses: mappedResponses.length
+          }
         };
         break;
+      }
       
       case 'toggleQuizStatus':
         const { data: qData } = await supabase.from('quizzes').select('status').eq('id', args[0]).single();
@@ -158,29 +185,80 @@ async function callBackend(action, args, onSuccess, onFailure) {
         result = true;
         break;
 
-      case 'saveNewQuiz':
+      case 'saveNewQuiz': {
         const payload = args[0];
-        const { error: insErr } = await supabase.from('quizzes').insert({
+        
+        // Helper to safely parse dates if schedule is enabled
+        let parsedStartTime = null, parsedEndTime = null;
+        if (payload.enableSchedule === 'Yes') {
+           try { parsedStartTime = new Date(payload.startTime).toISOString(); } catch(e){}
+           try { parsedEndTime = new Date(payload.endTime).toISOString(); } catch(e){}
+        }
+        
+        const { data: newQuiz, error: insErr } = await supabase.from('quizzes').insert({
           title: payload.title,
           stream: payload.stream,
-          semester: payload.semester,
-          duration: payload.duration,
+          semester: payload.sem,
+          duration: parseInt(payload.duration) || 0,
+          pass_percent: parseInt(payload.passPercent) || 0,
+          custom_msg: payload.customMsg || null,
+          send_certificate: payload.sendCert === "Yes",
+          cert_doc_id: payload.certDocId || null,
+          enable_geofence: payload.enableGeofence === "Yes",
+          max_radius_meters: parseInt(payload.maxRadiusMeters) || null,
+          campus_lat: parseFloat(payload.campusLat) || null,
+          campus_lon: parseFloat(payload.campusLon) || null,
+          campus_name: payload.campusName || null,
+          enable_schedule: payload.enableSchedule === "Yes",
+          start_time: parsedStartTime,
+          end_time: parsedEndTime,
+          shuffle_questions: payload.shuffleQuestions === "Yes",
+          shuffle_options: payload.shuffleOptions === "Yes",
+          send_result_email: payload.sendResultEmail === "Yes",
+          config_json: { sections: payload.sections || [] },
+          status: 'Closed',
           created_by: user.id
-          // mapped fields...
-        });
-        if(insErr) throw insErr;
-        result = true;
+        }).select('id').single();
+        
+        if (insErr) throw insErr;
+        result = newQuiz.id; // CRITICAL: return the generated UUID
         break;
-
+      }
       
       case 'updateExistingQuiz': {
         const payload = args[0], qId = args[1];
+        
+        let parsedStartTime = null, parsedEndTime = null;
+        if (payload.enableSchedule === 'Yes') {
+           try { parsedStartTime = new Date(payload.startTime).toISOString(); } catch(e){}
+           try { parsedEndTime = new Date(payload.endTime).toISOString(); } catch(e){}
+        }
+
         const { error } = await supabase.from('quizzes').update({
-          title: payload.title, stream: payload.stream, semester: payload.semester,
-          duration: payload.duration, config_json: payload.config_json
+          title: payload.title,
+          stream: payload.stream,
+          semester: payload.sem,
+          duration: parseInt(payload.duration) || 0,
+          pass_percent: parseInt(payload.passPercent) || 0,
+          custom_msg: payload.customMsg || null,
+          send_certificate: payload.sendCert === "Yes",
+          cert_doc_id: payload.certDocId || null,
+          enable_geofence: payload.enableGeofence === "Yes",
+          max_radius_meters: parseInt(payload.maxRadiusMeters) || null,
+          campus_lat: parseFloat(payload.campusLat) || null,
+          campus_lon: parseFloat(payload.campusLon) || null,
+          campus_name: payload.campusName || null,
+          enable_schedule: payload.enableSchedule === "Yes",
+          start_time: parsedStartTime,
+          end_time: parsedEndTime,
+          shuffle_questions: payload.shuffleQuestions === "Yes",
+          shuffle_options: payload.shuffleOptions === "Yes",
+          send_result_email: payload.sendResultEmail === "Yes",
+          config_json: { sections: payload.sections || [] }
         }).eq('id', qId);
+        
         if (error) throw error;
-        result = true;
+        result = qId; // Return the updated UUID
         break;
       }
       case 'deleteQuizData': {
@@ -189,26 +267,31 @@ async function callBackend(action, args, onSuccess, onFailure) {
         result = true;
         break;
       }
-      case 'uploadQuestionsBatch': {
-        const qId = args[0], qArr = args[1];
-        const rows = qArr.map(q => ({
-          quiz_id: qId, type: q.type, question_text: q.question,
-          options_json: q.options || [], correct_answer: q.answer,
-          marks: q.marks || 1, neg_marks: q.negMarks || 0, extra_config: q.extra || {}
-        }));
-        const { error } = await supabase.from('questions').insert(rows);
-        if (error) throw error;
-        result = true;
-        break;
-      }
+      case 'uploadQuestionsBatch':
       case 'replaceQuestionsBatch': {
         const qId = args[0], qArr = args[1];
-        await supabase.from('questions').delete().eq('quiz_id', qId);
-        const rows = qArr.map(q => ({
-          quiz_id: qId, type: q.type, question_text: q.question,
-          options_json: q.options || [], correct_answer: q.answer,
-          marks: q.marks || 1, neg_marks: q.negMarks || 0, extra_config: q.extra || {}
+        
+        if (action === 'replaceQuestionsBatch') {
+          await supabase.from('questions').delete().eq('quiz_id', qId);
+        }
+
+        const rows = qArr.map((q, index) => ({
+          quiz_id: qId,
+          type: q.type || 'MCQ',
+          question_text: q.question,
+          option1: q.options && q.options[0] ? q.options[0] : null,
+          option2: q.options && q.options[1] ? q.options[1] : null,
+          option3: q.options && q.options[2] ? q.options[2] : null,
+          option4: q.options && q.options[3] ? q.options[3] : null,
+          ans_index: parseInt(q.answer) || 0,
+          marks: parseFloat(q.marks) || 1,
+          negative_marks: parseFloat(q.negMarks) || 0,
+          extra_data: q.extra || {},
+          question_order: index + 1,
+          section: q.section || null,
+          correct_answer: null
         }));
+
         const { error } = await supabase.from('questions').insert(rows);
         if (error) throw error;
         result = true;
@@ -222,13 +305,22 @@ async function callBackend(action, args, onSuccess, onFailure) {
         break;
       }
       case 'addSubAdmin': {
-        // Handled by Edge Function since it involves Auth Admin API, or insert into profile
-        // Stub implementation
+        const payload = args[0];
+        const { data, error } = await supabase.functions.invoke('admin_ops', {
+          body: { action: 'addSubAdmin', payload }
+        });
+        if (error) throw error;
+        if (data.error) throw new Error(data.error);
         result = true;
         break;
       }
       case 'deleteSubAdmin': {
-        // Stub implementation
+        const payload = args[0]; // expect { email }
+        const { data, error } = await supabase.functions.invoke('admin_ops', {
+          body: { action: 'deleteSubAdmin', payload: { email: payload } }
+        });
+        if (error) throw error;
+        if (data.error) throw new Error(data.error);
         result = true;
         break;
       }
@@ -269,18 +361,28 @@ async function callBackend(action, args, onSuccess, onFailure) {
         break;
       }
       case 'adminCreateStudent': {
-        // Since auth API is required, inserting just into student_profiles won't create auth.user
-        // We use Edge function
+        const payload = args[0]; // expect { name, email, rollNo, stream, sem }
+        const { data, error } = await supabase.functions.invoke('admin_ops', {
+          body: { action: 'addStudent', payload }
+        });
+        if (error) throw error;
+        if (data.error) throw new Error(data.error);
         result = true;
         break;
       }
       case 'adminDeleteStudent': {
-        // Needs Edge function
+        const payload = args[0]; // expect email or id, let's say it's { email: student_email }
+        const { data, error } = await supabase.functions.invoke('admin_ops', {
+          body: { action: 'deleteStudent', payload: { email: payload } }
+        });
+        if (error) throw error;
+        if (data.error) throw new Error(data.error);
         result = true;
         break;
       }
       case 'createForm': {
-        const { error } = await supabase.from('forms').insert([{ ...args[0], created_by: user.id }]);
+        const shareToken = 'F-TOK-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        const { error } = await supabase.from('forms').insert([{ ...args[0], share_token: shareToken, created_by: user.id }]);
         if (error) throw error;
         result = true;
         break;
@@ -364,7 +466,6 @@ async function callBackend(action, args, onSuccess, onFailure) {
   }
 }
 
-document.addEventListener("DOMContentLoaded", ensureAuthenticated);
 </script>
 <!-- ========================================================================= -->
   <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
@@ -5276,27 +5377,72 @@ window.onload = () => {
   document.addEventListener('keyup', updateActivity);
   document.addEventListener('scroll', updateActivity, { passive: true });
 
-  setTimeout(() => {
+  setTimeout(async () => {
     hideGlobalLoader();
+    
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      document.getElementById('login-wrapper').style.display = 'flex';
+      return;
+    }
+
     const sessionStr = localStorage.getItem('digiQAdminSession');
+    let isExpired = false;
     if (sessionStr) {
       try {
-        const session = JSON.parse(sessionStr);
-        if (Date.now() - session.lastActivity > 10 * 60 * 1000) {
-          localStorage.removeItem('digiQAdminSession');
-          document.getElementById('login-wrapper').style.display = 'flex';
-          showToast('Session expired! Log in again.', 'warning');
+        const s = JSON.parse(sessionStr);
+        if (Date.now() - s.lastActivity > 10 * 60 * 1000) {
+          isExpired = true;
         } else {
-          session.lastActivity = Date.now();
-          localStorage.setItem('digiQAdminSession', JSON.stringify(session));
-          _restoreAdminSession(session.roleData);
-          return;
+          s.lastActivity = Date.now();
+          localStorage.setItem('digiQAdminSession', JSON.stringify(s));
         }
       } catch (e) {
-        localStorage.removeItem('digiQAdminSession');
-        document.getElementById('login-wrapper').style.display = 'flex';
+        isExpired = true;
       }
     } else {
+      isExpired = true;
+    }
+
+    if (isExpired) {
+      await supabase.auth.signOut();
+      localStorage.removeItem('digiQAdminSession');
+      document.getElementById('login-wrapper').style.display = 'flex';
+      showToast('Session expired! Log in again.', 'warning');
+      return;
+    }
+
+    // Restore from Supabase profiles
+    const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', session.user.id).single();
+    if(profile && (profile.role === 'MASTER' || profile.role === 'SUBADMIN')) {
+      window.currentUserRole = profile.role;
+      window.currentUserName = profile.full_name;
+      
+      let streamStr = '';
+      let semStr = '';
+      
+      if (profile.role === 'SUBADMIN') {
+        const { data: sub } = await supabase.from('subadmin_profiles').select('assigned_streams, assigned_sems').eq('profile_id', session.user.id).single();
+        if (sub) {
+          streamStr = sub.assigned_streams || '';
+          semStr = sub.assigned_sems || '';
+        }
+      }
+      
+      const res = { 
+        success: true, 
+        role: profile.role, 
+        name: profile.full_name,
+        email: session.user.email,
+        stream: streamStr,
+        sem: semStr
+      };
+      
+      localStorage.setItem('digiQAdminSession', JSON.stringify({ roleData: res, lastActivity: Date.now() }));
+      _restoreAdminSession(res);
+    } else {
+      alert("Unauthorized Access. Only Master or SubAdmins can access this portal.");
+      await supabase.auth.signOut();
       document.getElementById('login-wrapper').style.display = 'flex';
     }
   }, 700);
@@ -5323,24 +5469,52 @@ function getSelectedPills(containerId) {
 /* ════════════════════════════════════════
    LOGIN FLOW
 ════════════════════════════════════════ */
-function verifyAdminLogin() {
+async function verifyAdminLogin() {
   const email = document.getElementById('loginEmail').value.trim();
   const pass  = document.getElementById('loginPassword').value.trim();
   if (!email || !pass) { showToast('Enter email and password.', 'warning'); return; }
   showLoader('VERIFYING ADMIN');
-  google.script.run
-    .withSuccessHandler(res => {
-      hideLoader();
-      if (res.success) {
-        localStorage.setItem('digiQAdminSession', JSON.stringify({ roleData: res, lastActivity: Date.now() }));
-        _restoreAdminSession(res);
-        showToast('Welcome back! Dashboard loaded.', 'success');
-      } else {
-        const m = document.getElementById('login-msg'); m.textContent = res.message; m.style.display = 'block';
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+    const { data: profile, error: pErr } = await supabase.from('profiles').select('role, full_name').eq('id', data.user.id).single();
+    if (pErr) throw pErr;
+    if (!profile || (profile.role !== 'MASTER' && profile.role !== 'SUBADMIN')) {
+      await supabase.auth.signOut();
+      throw new Error('Unauthorized: Only Master or SubAdmins can access this portal.');
+    }
+    window.currentUserRole = profile.role;
+    window.currentUserName = profile.full_name;
+    
+    let streamStr = '';
+    let semStr = '';
+    
+    if (profile.role === 'SUBADMIN') {
+      const { data: sub, error: subErr } = await supabase.from('subadmin_profiles').select('assigned_streams, assigned_sems').eq('profile_id', data.user.id).single();
+      if (sub) {
+        streamStr = sub.assigned_streams || '';
+        semStr = sub.assigned_sems || '';
       }
-    })
-    .withFailureHandler(err => { hideLoader(); showToast('Connection error: ' + err.message, 'error'); })
-    .loginAdmin(email, pass);
+    }
+    
+    const res = { 
+      success: true, 
+      role: profile.role, 
+      name: profile.full_name,
+      email: data.user.email,
+      stream: streamStr,
+      sem: semStr
+    };
+    hideLoader();
+    localStorage.setItem('digiQAdminSession', JSON.stringify({ roleData: res, lastActivity: Date.now() }));
+    _restoreAdminSession(res);
+    showToast('Welcome back! Dashboard loaded.', 'success');
+  } catch(err) {
+    hideLoader();
+    const m = document.getElementById('login-msg');
+    if (m) { m.textContent = err.message; m.style.display = 'block'; }
+    else showToast('Login failed: ' + err.message, 'error');
+  }
 }
 
 function _restoreAdminSession(res) {
