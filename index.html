@@ -79,14 +79,36 @@ window.google.script.url = {
         result = metaData;
         break;
         
-      case 'getStudentDashboardData':
-         // We might need an authenticated user session first for dashboard
-         const { data: userD } = await supabase.auth.getUser();
-         if (!userD.user) throw new Error("Please log in to view dashboard");
-         const { data: dash, error: dashErr } = await supabase.rpc('get_student_dashboard', { p_student_id: userD.user.id });
-         if (dashErr) throw dashErr;
-         result = dash;
-         break;
+            case 'getStudentDashboardData': {
+           const { data: userD } = await supabase.auth.getUser();
+           if (!userD.user) throw new Error("Please log in to view dashboard");
+           const { data: dash, error: dashErr } = await supabase.rpc('get_student_dashboard', { p_student_id: userD.user.id });
+           if (dashErr) throw dashErr;
+           if (dash.error) throw new Error(dash.error);
+           
+           result = {
+               success: true,
+               activeTests: (dash.active_quizzes || []).map(q => ({
+                   quizId: q.id,
+                   title: q.title,
+                   duration: q.duration,
+                   isLive: true,
+                   computedStatus: 'Live',
+                   startTime: q.start_time
+               })),
+               pastTests: (dash.past_quizzes || []).map(p => ({
+                   title: p.quiz.title,
+                   score: p.response.score_obtained,
+                   total: p.response.total_score,
+                   perc: p.response.percentage,
+                   passed: p.response.passed ? 'Yes' : 'No',
+                   timestamp: p.response.submitted_at,
+                   sendCert: p.quiz.send_cert,
+                   certDocId: p.quiz.cert_doc_id
+               }))
+           };
+           break;
+      }
 
       
       case 'loginStudentPassword': {
