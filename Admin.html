@@ -34,7 +34,48 @@ window.google.script.url = {
   getLocation: function(cb) { cb({parameters: Object.fromEntries(new URLSearchParams(window.location.search))}); } 
 };
 
-
+// Polyfill the google.script.run proxy to point to Supabase
+window.google.script.run = new Proxy({}, {
+  get: function(target, prop) {
+    if (prop === 'withSuccessHandler') {
+      return function(successHandler) {
+        return new Proxy({}, {
+          get: function(t, method) {
+            if (method === 'withFailureHandler') {
+              return function(failureHandler) {
+                 return new Proxy({}, {
+                    get: function(t2, actualMethod) {
+                       return function(...args) { callBackend(actualMethod, args, successHandler, failureHandler); }
+                    }
+                 });
+              }
+            }
+            return function(...args) { callBackend(method, args, successHandler, null); }
+          }
+        });
+      };
+    }
+    if (prop === 'withFailureHandler') {
+      return function(failureHandler) {
+        return new Proxy({}, {
+          get: function(t, method) {
+             if (method === 'withSuccessHandler') {
+                return function(successHandler) {
+                    return new Proxy({}, {
+                        get: function(t2, actualMethod) {
+                            return function(...args) { callBackend(actualMethod, args, successHandler, failureHandler); }
+                        }
+                    });
+                }
+             }
+             return function(...args) { callBackend(method, args, null, failureHandler); }
+          }
+        });
+      }
+    }
+    return function(...args) { callBackend(prop, args, null, null); }
+  }
+});
 
 // The Unified callBackend Router mapped to Supabase
 async function callBackend(action, args, onSuccess, onFailure) {
@@ -73,7 +114,33 @@ async function callBackend(action, args, onSuccess, onFailure) {
         if(qRes.error) throw qRes.error;
         
         // Map Supabase Quiz Objects to legacy 2D array expected by frontend
-        const mappedQuizzes = qRes.data || [];
+        const mappedQuizzes = (qRes.data || []).map(q => [
+          q.id,                                // 0
+          q.title || '',                       // 1
+          q.stream || '',                      // 2
+          q.semester || '',                    // 3
+          'NA',                                // 4
+          q.duration || 0,                     // 5
+          q.pass_percent || 0,                 // 6
+          q.config_json || {},                 // 7
+          q.custom_msg || '',                  // 8
+          q.status || 'Closed',                // 9
+          q.created_by || '',                  // 10
+          q.send_certificate ? 'Yes' : 'No',   // 11
+          q.cert_doc_id || '',                 // 12
+          q.enable_geofence ? 'Yes' : 'No',    // 13
+          q.max_radius_meters || '',           // 14
+          q.campus_lat || '',                  // 15
+          q.campus_lon || '',                  // 16
+          q.enable_schedule ? 'Yes' : 'No',    // 17
+          q.start_time || '',                  // 18
+          q.end_time || '',                    // 19
+          q.created_at || '',                  // 20
+          q.campus_name || '',                 // 21
+          q.send_result_email ? 'Yes' : 'No',  // 22
+          q.shuffle_questions ? 'Yes' : 'No',  // 23
+          q.shuffle_options ? 'Yes' : 'No'     // 24
+        ]);
 
         // Map SubAdmins
         const mappedSubAdmins = (aRes.data || []).map(a => [
@@ -83,7 +150,17 @@ async function callBackend(action, args, onSuccess, onFailure) {
           a.full_name
         ]);
 
-        const mappedResponses = rRes.data || [];
+        const mappedResponses = (rRes.data || []).map(r => [
+          r.created_at || '',
+          r.quiz_id || '',
+          r.roll_no || '',             // 2: RollNo
+          r.student_name || '',        // 3: Name
+          r.student_email || '',       // 4: Email
+          r.score || 0,                // 5: Score
+          r.total_marks || 0,          // 6: Total
+          r.percentage || 0,           // 7: Perc
+          r.passed === 'Yes' ? 'Yes' : (r.passed === 'No' ? 'No' : 'N/A') // 8: Passed
+        ]);
 
         result = {
           quizzes: mappedQuizzes,
@@ -93,7 +170,7 @@ async function callBackend(action, args, onSuccess, onFailure) {
           roleData: { role: window.currentUserRole, email: user.email },
           stats: {
             totalQuizzes: mappedQuizzes.length,
-            activeQuizzes: mappedQuizzes.filter(q => q.status === 'Open').length,
+            activeQuizzes: mappedQuizzes.filter(q => q[9] === 'Open').length,
             totalResponses: mappedResponses.length
           }
         };
@@ -5612,7 +5689,8 @@ function requestForgotPasswordOTP() {
     return;
   }
   showLoader('SENDING OTP');
-  callBackend('requestAdminPasswordResetOTP', [email], res => {
+  google.script.run
+    .withSuccessHandler(res => {
       hideLoader();
       if (res.success) {
         showToast('OTP sent securely to your email!', 'success');
@@ -5621,10 +5699,12 @@ function requestForgotPasswordOTP() {
       } else {
         showToast(res.message, 'error');
       }
-    }, err => {
+    })
+    .withFailureHandler(err => {
       hideLoader();
       showToast('Connection error: ' + err.message, 'error');
-    });
+    })
+    .requestAdminPasswordResetOTP(email);
 }
 
 function verifyForgotPasswordOTP() {
@@ -5635,7 +5715,8 @@ function verifyForgotPasswordOTP() {
     return;
   }
   showLoader('VERIFYING OTP');
-  callBackend('verifyAdminPasswordResetOTP', [email, otp], res => {
+  google.script.run
+    .withSuccessHandler(res => {
       hideLoader();
       if (res.success) {
         showToast('OTP Verified. You can now reset your password.', 'success');
@@ -5644,10 +5725,12 @@ function verifyForgotPasswordOTP() {
       } else {
         showToast(res.message, 'error');
       }
-    }, err => {
+    })
+    .withFailureHandler(err => {
       hideLoader();
       showToast('Connection error: ' + err.message, 'error');
-    });
+    })
+    .verifyAdminPasswordResetOTP(email, otp);
 }
 
 function submitResetPassword() {
@@ -5665,7 +5748,8 @@ function submitResetPassword() {
   }
 
   showLoader('RESETTING PASSWORD');
-  callBackend('resetAdminPassword', [email, newPass], res => {
+  google.script.run
+    .withSuccessHandler(res => {
       hideLoader();
       if (res.success) {
         document.getElementById('step-forgot-reset').style.display = 'none';
@@ -5673,10 +5757,12 @@ function submitResetPassword() {
       } else {
         showToast(res.message, 'error');
       }
-    }, err => {
+    })
+    .withFailureHandler(err => {
       hideLoader();
       showToast('Connection error: ' + err.message, 'error');
-    });
+    })
+    .resetAdminPassword(email, newPass);
 }
 
 async function confirmLogout(skipConfirm = false) {
@@ -5880,7 +5966,8 @@ let autoRefreshTimer = null;
 
 function loadDashboard(silent = false) {
   if (!silent) { const btn = document.getElementById('refreshBtn'); if (btn) { btn.classList.add('spinning'); btn.disabled = true; } }
-  callBackend('getAdminDashboardData', [activeRole], data => {
+  google.script.run
+    .withSuccessHandler(data => {
       LIVE_APP_URL    = data.scriptUrl   || '';
       globalResponses = data.responses  || [];
       globalQuizzes   = data.quizzes    || [];
@@ -5893,7 +5980,7 @@ function loadDashboard(silent = false) {
       allQuizRows = globalQuizzes; renderManageTable(globalQuizzes);
       const prevSel = document.getElementById('reportQuizSelect').value;
       let opts = '<option value="ALL">All Assessments (Consolidated)</option>';
-      globalQuizzes.forEach(q => { opts += `<option value="${q.id}">${toTitleCase(q.title)} (${q.stream} – ${q.semester})</option>`; });
+      globalQuizzes.forEach(q => { opts += `<option value="${q[0]}">${toTitleCase(q[1])} (${q[2]} – ${q[3]})</option>`; });
       document.getElementById('reportQuizSelect').innerHTML = opts;
       const selEl = document.getElementById('reportQuizSelect');
       if (prevSel && Array.from(selEl.options).some(o => o.value === prevSel)) selEl.value = prevSel;
@@ -5903,10 +5990,12 @@ function loadDashboard(silent = false) {
       const timeEl = document.getElementById('last-refresh-time');
       if (timeEl) { const now = new Date(); timeEl.textContent = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
       const btn = document.getElementById('refreshBtn'); if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
-    }, err => {
+    })
+    .withFailureHandler(err => {
       const btn = document.getElementById('refreshBtn'); if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
       if (!silent) showToast('Failed to load dashboard: ' + err.message, 'error');
-    });
+    })
+    .getAdminDashboardData(activeRole);
 }
 
 function manualRefresh() { showToast('Refreshing dashboard data…', 'info', 2000); loadDashboard(); }
@@ -5927,24 +6016,24 @@ function renderManageTable(quizzes) {
   if (!quizzes || quizzes.length === 0) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   tbody.innerHTML = quizzes.map(q => {
-    const link  = `${LIVE_APP_URL}?${q.id}`;
-    const isOpen = q.status === 'Open';
-    const isGeo = (String((q.enable_geofence ? "Yes" : "No") || '').trim().toLowerCase() === 'yes' || (q.enable_geofence ? "Yes" : "No") === true);
-    const ts = parseInt(String(q.id).replace(/^QZ_/i, ''));
+    const link  = `${LIVE_APP_URL}?${q[0]}`;
+    const isOpen = q[9] === 'Open';
+    const isGeo = (String(q[13] || '').trim().toLowerCase() === 'yes' || q[13] === true);
+    const ts = parseInt(String(q[0]).replace(/^QZ_/i, ''));
     let dateStr = !isNaN(ts) && ts > 1000000000000 ? new Date(ts).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true }) : '—';
-    if (dateStr === '—' && q.created_at) {
-      dateStr = new Date(q.created_at).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true });
+    if (dateStr === '—' && q[20]) {
+      dateStr = new Date(q[20]).toLocaleString('en-IN', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', hour12:true });
     }
     return `<tr>
       <td class="td-muted" style="white-space:nowrap;">${dateStr}</td>
-      <td class="td-title">${isGeo ? '<i class="ti ti-map-pin" style="color:var(--primary); margin-right:4px;" title="Geofence Enabled"></i>' : ''}${toTitleCase(q.title)}</td>
-      <td class="td-muted">${q.stream}</td>
-      <td class="td-muted">${q.semester}</td>
+      <td class="td-title">${isGeo ? '<i class="ti ti-map-pin" style="color:var(--primary); margin-right:4px;" title="Geofence Enabled"></i>' : ''}${toTitleCase(q[1])}</td>
+      <td class="td-muted">${q[2]}</td>
+      <td class="td-muted">${q[3]}</td>
       <td style="text-align: left;">
         <div style="display:flex; justify-content:flex-start;">
           <div class="toggle-wrap" style="gap:8px;">
-            <input type="checkbox" id="check-${q.id}" class="quiz-status-check" ${(computeQuizStatus(q) === 'Scheduled' || computeQuizStatus(q) === 'Live') ? 'checked' : ''} onchange="toggleStatus('${q.id}')">
-            <label class="status-toggle" for="check-${q.id}" title="Click to turn On/Off"><div class="status-toggle__circle"></div></label>
+            <input type="checkbox" id="check-${q[0]}" class="quiz-status-check" ${(computeQuizStatus(q) === 'Scheduled' || computeQuizStatus(q) === 'Live') ? 'checked' : ''} onchange="toggleStatus('${q[0]}')">
+            <label class="status-toggle" for="check-${q[0]}" title="Click to turn On/Off"><div class="status-toggle__circle"></div></label>
             <span class="toggle-label" style="font-size:0.7rem; font-weight:600;">${computeQuizStatus(q)}</span>
           </div>
         </div>
@@ -5952,9 +6041,9 @@ function renderManageTable(quizzes) {
       <td style="white-space:nowrap; min-width:140px;">
         <div style="display:flex; gap:4px; flex-wrap:nowrap; align-items:center;">
           <button class="btn-xs btn-xs-action" onclick="copyToClipboard('${link}')" title="Copy Link"><i class="ti ti-clipboard"></i></button>
-          <button class="btn-xs btn-xs-action" onclick="downloadQuizData('${q.id}')" title="Download Excel"><svg class="svg-icon" width="1.1em" height="1.1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
-          <button class="btn-xs btn-xs-action" onclick="editQuiz('${q.id}')" title="Edit Quiz"><i class="ti ti-edit"></i></button>
-          <button class="btn-xs btn-xs-danger" onclick="deleteQuiz('${q.id}')" title="Delete Quiz"><i class="ti ti-trash"></i></button>
+          <button class="btn-xs btn-xs-action" onclick="downloadQuizData('${q[0]}')" title="Download Excel"><svg class="svg-icon" width="1.1em" height="1.1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+          <button class="btn-xs btn-xs-action" onclick="editQuiz('${q[0]}')" title="Edit Quiz"><i class="ti ti-edit"></i></button>
+          <button class="btn-xs btn-xs-danger" onclick="deleteQuiz('${q[0]}')" title="Delete Quiz"><i class="ti ti-trash"></i></button>
         </div>
       </td>
     </tr>`;
@@ -5966,7 +6055,7 @@ function renderManageTable(quizzes) {
 ════════════════════════════════════════ */
 function renderReportsTable() {
   const qId = document.getElementById('reportQuizSelect').value;
-  filteredReports = (qId === 'ALL') ? globalResponses : globalResponses.filter(r => r.quiz_id === qId);
+  filteredReports = (qId === 'ALL') ? globalResponses : globalResponses.filter(r => r[1] === qId);
   renderFilteredReports(filteredReports);
 }
 
@@ -5976,15 +6065,15 @@ function renderFilteredReports(data) {
   if (!data || data.length === 0) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   tbody.innerHTML = data.map(r => {
-    const passed  = (r.passed === "Yes" ? "Yes" : (r.passed === "No" ? "No" : "N/A")) === 'Yes';
-    const dateStr = r.created_at ? formatStandardDate(r.created_at) : '—';
+    const passed  = r[8] === 'Yes';
+    const dateStr = r[0] ? formatStandardDate(r[0]) : '—';
     return `<tr>
       <td class="td-muted">${dateStr}</td>
-      <td><strong>${toTitleCase(r.roll_no)}</strong></td>
-      <td>${r.student_name}</td>
-      <td class="td-muted">${r.student_email}</td>
-      <td>${r.score} / ${r.total_marks}</td>
-      <td><strong>${r.percentage}%</strong></td>
+      <td><strong>${toTitleCase(r[2])}</strong></td>
+      <td>${r[3]}</td>
+      <td class="td-muted">${r[4]}</td>
+      <td>${r[5]} / ${r[6]}</td>
+      <td><strong>${r[7]}%</strong></td>
       <td><span class="${passed ? 'badge-pass' : 'badge-fail'}">${passed ? 'Passed' : 'Fail'}</span></td>
     </tr>`;
   }).join('');
@@ -6004,15 +6093,18 @@ function loadPendingEssays() {
   if (empty)   empty.style.display = 'none';
   if (loading) loading.style.display = 'block';
 
-  callBackend('getPendingEssays', [currentRoleData], list => {
+  google.script.run
+    .withSuccessHandler(list => {
       if (loading) loading.style.display = 'none';
       globalPendingEssays = list || [];
       renderEssaysList(globalPendingEssays);
-    }, err => {
+    })
+    .withFailureHandler(err => {
       if (loading) loading.style.display = 'none';
       if (container) container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--danger);">Failed to load essays: ${err.message}</div>`;
       showToast('Failed to load pending essays: ' + err.message, 'error');
-    });
+    })
+    .getPendingEssays(currentRoleData);
 }
 
 // Group essays by assignment and student email
@@ -6256,7 +6348,25 @@ function publishAssessment() {
   const btn = document.getElementById('assess-publish-btn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin-sm"></span> Publishing…'; }
 
-  callBackend('publishEssayAssessment', [{
+  google.script.run
+    .withSuccessHandler(res => {
+      closeAssessModal();
+      showToast(`Assessment published! ${totalAwarded}/${totalMax} marks (${pct}%). Email sent to ${group.email}.`, 'success', 6000);
+      // Update the row in list to show reviewed status
+      const row = document.getElementById('essay-row-' + group.groupId);
+      if (row) {
+        const statusCell = row.cells[5]; const actionCell = row.cells[6];
+        if (statusCell) statusCell.innerHTML = `<span class="badge-pass" style="font-size:0.72rem;">Reviewed by ${assessorName}</span>`;
+        if (actionCell) actionCell.innerHTML = `<button class="btn-xs btn-xs-action" style="padding:7px 14px; font-size:0.8rem;" onclick="openAssessModal('${group.groupId}')"><i class="ti ti-eye"></i> View</button>`;
+      }
+      // Also refresh to get fresh data
+      loadPendingEssays();
+    })
+    .withFailureHandler(err => {
+      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i> Publish &amp; Notify Student'; }
+      showToast('Error publishing assessment: ' + err.message, 'error');
+    })
+    .publishEssayAssessment({
       submissionId: group.groupId,
       studentName:  group.studentName,
       rollNo:       group.rollNo,
@@ -6269,22 +6379,7 @@ function publishAssessment() {
       passed,
       assessorName,
       passPercent:  group.passPercent || 40
-    }, currentRoleData], res => {
-      closeAssessModal();
-      showToast(`Assessment published! ${totalAwarded}/${totalMax} marks (${pct}%). Email sent to ${group.email}.`, 'success', 6000);
-      // Update the row in list to show reviewed status
-      const row = document.getElementById('essay-row-' + group.groupId);
-      if (row) {
-        const statusCell = row.cells[5]; const actionCell = row.cells[6];
-        if (statusCell) statusCell.innerHTML = `<span class="badge-pass" style="font-size:0.72rem;">Reviewed by ${assessorName}</span>`;
-        if (actionCell) actionCell.innerHTML = `<button class="btn-xs btn-xs-action" style="padding:7px 14px; font-size:0.8rem;" onclick="openAssessModal('${group.groupId}')"><i class="ti ti-eye"></i> View</button>`;
-      }
-      // Also refresh to get fresh data
-      loadPendingEssays();
-    }, err => {
-      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i> Publish &amp; Notify Student'; }
-      showToast('Error publishing assessment: ' + err.message, 'error');
-    });
+    }, currentRoleData);
 }
 
 
@@ -6317,14 +6412,14 @@ function buildRecentSubmissions() {
     return;
   }
   tbody.innerHTML = last10.map(r => {
-    const title  = globalQuizzes.find(q => q.id === r.quiz_id)?.[1] || '—';
-    const passed = (r.passed === "Yes" ? "Yes" : (r.passed === "No" ? "No" : "N/A")) === 'Yes';
-    const date   = r.created_at ? formatStandardDate(r.created_at) : '—';
+    const title  = globalQuizzes.find(q => q[0] === r[1])?.[1] || '—';
+    const passed = r[8] === 'Yes';
+    const date   = r[0] ? formatStandardDate(r[0]) : '—';
     return `<tr>
       <td class="td-muted">${date}</td>
       <td class="td-title" style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${title}</td>
-      <td>${r.student_name}</td>
-      <td>${r.score}/${r.total_marks} <span style="color:var(--text-muted);">(${r.percentage}%)</span></td>
+      <td>${r[3]}</td>
+      <td>${r[5]}/${r[6]} <span style="color:var(--text-muted);">(${r[7]}%)</span></td>
       <td><span class="${passed ? 'badge-pass' : 'badge-fail'}">${passed ? 'Passed' : 'Fail'}</span></td>
     </tr>`;
   }).join('');
@@ -6334,9 +6429,9 @@ function buildRecentSubmissions() {
    CHARTS
 ════════════════════════════════════════ */
 function buildCharts() {
-  const passed = globalResponses.filter(r => (r.passed === "Yes" ? "Yes" : (r.passed === "No" ? "No" : "N/A")) === 'Yes').length;
+  const passed = globalResponses.filter(r => r[8] === 'Yes').length;
   const failed = globalResponses.length - passed;
-  const open   = globalQuizzes.filter(q => q.status === 'Open').length;
+  const open   = globalQuizzes.filter(q => q[9] === 'Open').length;
   const closed  = globalQuizzes.length - open;
 
   const isCompactMobile = window.matchMedia('(max-width: 768px)').matches;
@@ -6378,9 +6473,9 @@ function buildCharts() {
     options: { ...baseOpts }
   });
 
-  const high = globalResponses.filter(r => (r.percentage || 0) >= 70).length;
-  const mid  = globalResponses.filter(r => (r.percentage || 0) >= 40 && (r.percentage || 0) < 70).length;
-  const low  = globalResponses.filter(r => (r.percentage || 0) < 40).length;
+  const high = globalResponses.filter(r => (r[7] || 0) >= 70).length;
+  const mid  = globalResponses.filter(r => (r[7] || 0) >= 40 && (r[7] || 0) < 70).length;
+  const low  = globalResponses.filter(r => (r[7] || 0) < 40).length;
   setChartMetric('chart-stat-scoretiers', high + mid + low);
   if (chartScoreTier) chartScoreTier.destroy();
   chartScoreTier = new Chart(document.getElementById('chart-scoretier'), {
@@ -6396,7 +6491,7 @@ function buildCharts() {
   });
 
   const sMap = {};
-  globalQuizzes.forEach(q => { const s = q.stream || 'Other'; sMap[s] = (sMap[s] || 0) + 1; });
+  globalQuizzes.forEach(q => { const s = q[2] || 'Other'; sMap[s] = (sMap[s] || 0) + 1; });
   const sLabels = Object.keys(sMap).length ? Object.keys(sMap) : ['No Data'];
   const sData   = Object.keys(sMap).length ? Object.values(sMap) : [1];
   setChartMetric('chart-stat-streams', Object.keys(sMap).length);
@@ -6419,14 +6514,20 @@ function buildCharts() {
 ════════════════════════════════════════ */
 function toggleStatus(quizId) {
   showLoader('UPDATING STATUS');
-  callBackend('toggleQuizStatus', [quizId], () => { hideLoader(); showToast('Quiz status updated.', 'success'); loadDashboard(); }, err => { hideLoader(); showToast('Error: ' + err.message, 'error'); });
+  google.script.run
+    .withSuccessHandler(() => { hideLoader(); showToast('Quiz status updated.', 'success'); loadDashboard(); })
+    .withFailureHandler(err => { hideLoader(); showToast('Error: ' + err.message, 'error'); })
+    .toggleQuizStatus(quizId);
 }
 
 async function deleteQuiz(quizId) {
   const ok = await showCenterConfirm('Delete Quiz', 'Are you sure you want to <strong>permanently delete this quiz</strong> and all its questions? This action cannot be undone.', '<i class="ti ti-trash"></i> Delete Permanently', 'Cancel', 'acm-danger-ok');
   if (!ok) return;
   showLoader('DELETING QUIZ');
-  callBackend('deleteQuizData', [quizId], () => { hideLoader(); showToast('Quiz deleted.', 'success'); loadDashboard(); }, err => { hideLoader(); showToast('Error: ' + err.message, 'error'); });
+  google.script.run
+    .withSuccessHandler(() => { hideLoader(); showToast('Quiz deleted.', 'success'); loadDashboard(); })
+    .withFailureHandler(err => { hideLoader(); showToast('Error: ' + err.message, 'error'); })
+    .deleteQuizData(quizId);
 }
 
 let editingQuizId = null;
@@ -6434,7 +6535,8 @@ let existingQuestionsForEdit = null;
 
 function editQuiz(quizId) {
   clearDeployedLinkBox(); showLoader('LOADING QUIZ');
-  callBackend('trim', [], details => {
+  google.script.run
+    .withSuccessHandler(details => {
       hideLoader(); switchTab('create'); window.scrollTo({ top: 0, behavior: 'smooth' });
       editingQuizId = details.quizId; existingQuestionsForEdit = details.questions;
       // ── Helper: parse "DD-MM-YYYY HH:MM AM/PM" or "YYYY-MM-DD HH:MM" into parts ──
@@ -6443,7 +6545,7 @@ function editQuiz(quizId) {
         if (!s) return null;
         
         // Remove timezones in parentheses which can break Safari Date parsing
-        s = s.replace(/\s*\([^)]+\)$/, '', null);
+        s = s.replace(/\s*\([^)]+\)$/, '').trim();
         
         // 1. Try native JS Date parsing first (handles "8/17/2026 12:30:00 PM", "Mon Aug 17...", ISO strings)
         // Note: For "DD-MM-YYYY", native Date might fail or parse incorrectly, so we check for validity.
@@ -7005,7 +7107,8 @@ async function processQuizCreation() {
     const saveFunc = editingQuizId ? 'updateExistingQuiz' : 'saveNewQuiz';
     const arg2 = editingQuizId ? editingQuizId : activeRole;
     const questionsFunc = editingQuizId ? 'replaceQuestionsBatch' : 'uploadQuestionsBatch';
-    callBackend('', [], quizId => {
+    google.script.run
+      .withSuccessHandler(quizId => {
         google.script.run
           .withSuccessHandler(() => {
             hideLoader(); loader.style.display = 'none'; btn.disabled = false;
@@ -7023,7 +7126,9 @@ async function processQuizCreation() {
           })
           .withFailureHandler(err => { hideLoader(); loader.style.display='none'; btn.disabled=false; showToast('Question upload failed: ' + err.message, 'error'); })
           [questionsFunc](quizId, finalCleanJson);
-      }, err => { hideLoader(); loader.style.display='none'; btn.disabled=false; showToast('Failed to save quiz: ' + err.message, 'error'); });[saveFunc](payload, arg2);
+      })
+      .withFailureHandler(err => { hideLoader(); loader.style.display='none'; btn.disabled=false; showToast('Failed to save quiz: ' + err.message, 'error'); })
+      [saveFunc](payload, arg2);
   };
 
   if (!file && (!existingQuestionsForEdit || existingQuestionsForEdit.length === 0)) {
@@ -7093,7 +7198,8 @@ function submitStudentForm() {
 
   const payload = { name, email, rollNo, stream, sem };
   showLoader('ADDING STUDENT');
-  callBackend('adminCreateStudent', [payload], (res) => {
+  google.script.run
+    .withSuccessHandler((res) => {
       hideLoader();
       const pwd = res && res.password ? res.password : 'unknown';
       showToast('Student created successfully!', 'success', 5000);
@@ -7104,7 +7210,9 @@ function submitStudentForm() {
       document.getElementById('stdProgram').value = '';
       document.getElementById('stdSemester').value = '';
       if(typeof loadDashboard === 'function') loadDashboard();
-    }, err => { hideLoader(); showToast('Error: ' + err.message, 'error'); });
+    })
+    .withFailureHandler(err => { hideLoader(); showToast('Error: ' + err.message, 'error'); })
+    .adminCreateStudent(payload);
 }
 
 /* ════════════════════════════════════════
@@ -7120,7 +7228,8 @@ function registerSubAdmin() {
   if (!selectedSems.length)    { showToast('Please select at least one Semester.', 'warning'); return; }
   const payload = { name, email, stream: selectedStreams.join(', '), sem: selectedSems.join(', ') };
   showLoader('ADDING SUB ADMIN');
-  callBackend('addSubAdmin', [payload], (res) => {
+  google.script.run
+    .withSuccessHandler((res) => {
       hideLoader();
       const pwd = res && res.password ? res.password : 'unknown';
       showToast(`Sub-Admin "${name}" registered!`, 'success', 5000);
@@ -7128,14 +7237,19 @@ function registerSubAdmin() {
       document.getElementById('saName').value = ''; document.getElementById('saEmail').value = '';
       document.querySelectorAll('#sa-streams-pills .pill-item, #sa-sems-pills .pill-item').forEach(p => p.classList.remove('selected'));
       loadDashboard();
-    }, err => { hideLoader(); showToast('Error: ' + err.message, 'error'); });
+    })
+    .withFailureHandler(err => { hideLoader(); showToast('Error: ' + err.message, 'error'); })
+    .addSubAdmin(payload);
 }
 
 async function deleteSubAdmin(email) {
   const ok = await showCenterConfirm('Remove Sub-Admin', `Remove sub-admin access for <strong>${email}</strong>? They will no longer be able to log into the admin dashboard.`, '<i class="ti ti-trash"></i> Remove Access', 'Cancel', 'acm-danger-ok');
   if (!ok) return;
   showLoader('REMOVING SUB ADMIN');
-  callBackend('deleteSubAdmin', [email], () => { hideLoader(); showToast('Sub-Admin removed.', 'success'); loadDashboard(); }, err => { hideLoader(); showToast('Error: ' + err.message, 'error'); });
+  google.script.run
+    .withSuccessHandler(() => { hideLoader(); showToast('Sub-Admin removed.', 'success'); loadDashboard(); })
+    .withFailureHandler(err => { hideLoader(); showToast('Error: ' + err.message, 'error'); })
+    .deleteSubAdmin(email);
 }
 
 /* ════════════════════════════════════════
@@ -7143,14 +7257,14 @@ async function deleteSubAdmin(email) {
 ════════════════════════════════════════ */
 function downloadReportExcel() {
   const qId  = document.getElementById('reportQuizSelect').value;
-  const data = qId === 'ALL' ? globalResponses : globalResponses.filter(r => r.quiz_id === qId);
+  const data = qId === 'ALL' ? globalResponses : globalResponses.filter(r => r[1] === qId);
   if (!data.length) { showToast('No data to export.', 'warning'); return; }
   const rows = data.map(r => ({
-    'Date': r.created_at ? new Date(r.created_at).toLocaleString() : '',
-    'Assessment Title': globalQuizzes.find(q => q.id === r.quiz_id)?.[1] || r.quiz_id || '',
-    'Roll No': r.roll_no, 'Student Name': r.student_name, 'Email': r.student_email,
-    'Marks Scored': r.score, 'Total Marks': r.total_marks, 'Percentage': r.percentage + '%',
-    'Result': (r.passed === "Yes" ? "Yes" : (r.passed === "No" ? "No" : "N/A")) === 'Yes' ? 'Passed' : 'Fail'
+    'Date': r[0] ? new Date(r[0]).toLocaleString() : '',
+    'Assessment Title': globalQuizzes.find(q => q[0] === r[1])?.[1] || r[1] || '',
+    'Roll No': r[2], 'Student Name': r[3], 'Email': r[4],
+    'Marks Scored': r[5], 'Total Marks': r[6], 'Percentage': r[7] + '%',
+    'Result': r[8] === 'Yes' ? 'Passed' : 'Fail'
   }));
   const ws = XLSX.utils.json_to_sheet(rows); const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Assessment Data'); XLSX.writeFile(wb, `LMS_Report_${Date.now()}.xlsx`);
@@ -7160,8 +7274,8 @@ function downloadReportExcel() {
 function downloadReportPDF() {
   const { jsPDF } = window.jspdf; const doc = new jsPDF();
   const qId = document.getElementById('reportQuizSelect').value;
-  const qTitle = qId === 'ALL' ? 'All Assessments (Consolidated)' : (globalQuizzes.find(q => q.id === qId)?.[1] || qId);
-  const data = qId === 'ALL' ? globalResponses : globalResponses.filter(r => r.quiz_id === qId);
+  const qTitle = qId === 'ALL' ? 'All Assessments (Consolidated)' : (globalQuizzes.find(q => q[0] === qId)?.[1] || qId);
+  const data = qId === 'ALL' ? globalResponses : globalResponses.filter(r => r[1] === qId);
   if (!data.length) { showToast('No data to export.', 'warning'); return; }
   doc.setFontSize(18); doc.setTextColor(26,54,93); doc.text('M. N. College, Visnagar', 14, 20);
   doc.setFontSize(11); doc.setTextColor(50,50,50); doc.text('Department of English – Official Assessment Report', 14, 28);
@@ -7169,7 +7283,7 @@ function downloadReportPDF() {
   doc.autoTable({
     startY: 50,
     head: [['Date','Roll No','Name','Email','Score','%','Status']],
-    body: data.map(r => [r.created_at ? formatStandardDate(r.created_at) : '', r.roll_no, r.student_name, r.student_email, `${r.score}/${r.total_marks}`, `${r.percentage}%`, (r.passed === "Yes" ? "Yes" : (r.passed === "No" ? "No" : "N/A")) === 'Yes' ? 'Passed' : 'Fail']),
+    body: data.map(r => [r[0] ? formatStandardDate(r[0]) : '', r[2], r[3], r[4], `${r[5]}/${r[6]}`, `${r[7]}%`, r[8] === 'Yes' ? 'Passed' : 'Fail']),
     theme: 'grid', headStyles: { fillColor: [26,54,93], fontSize: 9 }, bodyStyles: { fontSize: 8 }
   });
   doc.save(`LMS_Report_${Date.now()}.pdf`); showToast('PDF report downloaded!', 'success');
@@ -7177,7 +7291,8 @@ function downloadReportPDF() {
 
 function downloadQuizData(quizId) {
   showLoader('PREPARING DOWNLOAD');
-  callBackend('getQuizDetails', [quizId], details => {
+  google.script.run
+    .withSuccessHandler(details => {
       hideLoader();
       if (!details) { showToast('Quiz not found.', 'error'); return; }
       
@@ -7186,7 +7301,7 @@ function downloadQuizData(quizId) {
       // Sheet 1: Quiz Details
       const ts = parseInt(String(quizId).replace(/^QZ_/i, ''));
       const dateStr = !isNaN(ts) && ts > 1000000000000 ? new Date(ts).toLocaleString('en-IN') : '';
-      const submissionCount = globalResponses ? globalResponses.filter(r => r.quiz_id === quizId).length : 0;
+      const submissionCount = globalResponses ? globalResponses.filter(r => r[1] === quizId).length : 0;
       const detailsData = [
         { "Property": "Quiz ID", "Value": quizId },
         { "Property": "Title", "Value": details.title },
@@ -7227,10 +7342,12 @@ function downloadQuizData(quizId) {
       
       XLSX.writeFile(wb, `Quiz_${quizId}.xlsx`);
       showToast('Excel file downloaded!', 'success');
-    }, err => {
+    })
+    .withFailureHandler(err => {
       hideLoader();
       showToast('Error preparing download: ' + err.message, 'error');
-    });
+    })
+    .getQuizDetails(quizId);
 }
 
 /* ════════════════════════════════════════
@@ -7265,7 +7382,8 @@ function submitChangePassword() {
   const email = activeRole.email || document.getElementById('loginEmail').value.trim();
   
   showLoader('UPDATING PASSWORD');
-  callBackend('resetAdminPassword', [email, newPass], res => {
+  google.script.run
+    .withSuccessHandler(res => {
       hideLoader();
       if (res.success) {
         document.getElementById('changePasswordFormBody').style.display = 'none';
@@ -7274,10 +7392,12 @@ function submitChangePassword() {
       } else {
         showToast(res.message, 'error');
       }
-    }, err => {
+    })
+    .withFailureHandler(err => {
       hideLoader();
       showToast('Connection error: ' + err.message, 'error');
-    });
+    })
+    .resetAdminPassword(email, newPass);
 }
 
 </script>
@@ -7459,16 +7579,19 @@ function submitChangePassword() {
     btn.innerHTML = '<i class="ti ti-loader" style="animation:spin 1s linear infinite;"></i> Submitting...';
     btn.disabled = true;
     
-    callBackend('submitAppFeedback', ['Admin', 'Admin', 'admin@digiq.in', apfbCurrentRating, category, message], res => {
+    google.script.run
+      .withSuccessHandler(res => {
         btn.innerHTML = originalText;
         btn.disabled = false;
         closeAdminFeedbackModal();
         showToast('Feedback submitted successfully.', 'success');
-      }, err => {
+      })
+      .withFailureHandler(err => {
         btn.innerHTML = originalText;
         btn.disabled = false;
         showToast('Failed to submit feedback.', 'error');
-      });
+      })
+      .submitAppFeedback('Admin', 'Admin', 'admin@digiq.in', apfbCurrentRating, category, message);
   }
 </script>
 
@@ -7523,14 +7646,14 @@ let qbFilters = {
 };
 
 function loadQuestionBank() {
-  callBackend('getQuestionBank', [window.digiQAdminSession], res => {
+  google.script.run.withSuccessHandler(res => {
     qbData = res || [];
     populateQbFilters();
     updateQbStats();
     renderQuestionBank();
-  }, err => {
+  }).withFailureHandler(err => {
     showToast('Failed to load Question Bank', 'error');
-  });
+  }).getQuestionBank(window.digiQAdminSession);
 }
 
 function updateQbStats() {
@@ -7891,16 +8014,16 @@ function processImportQbCsv() {
       }
       
       const roleData = { email: window._userEmail || '' };
-      callBackend('bulkCreateQuestions', [payloads, roleData], res => {
+      google.script.run.withSuccessHandler(res => {
         btn.innerHTML = 'Import Questions'; btn.disabled = false;
         if (res.success) {
           showToast('Successfully imported ' + res.count + ' questions!', 'success');
           closeQbImportModal(); loadQuestionBank();
         } else { showToast('Error: ' + res.error, 'error'); }
-      }, err => {
+      }).withFailureHandler(err => {
         btn.innerHTML = 'Import Questions'; btn.disabled = false;
         showToast('Request failed', 'error');
-      });
+      }).bulkCreateQuestions(payloads, roleData);
       
     } catch(ex) {
       btn.innerHTML = 'Import Questions'; btn.disabled = false;
@@ -8103,17 +8226,17 @@ function saveQuestion() {
   const roleData = { email: window._userEmail || '' };
   
   if (qid) {
-    callBackend('updateQuestion', [qid, payload, roleData], res => {
+    google.script.run.withSuccessHandler(res => {
       btn.innerHTML = 'Save Question'; btn.disabled = false;
       if(res.success) { showToast('Question updated successfully!', 'success'); closeQbAddModal(); loadQuestionBank(); }
       else showToast('Error: ' + res.error, 'error');
-    }, err => { btn.innerHTML = 'Save Question'; btn.disabled = false; showToast('Request failed', 'error'); });
+    }).withFailureHandler(err => { btn.innerHTML = 'Save Question'; btn.disabled = false; showToast('Request failed', 'error'); }).updateQuestion(qid, payload, roleData);
   } else {
-    callBackend('createQuestion', [payload, roleData], res => {
+    google.script.run.withSuccessHandler(res => {
       btn.innerHTML = 'Save Question'; btn.disabled = false;
       if(res.success) { showToast('Question created successfully!', 'success'); closeQbAddModal(); loadQuestionBank(); }
       else showToast('Error: ' + res.error, 'error');
-    }, err => { btn.innerHTML = 'Save Question'; btn.disabled = false; showToast('Request failed', 'error'); });
+    }).withFailureHandler(err => { btn.innerHTML = 'Save Question'; btn.disabled = false; showToast('Request failed', 'error'); }).createQuestion(payload, roleData);
   }
 }
 
@@ -8202,19 +8325,19 @@ function closeQbPreviewModal() { document.getElementById('qb-preview-modal').sty
 function archiveQuestionClient(id) {
   if (confirm('Are you sure you want to archive question ' + id + '? It will no longer be available for new assessments.')) {
     showToast('Archiving...', 'info');
-    callBackend('archiveQuestion', [id], res => {
+    google.script.run.withSuccessHandler(res => {
       if(res.success) { showToast('Question archived.', 'success'); loadQuestionBank(); }
       else showToast('Error: ' + res.error, 'error');
-    }, e => showToast('Failed', 'error'));
+    }).withFailureHandler(e => showToast('Failed', 'error')).archiveQuestion(id);
   }
 }
 function deleteQuestionClient(id) {
   if (confirm('WARNING: Are you sure you want to permanently delete question ' + id + '? This action cannot be undone. If it is used in existing quizzes, it cannot be deleted.')) {
     showToast('Deleting...', 'info');
-    callBackend('deleteQuestion', [id], res => {
+    google.script.run.withSuccessHandler(res => {
       if(res.success) { showToast('Question deleted.', 'success'); loadQuestionBank(); }
       else showToast('Error: ' + res.error, 'error');
-    }, e => showToast('Failed', 'error'));
+    }).withFailureHandler(e => showToast('Failed', 'error')).deleteQuestion(id);
   }
 }
 
@@ -8253,13 +8376,13 @@ function bulkUpdateStatusClient(newStatus) {
   if (ids.length === 0) return;
   if (confirm(`Are you sure you want to mark ${ids.length} questions as ${newStatus}?`)) {
     showToast(`Updating ${ids.length} questions...`, 'info');
-    callBackend('bulkUpdateQuestionStatus', [ids, newStatus], res => {
+    google.script.run.withSuccessHandler(res => {
       if(res.success) { 
         showToast('Questions updated.', 'success'); 
         clearQbSelection();
         loadQuestionBank(); 
       } else showToast('Error: ' + res.error, 'error');
-    }, e => showToast('Failed', 'error'));
+    }).withFailureHandler(e => showToast('Failed', 'error')).bulkUpdateQuestionStatus(ids, newStatus);
   }
 }
 
@@ -8268,13 +8391,13 @@ function bulkDeleteQuestionsClient() {
   if (ids.length === 0) return;
   if (confirm(`WARNING: Are you sure you want to permanently delete ${ids.length} questions? Used questions will be skipped.`)) {
     showToast(`Deleting ${ids.length} questions...`, 'info');
-    callBackend('bulkDeleteQuestions', [ids], res => {
+    google.script.run.withSuccessHandler(res => {
       if(res.success) { 
         showToast(`Deleted ${res.deletedCount} questions. Skipped ${res.skippedCount}.`, 'success'); 
         clearQbSelection();
         loadQuestionBank(); 
       } else showToast('Error: ' + res.error, 'error');
-    }, e => showToast('Failed', 'error'));
+    }).withFailureHandler(e => showToast('Failed', 'error')).bulkDeleteQuestions(ids);
   }
 }
 
@@ -8438,7 +8561,8 @@ function confirmQbSelection() {
 
   function exportQuestionBankDoc() {
     showGlobalLoader('GENERATING DOC...');
-    callBackend('generateQuestionBankDoc', [window.digiQAdminSession], url => {
+    google.script.run
+      .withSuccessHandler(url => {
         hideGlobalLoader();
         if (url) {
           showToast('Doc created successfully!', 'success');
@@ -8446,10 +8570,12 @@ function confirmQbSelection() {
         } else {
           showToast('Error generating doc.', 'error');
         }
-      }, err => {
+      })
+      .withFailureHandler(err => {
         hideGlobalLoader();
         showToast('Error: ' + err.message, 'error');
-      });
+      })
+      .generateQuestionBankDoc(window.digiQAdminSession);
   }
 
 
@@ -8569,9 +8695,9 @@ function parseStoredDateTime(str) {
 }
 
 function computeQuizStatus(q) {
-  const isScheduled = String((q.enable_schedule ? "Yes" : "No") || '').trim().toLowerCase() === 'yes' || (q.enable_schedule ? "Yes" : "No") === true;
-  const startStr = String(q.start_time || '').trim();
-  const endStr   = String(q.end_time || '').trim();
+  const isScheduled = String(q[17] || '').trim().toLowerCase() === 'yes' || q[17] === true;
+  const startStr = String(q[18] || '').trim();
+  const endStr   = String(q[19] || '').trim();
   
   if (isScheduled && (startStr || endStr)) {
     const start = parseStoredDateTime(startStr);
@@ -8583,7 +8709,7 @@ function computeQuizStatus(q) {
     return 'Live';
   }
 
-  const stored = String(q.status || '').trim();
+  const stored = String(q[9] || '').trim();
   if (stored === 'Accepting' || stored === 'Open' || stored.toLowerCase().includes('accept')) return 'Live';
   if (stored === 'Scheduled') return 'Scheduled';
   return 'Closed';
@@ -8609,14 +8735,14 @@ function filterManageTable() {
 
   let filtered = (allQuizRows || []).filter(function(r) {
     const matchSearch = !search ||
-      (r.quiz_id||'').toLowerCase().includes(search) ||
-      (r.roll_no||'').toLowerCase().includes(search) ||
-      (r.student_name||'').toLowerCase().includes(search) ||
-      (r.created_at||'').toLowerCase().includes(search);
+      (r[1]||'').toLowerCase().includes(search) ||
+      (r[2]||'').toLowerCase().includes(search) ||
+      (r[3]||'').toLowerCase().includes(search) ||
+      (r[0]||'').toLowerCase().includes(search);
     const computed = computeQuizStatus(r);
     const matchStatus = !statusF || computed === statusF;
     let matchDate = true;
-    const ts = parseInt(String(r.created_at).replace(/^QZ_/i, ''));
+    const ts = parseInt(String(r[0]).replace(/^QZ_/i, ''));
     if (!isNaN(ts) && ts > 1000000000000) {
       const d = new Date(ts);
       if (dateFrom && d < new Date(dateFrom)) matchDate = false;
@@ -8651,16 +8777,16 @@ function filterReportsTable() {
 
   let filtered = (filteredReports || []).filter(function(r) {
     const matchSearch = !search ||
-      (r.roll_no||'').toLowerCase().includes(search) ||
-      (r.student_name||'').toLowerCase().includes(search) ||
-      (r.student_email||'').toLowerCase().includes(search);
-    const passed = (r.passed === "Yes" ? "Yes" : (r.passed === "No" ? "No" : "N/A")) === 'Yes';
+      (r[2]||'').toLowerCase().includes(search) ||
+      (r[3]||'').toLowerCase().includes(search) ||
+      (r[4]||'').toLowerCase().includes(search);
+    const passed = r[8] === 'Yes';
     const matchResult = !resultF ||
       (resultF === 'Passed' && passed) ||
       (resultF === 'Failed' && !passed);
     let matchDate = true;
-    if (r.created_at) {
-      const d = new Date(r.created_at);
+    if (r[0]) {
+      const d = new Date(r[0]);
       if (dateFrom && d < new Date(dateFrom)) matchDate = false;
       if (dateTo && d > new Date(dateTo + 'T23:59:59')) matchDate = false;
     }
