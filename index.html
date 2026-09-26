@@ -2952,6 +2952,14 @@ window.google.script.url = {
   let timerInt, strikes = 0, globalDuration = 0, initialDuration = 0, examSendCert = true;
   let viewedQuestions = new Set();
   const OPTION_LETTERS = ['A', 'B', 'C', 'D'];
+  function mapExamData(raw) {
+    if (!raw) return [];
+    return raw.map(q => ({
+      ...q,
+      question: q.question_text || q.question || '',
+      options: q.option1 !== undefined ? [q.option1, q.option2, q.option3, q.option4].filter(x => x != null) : (q.options || [])
+    }));
+  }
 
   /* ══════════════════════════════════════════════════
      CUSTOM CENTRE DIALOGUE MODAL SYSTEM
@@ -3211,7 +3219,7 @@ window.google.script.url = {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           window.loginMethodStr = 'otp';
-          examData       = res.questions || res.exam;
+          examData       = mapExamData(res.questions || res.exam);
           config         = res.config;
           globalDuration = parseInt(res.duration) * 60;
           initialDuration = globalDuration;
@@ -4168,7 +4176,7 @@ window.google.script.url = {
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           window.loginMethodStr = 'password';
-          examData       = res.questions || res.exam;
+          examData       = mapExamData(res.questions || res.exam);
           globalDuration = parseInt(res.duration) * 60;
           initialDuration = globalDuration;
           config         = res.config;
@@ -4247,7 +4255,7 @@ window.google.script.url = {
             const res = { success: true, ...examDataObj, student: { rollNo: prof.roll_no, email: prof.profiles.email, name: prof.profiles.full_name, program: prof.program, semester: prof.semester } };
           document.getElementById('loader').style.display = 'none';
           if (res.success) {
-            examData       = res.questions || res.exam;
+            examData       = mapExamData(res.questions || res.exam);
             globalDuration = parseInt(res.duration) * 60;
             initialDuration = globalDuration;
             config         = res.config;
