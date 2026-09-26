@@ -35,120 +35,6 @@ window.google.script.url = {
      if (error || !data) throw new Error("Quiz not found.");
      return data.id;
   }
-
-  async function callBackend(action, args, onSuccess, onFailure) {
-  try {
-    let result;
-
-    switch(action) {
-       = await supabase.auth.verifyOtp({ email, token: enteredOtp, type: 'email' });
-        if (vErr) throw vErr;
-        
-        // After successful auth, fetch the exam using the RPC
-        const { data: examData, error: examErr } = await supabase.rpc('get_student_exam', { p_quiz_id: qId });
-        if (examErr) throw examErr;
-        if (examData.error) throw new Error(examData.error);
-        
-        result = examData;
-        break;
-
-      case 'submitExam':
-        const payload = args[0];
-        const { data: subData, error: subErr } = await supabase.functions.invoke('submit_exam', { body: payload });
-        if (subErr) throw subErr;
-        if (subData.error) throw new Error(subData.error);
-        result = subData;
-        break;
-        
-      case 'getQuizMeta':
-        const metaQId = args[0];
-        const { data: metaData, error: metaErr } = await supabase.from('quizzes').select('title, stream, semester, duration, config_json, enable_geofence, max_radius_meters, campus_lat, campus_lon, login_method').eq('id', metaQId).single();
-        if(metaErr) throw metaErr;
-        result = metaData;
-        break;
-        
-            case 'getStudentDashboardData': {
-           const { data: userD } = await supabase.auth.getUser();
-           if (!userD.user) throw new Error("Please log in to view dashboard");
-           const { data: dash, error: dashErr } = await supabase.rpc('get_student_dashboard', { p_student_id: userD.user.id });
-           if (dashErr) throw dashErr;
-           if (dash.error) throw new Error(dash.error);
-           
-           result = {
-               success: true,
-               activeTests: (dash.active_quizzes || []).map(q => ({
-                   quizId: q.id,
-                   title: q.title,
-                   duration: q.duration,
-                   isLive: true,
-                   computedStatus: 'Live',
-                   startTime: q.start_time
-               })),
-               pastTests: (dash.past_quizzes || []).map(p => ({
-                   title: p.quiz.title,
-                   score: p.response.score_obtained,
-                   total: p.response.total_score,
-                   perc: p.response.percentage,
-                   passed: p.response.passed ? 'Yes' : 'No',
-                   timestamp: p.response.submitted_at,
-                   sendCert: p.quiz.send_cert,
-                   certDocId: p.quiz.cert_doc_id
-               }))
-           };
-           break;
-      }
-
-      
-      
-      
-      
-      
-      case 'generateCertificateForDownload': {
-        const { data, error } = await supabase.storage.from('certificates').createSignedUrl(`${args[0]}.pdf`, 60);
-        if (error) throw error;
-        result = data.signedUrl;
-        break;
-      }
-      case 'submitFormResponse': {
-        const formId = args[0];
-        const shareToken = args[1];
-        const formData = args[2] || {};
-        
-        const { data: fData, error: fErr } = await supabase.from('forms').select('share_token').eq('id', formId).single();
-        if (fErr || !fData) throw new Error("Form not found");
-        if (fData.share_token !== shareToken) throw new Error("Invalid form token");
-        
-        const { error } = await supabase.from('form_responses').insert([{ 
-          form_id: formId, 
-          respondent_name: formData.name || '',
-          respondent_email: formData.email || '',
-          respondent_roll: formData.rollNo || '',
-          answers_json: formData.answers || {},
-          metadata_json: formData.metadata || {}
-        }]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      case 'submitAppFeedback': {
-        const { error } = await supabase.from('app_feedback').insert([args[0]]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      
-
-      default:
-        console.warn(`Unimplemented Supabase routing for action: ${action}`);
-        result = true;
-    }
-    
-    if (onSuccess) onSuccess(result);
-  } catch(err) {
-    if (onFailure) onFailure(err instanceof Error ? err : new Error(err && err.message ? err.message : JSON.stringify(err)));
-    else console.error(err);
-  }
-}
 </script>
 <!-- ========================================================================= -->
 
@@ -3210,31 +3096,38 @@ window.google.script.url = {
       if (otpToggle) otpToggle.style.display = 'none'; // Only password login for portal
       return;
     }
-    callBackend('getQuizMeta', [QUIZ_ID], res => {
+    (async () => {
+      try {
+        const { data: res, error } = await window.supabase.from('quizzes').select('title, stream, semester, duration, config_json, enable_geofence, max_radius_meters, campus_lat, campus_lon, login_method, send_certificate').eq('id', QUIZ_ID).single();
+        if (error) throw error;
+        
         document.getElementById('loader').style.display = 'none';
-        if (res.error) {
+        
+        if (!res) {
           document.getElementById('auth-portal').style.display = 'flex';
           document.getElementById('auth-portal').innerHTML =
             `<div class="auth-card" style="text-align:center;">
               <div style="font-size:3rem; margin-bottom:16px;"><svg class="svg-icon anim-shake" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0110 0v4"></path></svg></div>
               <h4 style="color:var(--danger); margin-bottom:8px;">Assessment Unavailable</h4>
-              <p style="color:var(--text-muted); font-size:0.87rem;">${res.error}</p>
+              <p style="color:var(--text-muted); font-size:0.87rem;">Quiz not found or not published.</p>
             </div>`;
           return;
         }
-        examSendCert = res.sendCert;
+
+        examSendCert = res.send_certificate || res.sendCert;
         document.getElementById('quiz-title-display').innerText = res.title;
         document.getElementById('auth-portal').style.display = 'flex';
-      }, err => {
+      } catch (err) {
         document.getElementById('loader').innerHTML =
           `<h4 style="color:var(--danger);">Connection Error</h4><p style="color:var(--text-muted);">${err.message}</p>`;
-      });
+      }
+    })();
   };
 
   /* ──────────────────────────────────────────────────────── */
   /* OTP FLOW                                                  */
   /* ──────────────────────────────────────────────────────── */
-  function sendOTP() {
+  async function sendOTP() {
     const payload = {
       name:   document.getElementById('sName').value.trim(),
       rollNo: document.getElementById('sRoll').value.trim(),
@@ -4024,7 +3917,11 @@ window.google.script.url = {
       loginMethod:   window.loginMethodStr || 'otp'
     };
 
-    callBackend('submitExam', [payload], res => {
+    (async () => {
+      try {
+        const { data: res, error } = await supabase.functions.invoke('submit_exam', { body: payload });
+        if (error) throw error;
+        if (res.error) throw new Error(res.error);
         document.getElementById('loader').style.display = 'none';
         
         window.isGuestUser = res.isGuest;
@@ -4075,12 +3972,13 @@ window.google.script.url = {
 
         // Confetti for pass
         if (passed) launchConfetti();
-      }, err => {
+      } catch (err) {
         document.getElementById('loader').style.display = 'none';
         showModal('Submission Error', 'Failed to submit exam.<br><strong>Please contact your instructor immediately.</strong><br><small style="color:#94a3b8">Details: ' + err.message + '</small>', 'error');
         document.getElementById('exam-ui').style.display = 'block';
         isExamLive = true;
-      });
+      }
+    })();
   }
 
   /* ──────────────────────────────────────────────────────── */
@@ -4143,45 +4041,6 @@ window.google.script.url = {
                    detailsHtml += '<span><i class="ti ti-school" style="margin-right:4px;"></i>' + (prof.program ? prof.program : '') + (prof.program && prof.semester ? ' | ' : '') + (prof.semester ? 'Semester ' + prof.semester : '') + '</span>';
                  }
                  detailsHtml += '</div>';
-                 sdDetails.innerHTML = detailsHtml;
-              }
-              document.getElementById('auth-portal').style.display = 'none';
-              document.getElementById('student-dashboard').style.display = 'block';
-              pushScreen('dashboard');
-              setTimeout(updateStudentSidebarNotch, 50);
-              loadStudentDashboard();
-          }
-      }
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-          const { data: prof } = await supabase.from('student_profiles').select('roll_no, program, semester, profiles(full_name, email)').eq('id', session.user.id).single();
-          if (prof) {
-              window.loginMethodStr = 'password';
-              rollNoStr = prof.roll_no;
-              studentEmailStr = prof.profiles.email;
-              document.getElementById('sName').value = prof.profiles.full_name;
-              document.getElementById('sRoll').value = prof.roll_no;
-              document.getElementById('sEmail').value = prof.profiles.email;
-              document.getElementById('sd-student-name').innerText = prof.profiles.full_name;
-              const mobHeader = document.getElementById('mob-student-name-header');
-              if (mobHeader) mobHeader.innerText = prof.profiles.full_name;
-              
-              const hr = new Date().getHours();
-              let msg = 'Good evening';
-              if (hr < 12) msg = 'Good morning';
-              else if (hr < 17) msg = 'Good afternoon';
-              const greetEl = document.getElementById('mob-greeting-text');
-              if (greetEl) greetEl.innerText = msg;
-              
-              const sdDetails = document.getElementById('sd-student-details');
-              if (sdDetails) {
-                 let detailsHtml = `<div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">`;
-                 detailsHtml += `<span><i class="ti ti-mail" style="margin-right:4px;"></i>${prof.profiles.email}</span>`;
-                 if (prof.program || prof.semester) {
-                   detailsHtml += `<span><i class="ti ti-school" style="margin-right:4px;"></i>${prof.program ? prof.program : ''}${prof.program && prof.semester ? ' | ' : ''}${prof.semester ? 'Semester ' + prof.semester : ''}</span>`;
-                 }
-                 detailsHtml += `</div>`;
                  sdDetails.innerHTML = detailsHtml;
               }
               document.getElementById('auth-portal').style.display = 'none';
@@ -4280,7 +4139,7 @@ window.google.script.url = {
     }
   }
 
-  function enterAssessmentFromDashboard(qId) {
+  async function enterAssessmentFromDashboard(qId) {
     QUIZ_ID = qId;
     const rollNo = document.getElementById('sRollPwd').value.trim() || document.getElementById('sRoll').value.trim();
     const email = document.getElementById('sEmailPwd').value.trim() || document.getElementById('sEmail').value.trim();
@@ -4512,7 +4371,7 @@ window.google.script.url = {
     document.getElementById('auth-error').style.display = 'none';
   }
 
-  function requestStudentForgotPasswordOTP() {
+  async function requestStudentForgotPasswordOTP() {
     const email = document.getElementById('sForgotEmail').value.trim();
     if (!email) {
       showToast('Please enter your email.', 'warning');
@@ -4664,7 +4523,36 @@ window.google.script.url = {
       setTimeout(() => activeRefreshToast && activeRefreshToast.remove(), 340);
     }
     activeRefreshToast = showToast("Refreshing Data...", "info", 0);
-    callBackend('getStudentDashboardData', [studentEmailStr, rollNoStr], data => {
+    (async () => {
+      try {
+        const { data: userD } = await supabase.auth.getUser();
+        if (!userD.user) throw new Error("Please log in to view dashboard");
+        
+        const { data: dash, error: dashErr } = await supabase.rpc('get_student_dashboard', { p_student_id: userD.user.id });
+        if (dashErr) throw dashErr;
+        if (dash && dash.error) throw new Error(dash.error);
+
+        const data = {
+          success: true,
+          activeTests: (dash.active_quizzes || []).map(q => ({
+            quizId: q.id,
+            title: q.title,
+            duration: q.duration,
+            isLive: true,
+            computedStatus: 'Live',
+            startTime: q.start_time
+          })),
+          pastTests: (dash.past_quizzes || []).map(p => ({
+            title: p.quiz.title,
+            score: p.response.score_obtained,
+            total: p.response.total_score,
+            perc: p.response.percentage,
+            passed: p.response.passed ? 'Yes' : 'No',
+            timestamp: p.response.submitted_at,
+            sendCert: p.quiz.send_cert,
+            certDocId: p.quiz.cert_doc_id
+          }))
+        };
         if (activeRefreshToast) {
           activeRefreshToast.classList.add('hide');
           setTimeout(() => activeRefreshToast && activeRefreshToast.remove(), 340);
@@ -4749,10 +4637,11 @@ window.google.script.url = {
         } else {
           pastGrid.innerHTML = '<div style="color:var(--text-muted); font-size:0.9rem; grid-column: 1 / -1;">No past submissions found.</div>';
         }
-      }, err => {
+      } catch (err) {
         document.getElementById('sd-live-grid').innerHTML = `<div style="color:var(--danger); grid-column: 1 / -1;">Failed to load data: ${err.message || JSON.stringify(err)}</div>`;
         document.getElementById('sd-past-grid').innerHTML = '';
-      });
+      }
+    })();
   }
 
   function logoutStudent() {
@@ -4806,41 +4695,33 @@ window.google.script.url = {
     btnEl.innerHTML = '<i class="ti ti-loader anim-spin"></i> Generating...';
     btnEl.disabled = true;
 
-    callBackend('generateCertificateForDownload', [certDocId, name, rollNo, score, total, perc, timestampStr], res => {
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('generate_certificate', {
+          body: { responseId: certDocId }
+        });
+        
         btnEl.innerHTML = originalText;
         btnEl.disabled = false;
         
-        if (!res.success) {
-          showModal('Error', 'Could not generate certificate: ' + res.error, 'error');
-          return;
-        }
+        if (error) throw error;
+        if (!data || !data.success || !data.url) throw new Error(data.error || "Failed to generate certificate URL");
+
+        // Download directly from the signed URL
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = data.url;
+        a.download = `Certificate_${rollNo}_${score}.pdf`;
+        document.body.appendChild(a);
+        a.click();
         
-        try {
-          const binaryString = window.atob(res.data);
-          const binaryLen = binaryString.length;
-          const bytes = new Uint8Array(binaryLen);
-          for (let i = 0; i < binaryLen; i++) {
-             const ascii = binaryString.charCodeAt(i);
-             bytes[i] = ascii;
-          }
-          const blob = new Blob([bytes], { type: 'application/pdf' });
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = url;
-          a.download = res.fileName;
-          document.body.appendChild(a);
-          a.click();
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
-        } catch (e) {
-          showModal('Error', 'Failed to process certificate file.', 'error');
-        }
-      }, err => {
+        setTimeout(() => document.body.removeChild(a), 100);
+      } catch (err) {
         btnEl.innerHTML = originalText;
         btnEl.disabled = false;
-        showModal('Server Error', 'Failed to generate certificate: ' + err.message, 'error');
-      });
+        showModal('Error', 'Failed to generate certificate: ' + err.message, 'error');
+      }
+    })();
   }
 
   // ═══════════════════════════════════════════════════════
@@ -4913,16 +4794,27 @@ window.google.script.url = {
     if(typeof window.studentEmail !== 'undefined') sEmail = window.studentEmail;
     else if(document.getElementById('sd-email')) sEmail = document.getElementById('sd-email').innerText; // If there's an email element
     
-    callBackend('submitAppFeedback', ['Student', sName, sEmail, apfbCurrentRating, category, message], res => {
+    (async () => {
+      try {
+        const { error } = await supabase.from('app_feedback').insert([{
+          type: 'Student',
+          name: sName,
+          email: sEmail,
+          rating: apfbCurrentRating,
+          category: category,
+          message: message
+        }]);
+        if (error) throw error;
         btn.innerHTML = originalText;
         btn.disabled = false;
         closeStudentFeedbackModal();
         showToast('Feedback submitted successfully. Thank you!', 'success');
-      }, err => {
+      } catch (err) {
         btn.innerHTML = originalText;
         btn.disabled = false;
         showModal('Error', 'Failed to submit feedback: ' + err.message, 'error');
-      });
+      }
+    })();
   }
   /* ═════════ MOBILE REDESIGN LOGIC ═════════ */
   function openMobStudentProfile() {
