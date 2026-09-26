@@ -41,19 +41,7 @@ window.google.script.url = {
     let result;
 
     switch(action) {
-      case 'requestOTP':
-        // using Supabase Auth OTP
-        const reqPayload = args[0];
-        const { error: otpErr } = await supabase.auth.signInWithOtp({ email: reqPayload.email });
-        if(otpErr) throw otpErr;
-        result = true;
-        break;
-
-      case 'verifyOTPAndBuildExam':
-        const email = args[0];
-        const enteredOtp = args[1];
-        const qId = args[2];
-        const { data: vData, error: vErr } = await supabase.auth.verifyOtp({ email, token: enteredOtp, type: 'email' });
+       = await supabase.auth.verifyOtp({ email, token: enteredOtp, type: 'email' });
         if (vErr) throw vErr;
         
         // After successful auth, fetch the exam using the RPC
@@ -111,51 +99,10 @@ window.google.script.url = {
       }
 
       
-      case 'loginStudentPassword': {
-        const rollNo = args[0], email = args[1], pass = args[2];
-        const { error: pErr } = await supabase.auth.signInWithPassword({ email: email, password: pass });
-        if (pErr) throw pErr;
-        
-        const { data: prof, error: profErr } = await supabase
-            .from('student_profiles')
-            .select(`roll_no, program, semester, profiles(full_name, email)`)
-            .eq('roll_no', rollNo)
-            .single();
-            
-        if (profErr || !prof) throw new Error("Student profile not found or roll number mismatch.");
-        if (prof.profiles.email.toLowerCase() !== email.toLowerCase()) throw new Error("Email does not match the provided Roll Number.");
-        
-        result = {
-            success: true,
-            student: {
-                rollNo: prof.roll_no,
-                email: prof.profiles.email,
-                name: prof.profiles.full_name,
-                program: prof.program,
-                semester: prof.semester
-            }
-        };
-        break;
-      }
       
-      case 'verifyPasswordAndBuildExam': {
-        // Students logging in with password
-        const rollNo = args[0], email = args[1], pass = args[2], qId = args[3];
-        const { error: pErr } = await supabase.auth.signInWithPassword({ email: email, password: pass });
-        if (pErr) throw pErr;
-        const { data, error } = await supabase.rpc('get_student_exam', { p_quiz_id: qId });
-        if (error) throw error;
-        if (data && data.error) throw new Error(data.error);
-        result = { success: true, ...data };
-        break;
-      }
-      case 'studentResetPassword': {
-        // Handled via supabase.auth.updateUser
-        const { error } = await supabase.auth.updateUser({ password: args[2] });
-        if (error) throw error;
-        result = true;
-        break;
-      }
+      
+      
+      
       case 'generateCertificateForDownload': {
         const { data, error } = await supabase.storage.from('certificates').createSignedUrl(`${args[0]}.pdf`, 60);
         if (error) throw error;
@@ -189,13 +136,7 @@ window.google.script.url = {
         result = true;
         break;
       }
-      case 'changeStudentPassword': {
-        const newPwd = args[3];
-        const { error } = await supabase.auth.updateUser({ password: newPwd });
-        if (error) throw error;
-        result = { success: true, message: 'Password updated successfully' };
-        break;
-      }
+      
 
       default:
         console.warn(`Unimplemented Supabase routing for action: ${action}`);
@@ -3308,7 +3249,11 @@ window.google.script.url = {
     btn.innerHTML = '<span class="inline-spinner"></span>Sending OTP…';
     showToast('Sending OTP...', 'info', 3000);
 
-    callBackend('requestOTP', [payload, QUIZ_ID], res => {
+    try {
+      const { error: otpErr } = await supabase.auth.signInWithOtp({ email: payload.email });
+      if (otpErr) throw otpErr;
+      const res = { success: true };
+
         if (res.success) {
           document.getElementById('step-1').style.display = 'none';
           document.getElementById('step-2').style.display = 'block';
@@ -3318,11 +3263,13 @@ window.google.script.url = {
           btn.innerHTML = '<svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg> Request Access (OTP via Email)';
           showModal('Access Denied', res.message, 'error');
         }
-      }, err => {
+      } catch(err) {
+      const res = { success: false, message: err.message };
+
         btn.disabled = false;
         btn.innerHTML = '<svg class="svg-icon anim-pulse" width="1.2em" height="1.2em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg> Request Access (OTP via Email)';
         showModal('Connection Error', 'Unable to connect to server. Please check your internet connection.<br><small style="color:#94a3b8">Details: ' + err.message + '</small>', 'error');
-      });
+      }
   }
 
   function showLoader(text) {
@@ -3344,7 +3291,7 @@ window.google.script.url = {
     loader.style.display = 'flex';
   }
 
-  function verifyOTP() {
+  async function verifyOTP() {
     const email = document.getElementById('sEmail').value.trim();
     const otp   = document.getElementById('sOtp').value.trim();
     if (!otp || otp.length < 4) { showModal('OTP Required', 'Please enter the <strong>4-digit OTP</strong> sent to your email.', 'warning'); return; }
@@ -3360,11 +3307,18 @@ window.google.script.url = {
       return;
     }
 
-    callBackend('verifyOTPAndBuildExam', [email, otp, QUIZ_ID], res => {
+    try {
+      const { data: vData, error: vErr } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' });
+      if (vErr) throw vErr;
+      const { data: examDataObj, error: examErr } = await supabase.rpc('get_student_exam', { p_quiz_id: QUIZ_ID });
+      if (examErr) throw examErr;
+      if (examDataObj && examDataObj.error) throw new Error(examDataObj.error);
+      const res = { success: true, ...examDataObj };
+
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           window.loginMethodStr = 'otp';
-          examData       = res.exam;
+          examData       = res.questions || res.exam;
           config         = res.config;
           globalDuration = parseInt(res.duration) * 60;
           initialDuration = globalDuration;
@@ -3403,11 +3357,12 @@ window.google.script.url = {
           showModal('Verification Failed', res.message, 'error');
           document.getElementById('auth-portal').style.display = 'flex';
         }
-      }, err => {
+      } catch(err) {
+
         document.getElementById('loader').style.display = 'none';
         document.getElementById('auth-portal').style.display = 'flex';
         showModal('Connection Error', 'Unable to verify OTP. Please try again.<br><small style="color:#94a3b8">Details: ' + err.message + '</small>', 'error');
-      });
+      }
   }
 
   /* ────────────────────────────────────────────────────────
@@ -4158,7 +4113,85 @@ window.google.script.url = {
     localStorage.setItem('digiQ_lastActivity', Date.now().toString());
   }
 
-  function checkSessionTimeout() {
+  async function checkSessionTimeout() {
+      const { data: { session } } = await window.supabase.auth.getSession();
+      if (session) {
+          const { data: prof } = await window.supabase.from('student_profiles').select('roll_no, program, semester, profiles(full_name, email)').eq('id', session.user.id).single();
+          if (prof) {
+              window.loginMethodStr = 'password';
+              rollNoStr = prof.roll_no;
+              studentEmailStr = prof.profiles.email;
+              document.getElementById('sName').value = prof.profiles.full_name;
+              document.getElementById('sRoll').value = prof.roll_no;
+              document.getElementById('sEmail').value = prof.profiles.email;
+              document.getElementById('sd-student-name').innerText = prof.profiles.full_name;
+              const mobHeader = document.getElementById('mob-student-name-header');
+              if (mobHeader) mobHeader.innerText = prof.profiles.full_name;
+              
+              const hr = new Date().getHours();
+              let msg = 'Good evening';
+              if (hr < 12) msg = 'Good morning';
+              else if (hr < 17) msg = 'Good afternoon';
+              const greetEl = document.getElementById('mob-greeting-text');
+              if (greetEl) greetEl.innerText = msg;
+              
+              const sdDetails = document.getElementById('sd-student-details');
+              if (sdDetails) {
+                 let detailsHtml = '<div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">';
+                 detailsHtml += '<span><i class="ti ti-mail" style="margin-right:4px;"></i>' + prof.profiles.email + '</span>';
+                 if (prof.program || prof.semester) {
+                   detailsHtml += '<span><i class="ti ti-school" style="margin-right:4px;"></i>' + (prof.program ? prof.program : '') + (prof.program && prof.semester ? ' | ' : '') + (prof.semester ? 'Semester ' + prof.semester : '') + '</span>';
+                 }
+                 detailsHtml += '</div>';
+                 sdDetails.innerHTML = detailsHtml;
+              }
+              document.getElementById('auth-portal').style.display = 'none';
+              document.getElementById('student-dashboard').style.display = 'block';
+              pushScreen('dashboard');
+              setTimeout(updateStudentSidebarNotch, 50);
+              loadStudentDashboard();
+          }
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+          const { data: prof } = await supabase.from('student_profiles').select('roll_no, program, semester, profiles(full_name, email)').eq('id', session.user.id).single();
+          if (prof) {
+              window.loginMethodStr = 'password';
+              rollNoStr = prof.roll_no;
+              studentEmailStr = prof.profiles.email;
+              document.getElementById('sName').value = prof.profiles.full_name;
+              document.getElementById('sRoll').value = prof.roll_no;
+              document.getElementById('sEmail').value = prof.profiles.email;
+              document.getElementById('sd-student-name').innerText = prof.profiles.full_name;
+              const mobHeader = document.getElementById('mob-student-name-header');
+              if (mobHeader) mobHeader.innerText = prof.profiles.full_name;
+              
+              const hr = new Date().getHours();
+              let msg = 'Good evening';
+              if (hr < 12) msg = 'Good morning';
+              else if (hr < 17) msg = 'Good afternoon';
+              const greetEl = document.getElementById('mob-greeting-text');
+              if (greetEl) greetEl.innerText = msg;
+              
+              const sdDetails = document.getElementById('sd-student-details');
+              if (sdDetails) {
+                 let detailsHtml = `<div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">`;
+                 detailsHtml += `<span><i class="ti ti-mail" style="margin-right:4px;"></i>${prof.profiles.email}</span>`;
+                 if (prof.program || prof.semester) {
+                   detailsHtml += `<span><i class="ti ti-school" style="margin-right:4px;"></i>${prof.program ? prof.program : ''}${prof.program && prof.semester ? ' | ' : ''}${prof.semester ? 'Semester ' + prof.semester : ''}</span>`;
+                 }
+                 detailsHtml += `</div>`;
+                 sdDetails.innerHTML = detailsHtml;
+              }
+              document.getElementById('auth-portal').style.display = 'none';
+              document.getElementById('student-dashboard').style.display = 'block';
+              pushScreen('dashboard');
+              setTimeout(updateStudentSidebarNotch, 50);
+              loadStudentDashboard();
+          }
+      }
+
     const lastActivity = localStorage.getItem('digiQ_lastActivity');
     if (lastActivity) {
       const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
@@ -4262,11 +4295,21 @@ window.google.script.url = {
     document.getElementById('loader').style.display = 'flex';
     showToast('Loading assessment...', 'info', 3000);
 
-    callBackend('verifyPasswordAndBuildExam', [rollNo, email, password, QUIZ_ID], res => {
+    try {
+      const { error: pErr } = await supabase.auth.signInWithPassword({ email: email, password: password });
+      if (pErr) throw pErr;
+      const { data: prof, error: profErr } = await supabase.from('student_profiles').select('roll_no, program, semester, profiles(full_name, email)').eq('roll_no', rollNo).single();
+      if (profErr || !prof) throw new Error("Student profile not found or roll number mismatch.");
+      if (prof.profiles.email.toLowerCase() !== email.toLowerCase()) { await supabase.auth.signOut(); throw new Error("Email does not match the provided Roll Number."); }
+      const { data: examDataObj, error: examErr } = await supabase.rpc('get_student_exam', { p_quiz_id: QUIZ_ID });
+      if (examErr) throw examErr;
+      if (examDataObj && examDataObj.error) throw new Error(examDataObj.error);
+      const res = { success: true, ...examDataObj, student: { rollNo: prof.roll_no, email: prof.profiles.email, name: prof.profiles.full_name, program: prof.program, semester: prof.semester } };
+
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           window.loginMethodStr = 'password';
-          examData       = res.exam;
+          examData       = res.questions || res.exam;
           globalDuration = parseInt(res.duration) * 60;
           initialDuration = globalDuration;
           config         = res.config;
@@ -4310,14 +4353,15 @@ window.google.script.url = {
           _cModalShow('Access Denied', res.message);
           document.getElementById('student-dashboard').style.display = 'flex';
         }
-      }, err => {
+      } catch(err) {
+
         document.getElementById('loader').style.display = 'none';
         _cModalShow('Connection Error', err.message);
         document.getElementById('student-dashboard').style.display = 'flex';
-      });
+      }
   }
 
-  function loginWithPassword() {
+  async function loginWithPassword() {
     const rollNo = document.getElementById('sRollPwd').value.trim();
     const email = document.getElementById('sEmailPwd').value.trim();
     const password = document.getElementById('sPassword').value.trim();
@@ -4332,10 +4376,19 @@ window.google.script.url = {
 
     if (QUIZ_ID) {
       // Direct login to a quiz via password
-      callBackend('verifyPasswordAndBuildExam', [rollNo, email, password, QUIZ_ID], res => {
+      try {
+            const { error: pErr } = await window.supabase.auth.signInWithPassword({ email: email, password: password });
+            if (pErr) throw pErr;
+            const { data: prof, error: profErr } = await window.supabase.from('student_profiles').select('roll_no, program, semester, profiles(full_name, email)').eq('roll_no', rollNo).single();
+            if (profErr || !prof) throw new Error("Student profile not found or roll number mismatch.");
+            if (prof.profiles.email.toLowerCase() !== email.toLowerCase()) { await window.supabase.auth.signOut(); throw new Error("Email does not match the provided Roll Number."); }
+            const { data: examDataObj, error: examErr } = await window.supabase.rpc('get_student_exam', { p_quiz_id: QUIZ_ID });
+            if (examErr) throw examErr;
+            if (examDataObj && examDataObj.error) throw new Error(examDataObj.error);
+            const res = { success: true, ...examDataObj, student: { rollNo: prof.roll_no, email: prof.profiles.email, name: prof.profiles.full_name, program: prof.program, semester: prof.semester } };
           document.getElementById('loader').style.display = 'none';
           if (res.success) {
-            examData       = res.exam;
+            examData       = res.questions || res.exam;
             globalDuration = parseInt(res.duration) * 60;
             initialDuration = globalDuration;
             config         = res.config;
@@ -4379,13 +4432,20 @@ window.google.script.url = {
           } else {
             showToast(res.message, 'error');
           }
-        }, err => {
+        } catch(err) {
           document.getElementById('loader').style.display = 'none';
           showToast(err.message, 'error');
-        });
+        }
     } else {
       // Regular login to student dashboard
-      callBackend('loginStudentPassword', [rollNo, email, password], res => {
+      try {
+      const { error: pErr } = await supabase.auth.signInWithPassword({ email: email, password: password });
+      if (pErr) throw pErr;
+      const { data: prof, error: profErr } = await supabase.from('student_profiles').select('roll_no, program, semester, profiles(full_name, email)').eq('roll_no', rollNo).single();
+      if (profErr || !prof) throw new Error("Student profile not found or roll number mismatch.");
+      if (prof.profiles.email.toLowerCase() !== email.toLowerCase()) { await supabase.auth.signOut(); throw new Error("Email does not match the provided Roll Number."); }
+      const res = { success: true, student: { rollNo: prof.roll_no, email: prof.profiles.email, name: prof.profiles.full_name, program: prof.program, semester: prof.semester } };
+
           document.getElementById('loader').style.display = 'none';
           if (res.success) {
             window.loginMethodStr = 'password';
@@ -4426,10 +4486,11 @@ window.google.script.url = {
           } else {
             showToast(res.message, 'error');
           }
-        }, err => {
+        } catch(err) {
+
           document.getElementById('loader').style.display = 'none';
           showToast(err.message, 'error');
-        });
+        }
     }
   }
 
@@ -4459,7 +4520,11 @@ window.google.script.url = {
     }
     
     showLoader('SENDING OTP');
-    callBackend('studentForgotPassword', [email], res => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      if (error) throw error;
+      const res = { success: true, message: "Password reset instructions sent to your email." };
+
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           showToast(res.message, 'success');
@@ -4468,13 +4533,14 @@ window.google.script.url = {
         } else {
           showToast(res.message, 'error');
         }
-      }, err => {
+      } catch(err) {
+
         document.getElementById('loader').style.display = 'none';
         showToast('Failed to send OTP: ' + err.message, 'error');
-      });
+      }
   }
 
-  function studentResetPasswordAction() {
+  async function studentResetPasswordAction() {
     const email = document.getElementById('sForgotEmail').value.trim();
     const otp = document.getElementById('sForgotOTP').value.trim();
     const newPass = document.getElementById('sForgotNewPassword').value.trim();
@@ -4485,7 +4551,13 @@ window.google.script.url = {
     }
     
     showLoader('RESETTING PASSWORD');
-    callBackend('studentResetPassword', [email, otp, newPass], res => {
+    try {
+      const { error: vErr } = await supabase.auth.verifyOtp({ email, token: otp, type: 'recovery' });
+      if (vErr) throw vErr;
+      const { error: uErr } = await supabase.auth.updateUser({ password: newPass });
+      if (uErr) throw uErr;
+      const res = { success: true, message: "Password reset successfully!" };
+
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           showToast(res.message, 'success');
@@ -4498,10 +4570,11 @@ window.google.script.url = {
         } else {
           showToast(res.message, 'error');
         }
-      }, err => {
+      } catch(err) {
+
         document.getElementById('loader').style.display = 'none';
         showToast('Failed to reset password: ' + err.message, 'error');
-      });
+      }
   }
 
   function switchStudentTab(tabId, el) {
@@ -4691,7 +4764,7 @@ window.google.script.url = {
     });
   }
 
-  function submitPasswordChange() {
+  async function submitPasswordChange() {
     const oldPwd = document.getElementById('sd-old-pwd').value;
     const newPwd = document.getElementById('sd-new-pwd').value;
     const confirmPwd = document.getElementById('sd-confirm-pwd').value;
@@ -4707,7 +4780,11 @@ window.google.script.url = {
 
     document.getElementById('loader').style.display = 'flex';
     showToast('Changing password...', 'info');
-    callBackend('changeStudentPassword', [rollNoStr, studentEmailStr, oldPwd, newPwd], res => {
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPwd });
+      if (error) throw error;
+      const res = { success: true };
+
         document.getElementById('loader').style.display = 'none';
         if (res.success) {
           showToast('Successfully Updated Password', 'success');
@@ -4717,10 +4794,11 @@ window.google.script.url = {
         } else {
           showToast(res.message, 'error');
         }
-      }, err => {
+      } catch(err) {
+
         document.getElementById('loader').style.display = 'none';
         showToast(err.message, 'error');
-      });
+      }
   }
 
   function downloadCert(btnEl, certDocId, name, rollNo, score, total, perc, timestampStr) {
