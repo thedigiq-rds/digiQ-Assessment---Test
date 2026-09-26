@@ -6049,9 +6049,12 @@ function buildCharts() {
 async function toggleStatus(quizId) {
   showLoader('UPDATING STATUS');
   try {
-    const { data: qData, error: qErr } = await supabase.from('quizzes').select('status').eq('id', quizId).single();
+    const { data: qDataArr, error: qErr } = await supabase.from('quizzes').select('status').eq('id', quizId);
     if (qErr) throw qErr;
-    const newStatus = qData.status === 'Open' ? 'Closed' : 'Open';
+    if (!qDataArr || qDataArr.length === 0) throw new Error('Quiz not found or access denied.');
+    const currentStatus = qDataArr[0].status;
+    const newStatus = currentStatus === 'Open' ? 'Closed' : 'Open';
+    
     const { error: updErr } = await supabase.from('quizzes').update({ status: newStatus }).eq('id', quizId);
     if (updErr) throw updErr;
     hideLoader(); showToast('Quiz status updated.', 'success'); loadDashboard();
