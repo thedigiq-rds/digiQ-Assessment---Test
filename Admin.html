@@ -63,40 +63,39 @@ async function callBackend(action, args, onSuccess, onFailure) {
 
     switch(action) {
       case 'getAdminDashboardData': {
-        // Fetch quizzes, admins, forms, etc.
-        const [qRes, aRes, fRes, rRes] = await Promise.all([
-          window.currentUserRole === 'MASTER' ? supabase.from('quizzes').select('*') : supabase.from('quizzes').select('*').eq('created_by', user.id),
-          window.currentUserRole === 'MASTER' ? supabase.from('profiles').select('*, subadmin_profiles(assigned_streams, assigned_sems)').eq('role', 'SUBADMIN') : Promise.resolve({data: []}),
-          window.currentUserRole === 'MASTER' ? supabase.from('forms').select('*') : supabase.from('forms').select('*').eq('created_by', user.id),
-          supabase.from('responses').select('*') // For total responses and filtered reports (RLS handles permissions perfectly)
-        ]);
-        if(qRes.error) throw qRes.error;
+        const { data, error } = await supabase.rpc('get_admin_dashboard_data');
+        if (error) throw error;
         
-        // Map Supabase Quiz Objects to legacy 2D array expected by frontend
-        const mappedQuizzes = qRes.data || [];
-
-        // Map SubAdmins
-        const mappedSubAdmins = (aRes.data || []).map(a => [
-          a.email, 
-          a.subadmin_profiles?.assigned_streams || '', 
-          a.subadmin_profiles?.assigned_sems || '',
-          a.full_name
-        ]);
-
-        const mappedResponses = rRes.data || [];
+        // Map the RPC 2D array output back to objects expected by Admin.html frontend
+        const mappedQuizzes = (data.quizzes || []).map(q => ({
+          id: q[0], legacy_id: q[0], title: q[1], stream: q[2], semester: q[3],
+          duration: q[5], pass_percent: q[6], config_json: q[7], custom_msg: q[8],
+          status: q[9], created_by_email: q[10], send_certificate: q[11] === 'Yes',
+          cert_doc_id: q[12], enable_geofence: q[13] === 'Yes', max_radius_meters: q[14],
+          campus_lat: q[15], campus_lon: q[16], enable_schedule: q[17] === 'Yes',
+          start_time: q[18], end_time: q[19], created_at: q[20], campus_name: q[21],
+          send_result_email: q[22] === 'Yes', shuffle_questions: q[23] === 'Yes',
+          shuffle_options: q[24] === 'Yes'
+        }));
+        
+        const mappedResponses = (data.responses || []).map(r => ({
+          created_at: r[0], quiz_id: r[1], roll_no: r[2], student_name: r[3],
+          student_email: r[4], score: r[5], total_marks: r[6], percentage: r[7], passed: r[8]
+        }));
+        
+        // Forms were not part of original GAS so they are queried securely via RLS
+        const { data: fData } = await (window.currentUserRole === 'MASTER' 
+          ? supabase.from('forms').select('*') 
+          : supabase.from('forms').select('*').eq('created_by', user.id));
 
         result = {
-          scriptUrl: "https://digiq-assessment.thedigiq.workers.dev/",
+          scriptUrl: data.scriptUrl,
           quizzes: mappedQuizzes,
-          subAdmins: mappedSubAdmins,
+          subAdmins: data.subAdmins || [],
           responses: mappedResponses,
-          forms: fRes.data || [],
-          roleData: { role: window.currentUserRole, email: user.email },
-          stats: {
-            totalQuizzes: mappedQuizzes.length,
-            activeQuizzes: mappedQuizzes.filter(q => q.status === 'Open').length,
-            totalResponses: mappedResponses.length
-          }
+          forms: fData || [],
+          roleData: data.roleData,
+          stats: data.stats
         };
         break;
       }
@@ -200,32 +199,28 @@ async function callBackend(action, args, onSuccess, onFailure) {
       case 'replaceQuestionsBatch': {
         const qId = args[0], qArr = args[1];
         
-        if (action === 'replaceQuestionsBatch') {
-          await supabase.from('questions').delete().eq('quiz_id', qId);
-        }
-
         const rows = qArr.map((q, index) => {
           let optionsArr = q.options || [q.Option1 || q.option1, q.Option2 || q.option2, q.Option3 || q.option3, q.Option4 || q.option4];
           return {
-            quiz_id: qId,
-            type: String(q.type || q.Type || q.QuestionType || 'MCQ').toUpperCase(),
-            question_text: q.question || q.Question || q.question_text || '',
-            option1: optionsArr[0] || null,
-            option2: optionsArr[1] || null,
-            option3: optionsArr[2] || null,
-            option4: optionsArr[3] || null,
-            ans_index: parseInt(q.answer !== undefined ? q.answer : q.AnsIndex) || 0,
-            marks: parseFloat(q.marks || q.Marks) || 1,
-            negative_marks: parseFloat(q.negMarks || q.NegativeMarks) || 0,
-            extra_data: q.extra || q.Extra || {},
-            question_order: index + 1,
-            section: q.section || q.Section || null,
-            correct_answer: null
+            Section: q.section || q.Section || null,
+            Type: String(q.type || q.Type || q.QuestionType || 'MCQ').toUpperCase(),
+            Question: q.question || q.Question || q.question_text || '',
+            Option1: optionsArr[0] || null,
+            Option2: optionsArr[1] || null,
+            Option3: optionsArr[2] || null,
+            Option4: optionsArr[3] || null,
+            AnsIndex: parseInt(q.answer !== undefined ? q.answer : q.AnsIndex) || 0,
+            Marks: parseFloat(q.marks || q.Marks) || 1,
+            NegativeMarks: parseFloat(q.negMarks || q.NegativeMarks) || 0,
+            ExtraData: q.extra || q.Extra || {}
           };
         });
 
-        const { error } = await supabase.from('questions').insert(rows);
+        // Use the atomic replace RPC which safely clears old questions and inserts the new batch
+        const { data, error } = await supabase.rpc('replace_questions_batch', { p_quiz_id: qId, p_questions: rows });
         if (error) throw error;
+        if (data && data.error) throw new Error(data.error);
+        
         result = true;
         break;
       }
@@ -429,6 +424,16 @@ async function callBackend(action, args, onSuccess, onFailure) {
         const { data, error } = await supabase.from('app_feedback').select('*');
         if (error) throw error;
         result = data;
+        break;
+      }
+
+      case 'generateQuestionBankDoc': {
+        const { data, error } = await supabase.functions.invoke('generate_question_bank_doc', {
+          body: { stream: args[0]?.stream || '', sem: args[0]?.sem || '' }
+        });
+        if (error) throw error;
+        if (data && data.error) throw new Error(data.error);
+        result = data.url;
         break;
       }
 
@@ -5637,29 +5642,27 @@ function showForgotPasswordEmailStep() {
   document.getElementById('login-msg').style.display = 'none';
 }
 
-function requestForgotPasswordOTP() {
+async function requestForgotPasswordOTP() {
   const email = document.getElementById('forgotEmail').value.trim();
   if (!email) {
     showToast('Please enter your admin email address.', 'warning');
     return;
   }
   showLoader('SENDING OTP');
-  callBackend('requestAdminPasswordResetOTP', [email], res => {
-      hideLoader();
-      if (res.success) {
-        showToast('OTP sent securely to your email!', 'success');
-        document.getElementById('step-forgot-email').style.display = 'none';
-        document.getElementById('step-forgot-otp').style.display = 'block';
-      } else {
-        showToast(res.message, 'error');
-      }
-    }, err => {
-      hideLoader();
-      showToast('Connection error: ' + err.message, 'error');
-    });
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    hideLoader();
+    if (error) throw error;
+    showToast('OTP sent securely to your email!', 'success');
+    document.getElementById('step-forgot-email').style.display = 'none';
+    document.getElementById('step-forgot-otp').style.display = 'block';
+  } catch (err) {
+    hideLoader();
+    showToast('Connection error: ' + err.message, 'error');
+  }
 }
 
-function verifyForgotPasswordOTP() {
+async function verifyForgotPasswordOTP() {
   const email = document.getElementById('forgotEmail').value.trim();
   const otp = document.getElementById('forgotOTP').value.trim();
   if (!otp || otp.length !== 6) {
@@ -5667,22 +5670,20 @@ function verifyForgotPasswordOTP() {
     return;
   }
   showLoader('VERIFYING OTP');
-  callBackend('verifyAdminPasswordResetOTP', [email, otp], res => {
-      hideLoader();
-      if (res.success) {
-        showToast('OTP Verified. You can now reset your password.', 'success');
-        document.getElementById('step-forgot-otp').style.display = 'none';
-        document.getElementById('step-forgot-reset').style.display = 'block';
-      } else {
-        showToast(res.message, 'error');
-      }
-    }, err => {
-      hideLoader();
-      showToast('Connection error: ' + err.message, 'error');
-    });
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: 'recovery' });
+    hideLoader();
+    if (error) throw error;
+    showToast('OTP Verified. You can now reset your password.', 'success');
+    document.getElementById('step-forgot-otp').style.display = 'none';
+    document.getElementById('step-forgot-reset').style.display = 'block';
+  } catch (err) {
+    hideLoader();
+    showToast('Connection error: ' + err.message, 'error');
+  }
 }
 
-function submitResetPassword() {
+async function submitResetPassword() {
   const email = document.getElementById('forgotEmail').value.trim();
   const newPass = document.getElementById('resetNewPassword').value.trim();
   const confirmPass = document.getElementById('resetConfirmPassword').value.trim();
@@ -5697,18 +5698,16 @@ function submitResetPassword() {
   }
 
   showLoader('RESETTING PASSWORD');
-  callBackend('resetAdminPassword', [email, newPass], res => {
-      hideLoader();
-      if (res.success) {
-        document.getElementById('step-forgot-reset').style.display = 'none';
-        document.getElementById('step-forgot-success').style.display = 'block';
-      } else {
-        showToast(res.message, 'error');
-      }
-    }, err => {
-      hideLoader();
-      showToast('Connection error: ' + err.message, 'error');
-    });
+  try {
+    const { data, error } = await supabase.auth.updateUser({ password: newPass });
+    hideLoader();
+    if (error) throw error;
+    document.getElementById('step-forgot-reset').style.display = 'none';
+    document.getElementById('step-forgot-success').style.display = 'block';
+  } catch (err) {
+    hideLoader();
+    showToast('Connection error: ' + err.message, 'error');
+  }
 }
 
 async function confirmLogout(skipConfirm = false) {
@@ -5728,6 +5727,7 @@ async function confirmLogout(skipConfirm = false) {
   const tabBar = document.getElementById('mobileTabBar');
   if (tabBar) tabBar.style.display = 'none';
   showGlobalLoader('LOGGING OUT');
+  await supabase.auth.signOut();
   localStorage.removeItem('digiQAdminSession');
   setTimeout(() => {
     if (autoRefreshTimer) { clearInterval(autoRefreshTimer); autoRefreshTimer = null; }
@@ -5910,35 +5910,67 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && _fabOpen) 
 ════════════════════════════════════════ */
 let autoRefreshTimer = null;
 
-function loadDashboard(silent = false) {
+async function loadDashboard(silent = false) {
   if (!silent) { const btn = document.getElementById('refreshBtn'); if (btn) { btn.classList.add('spinning'); btn.disabled = true; } }
-  callBackend('getAdminDashboardData', [activeRole], data => {
-      LIVE_APP_URL    = data.scriptUrl   || '';
-      globalResponses = data.responses  || [];
-      globalQuizzes   = data.quizzes    || [];
-      animateNumber('stat-total',     data.stats.totalQuizzes);
-      animateNumber('stat-total-mob', data.stats.totalQuizzes);
-      animateNumber('stat-active',    data.stats.activeQuizzes);
-      animateNumber('stat-active-mob', data.stats.activeQuizzes);
-      animateNumber('stat-responses', data.stats.totalResponses);
-      animateNumber('stat-responses-mob', data.stats.totalResponses);
-      allQuizRows = globalQuizzes; renderManageTable(globalQuizzes);
-      const prevSel = document.getElementById('reportQuizSelect').value;
-      let opts = '<option value="ALL">All Assessments (Consolidated)</option>';
-      globalQuizzes.forEach(q => { opts += `<option value="${q.id}">${toTitleCase(q.title)} (${q.stream} – ${q.semester})</option>`; });
-      document.getElementById('reportQuizSelect').innerHTML = opts;
-      const selEl = document.getElementById('reportQuizSelect');
-      if (prevSel && Array.from(selEl.options).some(o => o.value === prevSel)) selEl.value = prevSel;
-      filteredReports = globalResponses; renderReportsTable();
-      if (activeRole.role === 'MASTER') buildSubAdminTable(data.subAdmins || []);
-      buildCharts(); buildRecentSubmissions();
-      const timeEl = document.getElementById('last-refresh-time');
-      if (timeEl) { const now = new Date(); timeEl.textContent = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
-      const btn = document.getElementById('refreshBtn'); if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
-    }, err => {
-      const btn = document.getElementById('refreshBtn'); if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
-      if (!silent) showToast('Failed to load dashboard: ' + err.message, 'error');
-    });
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+    
+    const { data: rpcData, error } = await supabase.rpc('get_admin_dashboard_data');
+    if (error) throw error;
+    if (rpcData && rpcData.error) throw new Error(rpcData.error);
+    
+    const mappedQuizzes = (rpcData.quizzes || []).map(q => ({
+      id: q[0], legacy_id: q[0], title: q[1], stream: q[2], semester: q[3],
+      duration: q[5], pass_percent: q[6], config_json: q[7], custom_msg: q[8],
+      status: q[9], created_by_email: q[10], send_certificate: q[11] === 'Yes',
+      cert_doc_id: q[12], enable_geofence: q[13] === 'Yes', max_radius_meters: q[14],
+      campus_lat: q[15], campus_lon: q[16], enable_schedule: q[17] === 'Yes',
+      start_time: q[18], end_time: q[19], created_at: q[20], campus_name: q[21],
+      send_result_email: q[22] === 'Yes', shuffle_questions: q[23] === 'Yes',
+      shuffle_options: q[24] === 'Yes'
+    }));
+    
+    const mappedResponses = (rpcData.responses || []).map(r => ({
+      created_at: r[0], quiz_id: r[1], roll_no: r[2], student_name: r[3],
+      student_email: r[4], score: r[5], total_marks: r[6], percentage: r[7], passed: r[8]
+    }));
+    
+    const data = {
+      scriptUrl: rpcData.scriptUrl,
+      quizzes: mappedQuizzes,
+      subAdmins: rpcData.subAdmins || [],
+      responses: mappedResponses,
+      roleData: rpcData.roleData,
+      stats: rpcData.stats
+    };
+
+    LIVE_APP_URL    = data.scriptUrl   || '';
+    globalResponses = data.responses  || [];
+    globalQuizzes   = data.quizzes    || [];
+    animateNumber('stat-total',     data.stats.totalQuizzes);
+    animateNumber('stat-total-mob', data.stats.totalQuizzes);
+    animateNumber('stat-active',    data.stats.activeQuizzes);
+    animateNumber('stat-active-mob', data.stats.activeQuizzes);
+    animateNumber('stat-responses', data.stats.totalResponses);
+    animateNumber('stat-responses-mob', data.stats.totalResponses);
+    allQuizRows = globalQuizzes; renderManageTable(globalQuizzes);
+    const prevSel = document.getElementById('reportQuizSelect').value;
+    let opts = '<option value="ALL">All Assessments (Consolidated)</option>';
+    globalQuizzes.forEach(q => { opts += `<option value="${q.id}">${toTitleCase(q.title)} (${q.stream} – ${q.semester})</option>`; });
+    document.getElementById('reportQuizSelect').innerHTML = opts;
+    const selEl = document.getElementById('reportQuizSelect');
+    if (prevSel && Array.from(selEl.options).some(o => o.value === prevSel)) selEl.value = prevSel;
+    filteredReports = globalResponses; renderReportsTable();
+    if (activeRole.role === 'MASTER') buildSubAdminTable(data.subAdmins || []);
+    buildCharts(); buildRecentSubmissions();
+    const timeEl = document.getElementById('last-refresh-time');
+    if (timeEl) { const now = new Date(); timeEl.textContent = now.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
+    const btn = document.getElementById('refreshBtn'); if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
+  } catch (err) {
+    const btn = document.getElementById('refreshBtn'); if (btn) { btn.classList.remove('spinning'); btn.disabled = false; }
+    if (!silent) showToast('Failed to load dashboard: ' + err.message, 'error');
+  }
 }
 
 function manualRefresh() { showToast('Refreshing dashboard data…', 'info', 2000); loadDashboard(); }
@@ -6449,26 +6481,61 @@ function buildCharts() {
 /* ════════════════════════════════════════
    QUIZ ACTIONS
 ════════════════════════════════════════ */
-function toggleStatus(quizId) {
+async function toggleStatus(quizId) {
   showLoader('UPDATING STATUS');
-  callBackend('toggleQuizStatus', [quizId], () => { hideLoader(); showToast('Quiz status updated.', 'success'); loadDashboard(); }, err => { hideLoader(); showToast('Error: ' + err.message, 'error'); });
+  try {
+    const { data: qData, error: qErr } = await supabase.from('quizzes').select('status').eq('id', quizId).single();
+    if (qErr) throw qErr;
+    const newStatus = qData.status === 'Open' ? 'Closed' : 'Open';
+    const { error: updErr } = await supabase.from('quizzes').update({ status: newStatus }).eq('id', quizId);
+    if (updErr) throw updErr;
+    hideLoader(); showToast('Quiz status updated.', 'success'); loadDashboard();
+  } catch (err) {
+    hideLoader(); showToast('Error: ' + err.message, 'error');
+  }
 }
 
 async function deleteQuiz(quizId) {
   const ok = await showCenterConfirm('Delete Quiz', 'Are you sure you want to <strong>permanently delete this quiz</strong> and all its questions? This action cannot be undone.', '<i class="ti ti-trash"></i> Delete Permanently', 'Cancel', 'acm-danger-ok');
   if (!ok) return;
   showLoader('DELETING QUIZ');
-  callBackend('deleteQuizData', [quizId], () => { hideLoader(); showToast('Quiz deleted.', 'success'); loadDashboard(); }, err => { hideLoader(); showToast('Error: ' + err.message, 'error'); });
+  try {
+    const { error } = await supabase.from('quizzes').delete().eq('id', quizId);
+    if (error) throw error;
+    hideLoader(); showToast('Quiz deleted.', 'success'); loadDashboard();
+  } catch (err) {
+    hideLoader(); showToast('Error: ' + err.message, 'error');
+  }
 }
 
 let editingQuizId = null;
 let existingQuestionsForEdit = null;
 
-function editQuiz(quizId) {
+async function editQuiz(quizId) {
   clearDeployedLinkBox(); showLoader('LOADING QUIZ');
-  callBackend('trim', [], details => {
-      hideLoader(); switchTab('create'); window.scrollTo({ top: 0, behavior: 'smooth' });
-      editingQuizId = details.quizId; existingQuestionsForEdit = details.questions;
+  try {
+    const { data: qData, error: qErr } = await supabase.from('quizzes').select('*').eq('id', quizId).single();
+    if (qErr) throw qErr;
+    const { data: questions, error: qnsErr } = await supabase.from('questions').select('*').eq('quiz_id', quizId);
+    if (qnsErr) throw qnsErr;
+
+    const details = {
+      quizId: qData.id, title: qData.title, stream: qData.stream, sem: qData.semester,
+      duration: qData.duration, passPercent: qData.pass_percent, customMsg: qData.custom_msg,
+      sendCert: qData.send_certificate, certDocId: qData.cert_doc_id, enableGeofence: qData.enable_geofence,
+      maxRadiusMeters: qData.max_radius_meters, campusLat: qData.campus_lat, campusLon: qData.campus_lon,
+      campusName: qData.campus_name, enableSchedule: qData.enable_schedule,
+      startTime: qData.start_time, endTime: qData.end_time, shuffleQuestions: qData.shuffle_questions,
+      shuffleOptions: qData.shuffle_options, sendResultEmail: qData.send_result_email,
+      sections: (qData.config_json || {}).sections || [],
+      questions: questions.map(q => ({
+        Section: q.section, Type: q.type, Question: q.question_text, Option1: q.options ? q.options[0] : null,
+        Option2: q.options ? q.options[1] : null, Option3: q.options ? q.options[2] : null,
+        Option4: q.options ? q.options[3] : null, AnsIndex: q.answer_index, Marks: q.marks, NegativeMarks: q.negative_marks, ExtraData: q.extra_data
+      }))
+    };
+    hideLoader(); switchTab('create'); window.scrollTo({ top: 0, behavior: 'smooth' });
+    editingQuizId = details.quizId; existingQuestionsForEdit = details.questions;
       // ── Helper: parse "DD-MM-YYYY HH:MM AM/PM" or "YYYY-MM-DD HH:MM" into parts ──
       function _parseQuizDateTime(str) {
         let s = String(str || '').trim();
@@ -6667,9 +6734,9 @@ function editQuiz(quizId) {
       noticeEl.style.display = 'block';
 
       showToast('Quiz loaded. Modify fields and click Update Quiz to save.', 'success');
-    })
-    .withFailureHandler(err => { hideLoader(); showToast('Failed to load quiz details: ' + err.message, 'error'); })
-    .getQuizDetails(quizId);
+  } catch(err) {
+      hideLoader(); showToast('Failed to load quiz details: ' + err.message, 'error');
+  }
 }
 
 function cancelEditQuiz() { resetCreateQuizForm(); clearDeployedLinkBox(); showToast('Edit cancelled.', 'info'); }
@@ -7027,41 +7094,103 @@ async function processQuizCreation() {
     if(!document.getElementById('cqEndDate').value) { showToast('Please select an end date.', 'warning'); loader.style.display='none'; hideLoader(); btn.disabled=false; return; }
   }
 
-  const saveQuizBackend = (questionsToUse) => {
+  const saveQuizBackend = async (questionsToUse) => {
     let finalCleanJson = questionsToUse;
     if (sections.length === 0) {
       const defaultSectionName = title;
       payload.sections = [{ name: defaultSectionName, pick: questionsToUse.length }];
       finalCleanJson = questionsToUse.map(q => { q.Section = defaultSectionName; return q; });
     }
-    const saveFunc = editingQuizId ? 'updateExistingQuiz' : 'saveNewQuiz';
-    const arg2 = editingQuizId ? editingQuizId : activeRole;
-    const questionsFunc = editingQuizId ? 'replaceQuestionsBatch' : 'uploadQuestionsBatch';
-    callBackend(saveFunc, [payload, arg2], savedQuiz => {
-        const quizId = savedQuiz.id;
-        const linkId = savedQuiz.legacy_id || savedQuiz.id;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      let parsedStartTime = null, parsedEndTime = null;
+      if (payload.enableSchedule === 'Yes') {
+         try { parsedStartTime = new Date(payload.startTime).toISOString(); } catch(e){}
+         try { parsedEndTime = new Date(payload.endTime).toISOString(); } catch(e){}
+      }
+
+      let quizId, linkId;
+      if (editingQuizId) {
+        const { error } = await supabase.from('quizzes').update({
+          title: payload.title, stream: payload.stream, semester: payload.sem,
+          duration: parseInt(payload.duration) || 0, pass_percent: parseInt(payload.passPercent) || 0,
+          custom_msg: payload.customMsg || null, send_certificate: payload.sendCert === "Yes",
+          cert_doc_id: payload.certDocId || null, enable_geofence: payload.enableGeofence === "Yes",
+          max_radius_meters: parseInt(payload.maxRadiusMeters) || null, campus_lat: parseFloat(payload.campusLat) || null,
+          campus_lon: parseFloat(payload.campusLon) || null, campus_name: payload.campusName || null,
+          enable_schedule: payload.enableSchedule === "Yes", start_time: parsedStartTime, end_time: parsedEndTime,
+          shuffle_questions: payload.shuffleQuestions === "Yes", shuffle_options: payload.shuffleOptions === "Yes",
+          send_result_email: payload.sendResultEmail === "Yes", config_json: { sections: payload.sections || [] }
+        }).eq('id', editingQuizId);
+        if (error) throw error;
         
-        callBackend(questionsFunc, [quizId, finalCleanJson], () => {
-            hideLoader(); loader.style.display = 'none'; btn.disabled = false;
-            const isEditing = Boolean(editingQuizId);
-            const fullLink = `${LIVE_APP_URL}?${linkId}`;
-            resetCreateQuizForm(true);
-            document.getElementById('generated-link').value = fullLink;
-            const idBadge = document.getElementById('link-quiz-id-text'); if (idBadge) idBadge.textContent = `Quiz ID: ${quizId}`;
-            const lbTitle = document.querySelector('#link-result .link-box-title');
-            if (lbTitle) lbTitle.innerHTML = '<i class="ti ti-circle-check"></i> Quiz Deployed Successfully!';
-            if (linkBox) linkBox.style.display = 'block';
-            linkBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            showToast(isEditing ? 'Quiz updated successfully!' : 'Quiz deployed successfully!', 'success', 5000);
-            loadDashboard();
-        }, err => {
-            hideLoader(); loader.style.display = 'none'; btn.disabled = false;
-            showToast('Question upload failed: ' + err.message, 'error');
-        });
-    }, err => {
-        hideLoader(); loader.style.display = 'none'; btn.disabled = false;
-        showToast('Failed to save quiz: ' + err.message, 'error');
-    });
+        const { data: updatedQuiz } = await supabase.from('quizzes').select('id, legacy_id').eq('id', editingQuizId).single();
+        quizId = updatedQuiz.id;
+        linkId = updatedQuiz.legacy_id || updatedQuiz.id;
+      } else {
+        const baseTitle = (payload.title || 'Quiz').trim().replace(/[^a-zA-Z0-9]/g, '');
+        const legacyId = baseTitle + '_' + Date.now().toString(36);
+        const { data: newQuiz, error: insErr } = await supabase.from('quizzes').insert({
+          legacy_id: legacyId, title: payload.title, stream: payload.stream, semester: payload.sem,
+          duration: parseInt(payload.duration) || 0, pass_percent: parseInt(payload.passPercent) || 0,
+          custom_msg: payload.customMsg || null, send_certificate: payload.sendCert === "Yes",
+          cert_doc_id: payload.certDocId || null, enable_geofence: payload.enableGeofence === "Yes",
+          max_radius_meters: parseInt(payload.maxRadiusMeters) || null, campus_lat: parseFloat(payload.campusLat) || null,
+          campus_lon: parseFloat(payload.campusLon) || null, campus_name: payload.campusName || null,
+          enable_schedule: payload.enableSchedule === "Yes", start_time: parsedStartTime, end_time: parsedEndTime,
+          shuffle_questions: payload.shuffleQuestions === "Yes", shuffle_options: payload.shuffleOptions === "Yes",
+          send_result_email: payload.sendResultEmail === "Yes", config_json: { sections: payload.sections || [] },
+          status: 'Closed', created_by: user.id
+        }).select('id, legacy_id').single();
+        if (insErr) throw insErr;
+        quizId = newQuiz.id;
+        linkId = newQuiz.legacy_id || newQuiz.id;
+      }
+
+      const rows = finalCleanJson.map((q) => {
+        let optionsArr = q.options || [q.Option1 || q.option1, q.Option2 || q.option2, q.Option3 || q.option3, q.Option4 || q.option4];
+        return {
+          quiz_id: quizId,
+          section: q.Section || q.section || null,
+          type: String(q.Type || q.type || q.QuestionType || 'MCQ').toUpperCase(),
+          question_text: q.Question || q.question || q.question_text || '',
+          options: [optionsArr[0] || null, optionsArr[1] || null, optionsArr[2] || null, optionsArr[3] || null],
+          answer_index: parseInt(q.AnsIndex !== undefined ? q.AnsIndex : q.answer) || 0,
+          marks: parseFloat(q.Marks || q.marks) || 1,
+          negative_marks: parseFloat(q.NegativeMarks || q.negMarks) || 0,
+          extra_data: q.ExtraData || q.extra || q.Extra || {}
+        };
+      });
+
+      if (editingQuizId) {
+        // replaceQuestionsBatch
+        const { data, error } = await supabase.rpc('replace_questions_batch', { p_quiz_id: quizId, p_questions: rows });
+        if (error) throw error;
+        if (data && data.error) throw new Error(data.error);
+      } else {
+        // uploadQuestionsBatch
+        const { error } = await supabase.from('questions').insert(rows);
+        if (error) throw error;
+      }
+
+      hideLoader(); loader.style.display = 'none'; btn.disabled = false;
+      const isEditing = Boolean(editingQuizId);
+      const fullLink = `${LIVE_APP_URL}?${linkId}`;
+      resetCreateQuizForm(true);
+      document.getElementById('generated-link').value = fullLink;
+      const idBadge = document.getElementById('link-quiz-id-text'); if (idBadge) idBadge.textContent = `Quiz ID: ${quizId}`;
+      const lbTitle = document.querySelector('#link-result .link-box-title');
+      if (lbTitle) lbTitle.innerHTML = '<i class="ti ti-circle-check"></i> Quiz Deployed Successfully!';
+      if (linkBox) linkBox.style.display = 'block';
+      linkBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showToast(isEditing ? 'Quiz updated successfully!' : 'Quiz deployed successfully!', 'success', 5000);
+      loadDashboard();
+    } catch (err) {
+      hideLoader(); loader.style.display = 'none'; btn.disabled = false;
+      showToast('Failed to save quiz or upload questions: ' + err.message, 'error');
+    }
   };
 
   if (!file && (!existingQuestionsForEdit || existingQuestionsForEdit.length === 0)) {
@@ -7463,11 +7592,30 @@ function downloadReportPDF() {
   doc.save(`LMS_Report_${Date.now()}.pdf`); showToast('PDF report downloaded!', 'success');
 }
 
-function downloadQuizData(quizId) {
+async function downloadQuizData(quizId) {
   showLoader('PREPARING DOWNLOAD');
-  callBackend('getQuizDetails', [quizId], details => {
-      hideLoader();
-      if (!details) { showToast('Quiz not found.', 'error'); return; }
+  try {
+    const { data: qData, error: qErr } = await supabase.from('quizzes').select('*').eq('id', quizId).single();
+    if (qErr) throw qErr;
+    const { data: questions, error: qnsErr } = await supabase.from('questions').select('*').eq('quiz_id', quizId);
+    if (qnsErr) throw qnsErr;
+
+    const details = {
+      title: qData.title, stream: qData.stream, sem: qData.semester,
+      duration: qData.duration, passPercent: qData.pass_percent, customMsg: qData.custom_msg,
+      sendCert: qData.send_certificate, certDocId: qData.cert_doc_id, enableGeofence: qData.enable_geofence,
+      maxRadiusMeters: qData.max_radius_meters, campusLat: qData.campus_lat, campusLon: qData.campus_lon,
+      campusName: qData.campus_name, enableSchedule: qData.enable_schedule,
+      startTime: qData.start_time, endTime: qData.end_time, shuffleQuestions: qData.shuffle_questions,
+      shuffleOptions: qData.shuffle_options, sendResultEmail: qData.send_result_email,
+      questions: questions.map(q => ({
+        Section: q.section, Type: q.type, Question: q.question_text, Option1: q.options ? q.options[0] : null,
+        Option2: q.options ? q.options[1] : null, Option3: q.options ? q.options[2] : null,
+        Option4: q.options ? q.options[3] : null, AnsIndex: q.answer_index, Marks: q.marks, NegativeMarks: q.negative_marks, ExtraData: q.extra_data
+      }))
+    };
+    hideLoader();
+    if (!details) { showToast('Quiz not found.', 'error'); return; }
       
       const wb = XLSX.utils.book_new();
       
@@ -7515,10 +7663,10 @@ function downloadQuizData(quizId) {
       
       XLSX.writeFile(wb, `Quiz_${quizId}.xlsx`);
       showToast('Excel file downloaded!', 'success');
-    }, err => {
+  } catch(err) {
       hideLoader();
       showToast('Error preparing download: ' + err.message, 'error');
-    });
+  }
 }
 
 /* ════════════════════════════════════════
