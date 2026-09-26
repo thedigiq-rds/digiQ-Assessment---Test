@@ -36,464 +36,7 @@ window.google.script.url = {
 
 
 
-// The Unified callBackend Router mapped to Supabase
-async function callBackend(action, args, onSuccess, onFailure) {
-  try {
-    let result;
 
-    // loginAdmin is handled BEFORE the auth guard since the user isn't logged in yet
-    if (action === 'loginAdmin') {
-      const [email, pass] = args;
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password: pass });
-      if (error) throw error;
-      const { data: profile } = await supabase.from('profiles').select('role, full_name').eq('id', data.user.id).single();
-      if (!profile || (profile.role !== 'MASTER' && profile.role !== 'SUBADMIN')) {
-        await supabase.auth.signOut();
-        throw new Error('Unauthorized: Only Master or SubAdmins can access this portal.');
-      }
-      window.currentUserRole = profile.role;
-      window.currentUserName = profile.full_name;
-      result = { success: true, role: profile.role, name: profile.full_name };
-      if (onSuccess) onSuccess(result);
-      return;
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not authenticated");
-
-    switch(action) {
-      case 'getAdminDashboardData': {
-        const { data, error } = await supabase.rpc('get_admin_dashboard_data');
-        if (error) throw error;
-        
-        // Map the RPC 2D array output back to objects expected by Admin.html frontend
-        const mappedQuizzes = (data.quizzes || []).map(q => ({
-          id: q[0], legacy_id: q[0], title: q[1], stream: q[2], semester: q[3],
-          duration: q[5], pass_percent: q[6], config_json: q[7], custom_msg: q[8],
-          status: q[9], created_by_email: q[10], send_certificate: q[11] === 'Yes',
-          cert_doc_id: q[12], enable_geofence: q[13] === 'Yes', max_radius_meters: q[14],
-          campus_lat: q[15], campus_lon: q[16], enable_schedule: q[17] === 'Yes',
-          start_time: q[18], end_time: q[19], created_at: q[20], campus_name: q[21],
-          send_result_email: q[22] === 'Yes', shuffle_questions: q[23] === 'Yes',
-          shuffle_options: q[24] === 'Yes'
-        }));
-        
-        const mappedResponses = (data.responses || []).map(r => ({
-          created_at: r[0], quiz_id: r[1], roll_no: r[2], student_name: r[3],
-          student_email: r[4], score: r[5], total_marks: r[6], percentage: r[7], passed: r[8]
-        }));
-        
-        // Forms were not part of original GAS so they are queried securely via RLS
-        const { data: fData } = await (window.currentUserRole === 'MASTER' 
-          ? supabase.from('forms').select('*') 
-          : supabase.from('forms').select('*').eq('created_by', user.id));
-
-        result = {
-          scriptUrl: data.scriptUrl,
-          quizzes: mappedQuizzes,
-          subAdmins: data.subAdmins || [],
-          responses: mappedResponses,
-          forms: fData || [],
-          roleData: data.roleData,
-          stats: data.stats
-        };
-        break;
-      }
-      
-      case 'toggleQuizStatus':
-        const { data: qData } = await supabase.from('quizzes').select('status').eq('id', args[0]).single();
-        const newStatus = qData.status === 'Open' ? 'Closed' : 'Open';
-        const { error: tErr } = await supabase.from('quizzes').update({ status: newStatus }).eq('id', args[0]);
-        if (tErr) throw tErr;
-        result = true;
-        break;
-
-      case 'saveNewQuiz': {
-        const payload = args[0];
-        
-        // Helper to safely parse dates if schedule is enabled
-        let parsedStartTime = null, parsedEndTime = null;
-        if (payload.enableSchedule === 'Yes') {
-           try { parsedStartTime = new Date(payload.startTime).toISOString(); } catch(e){}
-           try { parsedEndTime = new Date(payload.endTime).toISOString(); } catch(e){}
-        }
-        
-        const baseTitle = (payload.title || 'Quiz').trim().replace(/[^a-zA-Z0-9]/g, '');
-        const legacyId = baseTitle + '_' + Date.now().toString(36);
-        
-        const { data: newQuiz, error: insErr } = await supabase.from('quizzes').insert({
-          legacy_id: legacyId,
-          title: payload.title,
-          stream: payload.stream,
-          semester: payload.sem,
-          duration: parseInt(payload.duration) || 0,
-          pass_percent: parseInt(payload.passPercent) || 0,
-          custom_msg: payload.customMsg || null,
-          send_certificate: payload.sendCert === "Yes",
-          cert_doc_id: payload.certDocId || null,
-          enable_geofence: payload.enableGeofence === "Yes",
-          max_radius_meters: parseInt(payload.maxRadiusMeters) || null,
-          campus_lat: parseFloat(payload.campusLat) || null,
-          campus_lon: parseFloat(payload.campusLon) || null,
-          campus_name: payload.campusName || null,
-          enable_schedule: payload.enableSchedule === "Yes",
-          start_time: parsedStartTime,
-          end_time: parsedEndTime,
-          shuffle_questions: payload.shuffleQuestions === "Yes",
-          shuffle_options: payload.shuffleOptions === "Yes",
-          send_result_email: payload.sendResultEmail === "Yes",
-          config_json: { sections: payload.sections || [] },
-          status: 'Closed',
-          created_by: user.id
-        }).select('id, legacy_id').single();
-        
-        if (insErr) throw insErr;
-        result = newQuiz;
-        break;
-      }
-      
-      case 'updateExistingQuiz': {
-        const payload = args[0], qId = args[1];
-        
-        let parsedStartTime = null, parsedEndTime = null;
-        if (payload.enableSchedule === 'Yes') {
-           try { parsedStartTime = new Date(payload.startTime).toISOString(); } catch(e){}
-           try { parsedEndTime = new Date(payload.endTime).toISOString(); } catch(e){}
-        }
-
-        const { error } = await supabase.from('quizzes').update({
-          title: payload.title,
-          stream: payload.stream,
-          semester: payload.sem,
-          duration: parseInt(payload.duration) || 0,
-          pass_percent: parseInt(payload.passPercent) || 0,
-          custom_msg: payload.customMsg || null,
-          send_certificate: payload.sendCert === "Yes",
-          cert_doc_id: payload.certDocId || null,
-          enable_geofence: payload.enableGeofence === "Yes",
-          max_radius_meters: parseInt(payload.maxRadiusMeters) || null,
-          campus_lat: parseFloat(payload.campusLat) || null,
-          campus_lon: parseFloat(payload.campusLon) || null,
-          campus_name: payload.campusName || null,
-          enable_schedule: payload.enableSchedule === "Yes",
-          start_time: parsedStartTime,
-          end_time: parsedEndTime,
-          shuffle_questions: payload.shuffleQuestions === "Yes",
-          shuffle_options: payload.shuffleOptions === "Yes",
-          send_result_email: payload.sendResultEmail === "Yes",
-          config_json: { sections: payload.sections || [] }
-        }).eq('id', qId);
-        
-        if (error) throw error;
-        const { data: updatedQuiz } = await supabase.from('quizzes').select('id, legacy_id').eq('id', qId).single();
-        result = updatedQuiz; // Return the updated UUID
-        break;
-      }
-      case 'deleteQuizData': {
-        const { error } = await supabase.from('quizzes').delete().eq('id', args[0]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      case 'uploadQuestionsBatch':
-      case 'replaceQuestionsBatch': {
-        const qId = args[0], qArr = args[1];
-        
-        const rows = qArr.map((q, index) => {
-          let optionsArr = q.options || [q.Option1 || q.option1, q.Option2 || q.option2, q.Option3 || q.option3, q.Option4 || q.option4];
-          return {
-            Section: q.section || q.Section || null,
-            Type: String(q.type || q.Type || q.QuestionType || 'MCQ').toUpperCase(),
-            Question: q.question || q.Question || q.question_text || '',
-            Option1: optionsArr[0] || null,
-            Option2: optionsArr[1] || null,
-            Option3: optionsArr[2] || null,
-            Option4: optionsArr[3] || null,
-            AnsIndex: parseInt(q.answer !== undefined ? q.answer : q.AnsIndex) || 0,
-            Marks: parseFloat(q.marks || q.Marks) || 1,
-            NegativeMarks: parseFloat(q.negMarks || q.NegativeMarks) || 0,
-            ExtraData: q.extra || q.Extra || {}
-          };
-        });
-
-        // Use the atomic replace RPC which safely clears old questions and inserts the new batch
-        const { data, error } = await supabase.rpc('replace_questions_batch', { p_quiz_id: qId, p_questions: rows });
-        if (error) throw error;
-        if (data && data.error) throw new Error(data.error);
-        
-        result = true;
-        break;
-      }
-      case 'getQuizDetails': {
-        const qId = args[0];
-        const { data: qData, error: qErr } = await supabase.from('quizzes').select('*').eq('id', qId).single();
-        if (qErr) throw qErr;
-        
-        const { data: questions, error: qnsErr } = await supabase.from('questions').select('*').eq('quiz_id', qId);
-        if (qnsErr) throw qnsErr;
-
-        result = {
-          quizId: qData.id,
-          title: qData.title,
-          stream: qData.stream,
-          sem: qData.semester,
-          duration: qData.duration,
-          passPercent: qData.pass_percent,
-          customMsg: qData.custom_msg,
-          sendCert: qData.send_certificate,
-          certDocId: qData.cert_doc_id,
-          enableGeofence: qData.enable_geofence,
-          maxRadiusMeters: qData.max_radius_meters,
-          campusLat: qData.campus_lat,
-          campusLon: qData.campus_lon,
-          campusName: qData.campus_name,
-          enableSchedule: qData.enable_schedule,
-          startTime: qData.start_time,
-          endTime: qData.end_time,
-          shuffleQuestions: qData.shuffle_questions,
-          shuffleOptions: qData.shuffle_options,
-          sendResultEmail: qData.send_result_email,
-          questions: questions
-        };
-        break;
-      }
-      case 'addSubAdmin': {
-        const payload = args[0];
-        const { data, error } = await supabase.functions.invoke('admin_ops', {
-          body: { action: 'addSubAdmin', payload }
-        });
-        if (error) throw error;
-        if (data.error) throw new Error(data.error);
-        result = data;
-        break;
-      }
-      case 'deleteSubAdmin': {
-        const payload = args[0]; // expect { email }
-        const { data, error } = await supabase.functions.invoke('admin_ops', {
-          body: { action: 'deleteSubAdmin', payload: { email: payload } }
-        });
-        if (error) throw error;
-        if (data.error) throw new Error(data.error);
-        result = true;
-        break;
-      }
-      case 'getQuestionBank': {
-        const { data, error } = await supabase.from('question_bank').select('*');
-        if (error) throw error;
-        result = data;
-        break;
-      }
-      case 'createQuestion': {
-        const { error } = await supabase.from('question_bank').insert([args[0]]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      case 'updateQuestion': {
-        const { error } = await supabase.from('question_bank').update(args[1]).eq('id', args[0]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      case 'archiveQuestion': {
-        const { error } = await supabase.from('question_bank').update({ status: 'Archived' }).eq('id', args[0]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      case 'deleteQuestion': {
-        const { error } = await supabase.from('question_bank').delete().eq('id', args[0]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      case 'getAllStudents': {
-        const { data, error } = await supabase.from('student_profiles').select(`*, profiles(full_name, email)`);
-        if (error) throw error;
-        result = data;
-        break;
-      }
-      case 'adminCreateStudent': {
-        const payload = args[0]; // expect { name, email, rollNo, stream, sem }
-        const { data, error } = await supabase.functions.invoke('admin_ops', {
-          body: { action: 'addStudent', payload }
-        });
-        if (error) throw error;
-        if (data.error) throw new Error(data.error);
-        result = data;
-        break;
-      }
-      case 'resetAdminPassword': {
-        const email = args[0];
-        const newPass = args[1];
-        
-        if (user.email === email) {
-          // Admin changing their own password
-          const { error } = await supabase.auth.updateUser({ password: newPass });
-          if (error) throw error;
-          result = { success: true, message: 'Password updated successfully' };
-        } else {
-          // Master Admin changing another user's password
-          const { data, error } = await supabase.functions.invoke('admin_ops', {
-             body: { action: 'changePassword', payload: { email, newPass } }
-          });
-          if (error) throw error;
-          if (data.error) throw new Error(data.error);
-          result = { success: true, message: 'Password updated successfully' };
-        }
-        break;
-      }
-      case 'adminDeleteStudent': {
-        const payload = args[0]; // expect email or id, let's say it's { email: student_email }
-        const { data, error } = await supabase.functions.invoke('admin_ops', {
-          body: { action: 'deleteStudent', payload: { email: payload } }
-        });
-        if (error) throw error;
-        if (data.error) throw new Error(data.error);
-        result = true;
-        break;
-      }
-      case 'createForm': {
-        const shareToken = 'F-TOK-' + Math.random().toString(36).substr(2, 8).toUpperCase();
-        const { error } = await supabase.from('forms').insert([{ ...args[0], share_token: shareToken, created_by: user.id }]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      case 'getForms': {
-        const { data, error } = await supabase.from('forms').select('*');
-        if (error) throw error;
-        result = data;
-        break;
-      }
-      case 'getFormById': {
-        const { data, error } = await supabase.from('forms').select('*').eq('id', args[0]).single();
-        if (error) throw error;
-        result = data;
-        break;
-      }
-      case 'updateForm': {
-        const { error } = await supabase.from('forms').update(args[1]).eq('id', args[0]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      case 'setFormStatus': {
-        const { error } = await supabase.from('forms').update({ status: args[1] }).eq('id', args[0]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      case 'deleteForm': {
-        const { error } = await supabase.from('forms').delete().eq('id', args[0]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-      case 'getFormResponses': {
-        const { data, error } = await supabase.from('form_responses').select('*').eq('form_id', args[0]);
-        if (error) throw error;
-        result = data;
-        break;
-      }
-      case 'getFormAnalytics': {
-        const { data, error } = await supabase.rpc('get_form_analytics', { p_form_id: args[0] });
-        if (error) throw error;
-        result = data;
-        break;
-      }
-      case 'getPendingEssays': {
-        const { data, error } = await supabase.from('pending_essays').select('*, responses(*)');
-        if (error) throw error;
-        result = data;
-        break;
-      }
-      case 'awardEssayMarks': {
-        const { data, error } = await supabase.rpc('award_essay_marks', { p_payload: args[0] });
-        if (error) throw error;
-        result = data;
-        break;
-      }
-      case 'publishEssayAssessment': {
-        const { data, error } = await supabase.functions.invoke('publish_essay_assessment', { body: args[0] });
-        if (error) throw error;
-        result = data;
-        break;
-      }
-      case 'getAppFeedback': {
-        const { data, error } = await supabase.from('app_feedback').select('*');
-        if (error) throw error;
-        result = data;
-        break;
-      }
-
-      case 'generateQuestionBankDoc': {
-        const { data, error } = await supabase.functions.invoke('generate_question_bank_doc', {
-          body: { stream: args[0]?.stream || '', sem: args[0]?.sem || '' }
-        });
-        if (error) throw error;
-        if (data && data.error) throw new Error(data.error);
-        result = data.url;
-        break;
-      }
-
-      case 'bulkCreateQuestions': {
-        const payloads = args[0];
-        const rows = payloads.map(p => ({
-          created_by: user.id,
-          type: p.QuestionType || 'MCQ',
-          programme: p.Programme || null,
-          semester: p.Semester || null,
-          subject: p.Subject || null,
-          section: p.Section || null,
-          title_of_paper: p['Title of Paper'] || null,
-          unit: p.Unit || null,
-          topic: p.Topic || null,
-          question_text: p.Question || '',
-          option1: p.Option1 || null,
-          option2: p.Option2 || null,
-          option3: p.Option3 || null,
-          option4: p.Option4 || null,
-          ans_index: parseInt(p.AnsIndex) || 0,
-          explanation: p.Explanation || null,
-          difficulty: p.Difficulty || 'Medium',
-          marks: parseFloat(p.Marks) || 1.0,
-          negative_marks: parseFloat(p.NegativeMarks) || 0.0,
-          status: p.Status || 'Active',
-          keywords: p.KeyWords || null
-        }));
-        
-        const { data, error } = await supabase.from('question_bank').insert(rows).select('id');
-        if (error) throw error;
-        result = { success: true, count: data ? data.length : rows.length };
-        break;
-      }
-      
-      case 'submitAppFeedback': {
-        const [role, name, email, rating, category, message] = args;
-        const { data, error } = await supabase.from('app_feedback').insert([{
-          category: category || 'General',
-          rating: parseInt(rating) || 0,
-          message: message,
-          submitted_by: `${name} (${email})`,
-          user_type: role || 'Admin'
-        }]);
-        if (error) throw error;
-        result = true;
-        break;
-      }
-
-      default:
-        console.warn(`Unimplemented Supabase routing for action: ${action}`);
-        // Temporarily return dummy success to avoid crashing UI
-        result = true;
-    }
-    if (onSuccess) onSuccess(result);
-  } catch(err) {
-    if (onFailure) onFailure(err instanceof Error ? err : new Error(err && err.message ? err.message : JSON.stringify(err)));
-    else console.error(err);
-  }
-}
 
 </script>
 <!-- ========================================================================= -->
@@ -6060,7 +5603,7 @@ function renderFilteredReports(data) {
 let globalPendingEssays = [];
 let currentAssessData   = null; // The submission group being assessed
 
-function loadPendingEssays() {
+async function loadPendingEssays() {
   const container = document.getElementById('essays-list-container');
   const empty     = document.getElementById('essays-empty');
   const loading   = document.getElementById('essays-loading');
@@ -6068,15 +5611,34 @@ function loadPendingEssays() {
   if (empty)   empty.style.display = 'none';
   if (loading) loading.style.display = 'block';
 
-  callBackend('getPendingEssays', [currentRoleData], list => {
-      if (loading) loading.style.display = 'none';
-      globalPendingEssays = list || [];
-      renderEssaysList(globalPendingEssays);
-    }, err => {
-      if (loading) loading.style.display = 'none';
-      if (container) container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--danger);">Failed to load essays: ${err.message}</div>`;
-      showToast('Failed to load pending essays: ' + err.message, 'error');
-    });
+  try {
+    const { data, error } = await supabase.from('pending_essays').select('*, responses(*)');
+    if (error) throw error;
+    if (loading) loading.style.display = 'none';
+    
+    // Map snake_case relation to legacy frontend structure
+    globalPendingEssays = (data || []).map(r => ({
+      dbId: r.id,
+      responseId: r.response_id,
+      quizId: r.responses?.quiz_id,
+      quizTitle: r.responses?.quiz_id,
+      rollNo: r.responses?.roll_no,
+      studentName: r.responses?.student_name,
+      email: r.responses?.student_email,
+      submittedAt: r.responses?.created_at,
+      question: r.question_text || 'Essay Question',
+      answer: r.student_answer,
+      maxMarks: r.max_marks || 1,
+      awardedMarks: r.marks_awarded,
+      feedback: r.feedback
+    }));
+    
+    renderEssaysList(globalPendingEssays);
+  } catch (err) {
+    if (loading) loading.style.display = 'none';
+    if (container) container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--danger);">Failed to load essays: ${err.message}</div>`;
+    showToast('Failed to load pending essays: ' + err.message, 'error');
+  }
 }
 
 // Group essays by assignment and student email
@@ -6292,7 +5854,7 @@ function closeAssessModal() {
   currentAssessData = null;
 }
 
-function publishAssessment() {
+async function publishAssessment() {
   if (!currentAssessData) return;
   const group = currentAssessData;
   const assessorName = (activeRole && activeRole.name) ? activeRole.name : (currentRoleData.name || currentRoleData.email || 'Assessor');
@@ -6320,7 +5882,8 @@ function publishAssessment() {
   const btn = document.getElementById('assess-publish-btn');
   if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin-sm"></span> Publishing…'; }
 
-  callBackend('publishEssayAssessment', [{
+  try {
+    const payload = {
       submissionId: group.groupId,
       studentName:  group.studentName,
       rollNo:       group.rollNo,
@@ -6333,22 +5896,24 @@ function publishAssessment() {
       passed,
       assessorName,
       passPercent:  group.passPercent || 40
-    }, currentRoleData], res => {
-      closeAssessModal();
-      showToast(`Assessment published! ${totalAwarded}/${totalMax} marks (${pct}%). Email sent to ${group.email}.`, 'success', 6000);
-      // Update the row in list to show reviewed status
-      const row = document.getElementById('essay-row-' + group.groupId);
-      if (row) {
-        const statusCell = row.cells[5]; const actionCell = row.cells[6];
-        if (statusCell) statusCell.innerHTML = `<span class="badge-pass" style="font-size:0.72rem;">Reviewed by ${assessorName}</span>`;
-        if (actionCell) actionCell.innerHTML = `<button class="btn-xs btn-xs-action" style="padding:7px 14px; font-size:0.8rem;" onclick="openAssessModal('${group.groupId}')"><i class="ti ti-eye"></i> View</button>`;
-      }
-      // Also refresh to get fresh data
-      loadPendingEssays();
-    }, err => {
-      if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i> Publish &amp; Notify Student'; }
-      showToast('Error publishing assessment: ' + err.message, 'error');
-    });
+    };
+    const { data, error } = await supabase.functions.invoke('publish_essay_assessment', { body: payload });
+    if (error) throw error;
+    if (data && data.error) throw new Error(data.error);
+
+    closeAssessModal();
+    showToast(`Assessment published! ${totalAwarded}/${totalMax} marks (${pct}%). Email sent to ${group.email}.`, 'success', 6000);
+    const row = document.getElementById('essay-row-' + group.groupId);
+    if (row) {
+      const statusCell = row.cells[5]; const actionCell = row.cells[6];
+      if (statusCell) statusCell.innerHTML = `<span class="badge-pass" style="font-size:0.72rem;">Reviewed by ${assessorName}</span>`;
+      if (actionCell) actionCell.innerHTML = `<button class="btn-xs btn-xs-action" style="padding:7px 14px; font-size:0.8rem;" onclick="openAssessModal('${group.groupId}')"><i class="ti ti-eye"></i> View</button>`;
+    }
+    loadPendingEssays();
+  } catch (err) {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i> Publish &amp; Notify Student'; }
+    showToast('Error publishing assessment: ' + err.message, 'error');
+  }
 }
 
 
@@ -7249,18 +6814,30 @@ function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => 
 
 let allStudents = [];
 
-function loadStudentsList() {
+async function loadStudentsList() {
   if (typeof updateStudentSemesterOptions === 'function') updateStudentSemesterOptions();
   
   const tbody = document.querySelector('#studentsTable tbody');
   if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8;">Loading students...</td></tr>`;
   
-  callBackend('getAllStudents', [], res => {
+  try {
+    const { data: res, error } = await supabase.from('student_profiles').select('*');
+    if (error) throw error;
+    
     if (!res) {
       if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--danger);">Error loading students.</td></tr>`;
       return;
     }
-    allStudents = res;
+    
+    // Map db rows back to frontend camelCase expected by renderStudentsTable if needed, but it seems frontend uses s.program, s.semester, s.name. Let's map it safely:
+    allStudents = res.map(row => ({
+      name: row.full_name || '',
+      email: row.email,
+      roll: row.roll_no,
+      program: row.program,
+      semester: row.semester,
+      phone: row.phone || ''
+    }));
     
     // Auto-populate filter options based on available students
     const programs = new Set();
@@ -7282,7 +6859,9 @@ function loadStudentsList() {
     }
     
     renderStudentsTable();
-  });
+  } catch (err) {
+    if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--danger);">Error: ${err.message}</td></tr>`;
+  }
 }
 
 function renderStudentsTable() {
@@ -7365,7 +6944,7 @@ function bulkDeleteStudents() {
   showLoader(`Deleting ${checkboxes.length} student(s)...`);
   let deletedCount = 0;
   
-  const deleteNext = () => {
+  const deleteNext = async () => {
     if (emails.length === 0) {
       document.getElementById('loader').style.display = 'none';
       showToast(`Successfully deleted ${deletedCount} student(s).`, 'success');
@@ -7373,29 +6952,34 @@ function bulkDeleteStudents() {
       return;
     }
     const email = emails.pop();
-    callBackend('adminDeleteStudent', [email], res => {
+    try {
+      const { data, error } = await supabase.functions.invoke('admin_ops', { body: { action: 'deleteStudent', payload: { email } } });
+      if (error) throw error;
+      if (data && data.error) throw new Error(data.error);
       deletedCount++;
-      deleteNext();
-    }, err => {
+    } catch (err) {
       showToast(`Error deleting ${email}: ${err.message}`, 'error');
-      deleteNext();
-    });
+    }
+    deleteNext();
   };
   
   deleteNext();
 }
 
-function deleteStudent(email) {
+async function deleteStudent(email) {
   if (!confirm(`Are you sure you want to delete the student with email ${email}?`)) return;
   showLoader('Deleting student...');
-  callBackend('adminDeleteStudent', [email], res => {
+  try {
+    const { data, error } = await supabase.functions.invoke('admin_ops', { body: { action: 'deleteStudent', payload: { email } } });
+    if (error) throw error;
+    if (data && data.error) throw new Error(data.error);
     document.getElementById('loader').style.display = 'none';
     showToast('Student deleted successfully', 'success');
     loadStudentsList();
-  }, err => {
+  } catch (err) {
     document.getElementById('loader').style.display = 'none';
     showToast(`Error: ${err.message}`, 'error');
-  });
+  }
 }
 
 
@@ -7473,9 +7057,9 @@ function uploadStudentsCSV() {
               
               const payload = { name, email, rollNo, stream, sem };
               try {
-                  const res = await new Promise((resolve, reject) => {
-                      callBackend('adminCreateStudent', [payload], resolve, reject);
-                  });
+                  const { data, error } = await supabase.functions.invoke('admin_ops', { body: { action: 'addStudent', payload } });
+                  if (error) throw error;
+                  if (data && data.error) throw new Error(data.error);
                   resultsDiv.innerHTML += `<span style="color:green;">Row ${i+2}: Created ${email} successfully.</span><br>`;
                   successCount++;
               } catch (err) {
@@ -7496,7 +7080,7 @@ function uploadStudentsCSV() {
   reader.readAsArrayBuffer(file);
 }
 
-function submitStudentForm() {
+async function submitStudentForm() {
   const name = document.getElementById('stdName').value.trim();
   const rollNo = document.getElementById('stdRoll').value.trim();
   const email = document.getElementById('stdEmail').value.trim();
@@ -7510,24 +7094,30 @@ function submitStudentForm() {
 
   const payload = { name, email, rollNo, stream, sem };
   showLoader('ADDING STUDENT');
-  callBackend('adminCreateStudent', [payload], (res) => {
-      hideLoader();
-      const pwd = res && res.password ? res.password : 'unknown';
-      showToast('Student created successfully!', 'success', 5000);
-      alert(`Student Created Successfully!\n\nName: ${name}\nEmail: ${email}\nPassword: ${pwd}\n\nPlease copy and share this password securely. It will not be shown again.`);
-      document.getElementById('stdName').value = '';
-      document.getElementById('stdRoll').value = '';
-      document.getElementById('stdEmail').value = '';
-      document.getElementById('stdProgram').value = '';
-      document.getElementById('stdSemester').value = '';
-      if(typeof loadDashboard === 'function') loadDashboard();
-    }, err => { hideLoader(); showToast('Error: ' + err.message, 'error'); });
+  try {
+    const { data: res, error } = await supabase.functions.invoke('admin_ops', { body: { action: 'addStudent', payload } });
+    if (error) throw error;
+    if (res && res.error) throw new Error(res.error);
+    
+    hideLoader();
+    const pwd = res && res.password ? res.password : 'unknown';
+    showToast('Student created successfully!', 'success', 5000);
+    alert(`Student Created Successfully!\n\nName: ${name}\nEmail: ${email}\nPassword: ${pwd}\n\nPlease copy and share this password securely. It will not be shown again.`);
+    document.getElementById('stdName').value = '';
+    document.getElementById('stdRoll').value = '';
+    document.getElementById('stdEmail').value = '';
+    document.getElementById('stdProgram').value = '';
+    document.getElementById('stdSemester').value = '';
+    if(typeof loadDashboard === 'function') loadDashboard();
+  } catch (err) {
+    hideLoader(); showToast('Error: ' + err.message, 'error');
+  }
 }
 
 /* ════════════════════════════════════════
    SUB-ADMIN MANAGEMENT
 ════════════════════════════════════════ */
-function registerSubAdmin() {
+async function registerSubAdmin() {
   const selectedStreams = getSelectedPills('sa-streams-pills');
   const selectedSems   = getSelectedPills('sa-sems-pills');
   const name  = document.getElementById('saName').value.trim();
@@ -7537,22 +7127,35 @@ function registerSubAdmin() {
   if (!selectedSems.length)    { showToast('Please select at least one Semester.', 'warning'); return; }
   const payload = { name, email, stream: selectedStreams.join(', '), sem: selectedSems.join(', ') };
   showLoader('ADDING SUB ADMIN');
-  callBackend('addSubAdmin', [payload], (res) => {
-      hideLoader();
-      const pwd = res && res.password ? res.password : 'unknown';
-      showToast(`Sub-Admin "${name}" registered!`, 'success', 5000);
-      alert(`Sub-Admin Created Successfully!\n\nName: ${name}\nEmail: ${email}\nPassword: ${pwd}\n\nPlease copy and share this password securely. It will not be shown again.`);
-      document.getElementById('saName').value = ''; document.getElementById('saEmail').value = '';
-      document.querySelectorAll('#sa-streams-pills .pill-item, #sa-sems-pills .pill-item').forEach(p => p.classList.remove('selected'));
-      loadDashboard();
-    }, err => { hideLoader(); showToast('Error: ' + err.message, 'error'); });
+  try {
+    const { data: res, error } = await supabase.functions.invoke('admin_ops', { body: { action: 'addSubAdmin', payload } });
+    if (error) throw error;
+    if (res && res.error) throw new Error(res.error);
+    
+    hideLoader();
+    const pwd = res && res.password ? res.password : 'unknown';
+    showToast(`Sub-Admin "${name}" registered!`, 'success', 5000);
+    alert(`Sub-Admin Created Successfully!\n\nName: ${name}\nEmail: ${email}\nPassword: ${pwd}\n\nPlease copy and share this password securely. It will not be shown again.`);
+    document.getElementById('saName').value = ''; document.getElementById('saEmail').value = '';
+    document.querySelectorAll('#sa-streams-pills .pill-item, #sa-sems-pills .pill-item').forEach(p => p.classList.remove('selected'));
+    loadDashboard();
+  } catch (err) {
+    hideLoader(); showToast('Error: ' + err.message, 'error');
+  }
 }
 
 async function deleteSubAdmin(email) {
   const ok = await showCenterConfirm('Remove Sub-Admin', `Remove sub-admin access for <strong>${email}</strong>? They will no longer be able to log into the admin dashboard.`, '<i class="ti ti-trash"></i> Remove Access', 'Cancel', 'acm-danger-ok');
   if (!ok) return;
   showLoader('REMOVING SUB ADMIN');
-  callBackend('deleteSubAdmin', [email], () => { hideLoader(); showToast('Sub-Admin removed.', 'success'); loadDashboard(); }, err => { hideLoader(); showToast('Error: ' + err.message, 'error'); });
+  try {
+    const { data, error } = await supabase.functions.invoke('admin_ops', { body: { action: 'deleteSubAdmin', payload: { email } } });
+    if (error) throw error;
+    if (data && data.error) throw new Error(data.error);
+    hideLoader(); showToast('Sub-Admin removed.', 'success'); loadDashboard();
+  } catch (err) {
+    hideLoader(); showToast('Error: ' + err.message, 'error');
+  }
 }
 
 /* ════════════════════════════════════════
@@ -7685,7 +7288,7 @@ function closeChangePasswordModal() {
   document.getElementById('changePasswordModal').style.display = 'none';
 }
 
-function submitChangePassword() {
+async function submitChangePassword() {
   const newPass = document.getElementById('newPassword').value.trim();
   const confirmPass = document.getElementById('confirmPassword').value.trim();
   
@@ -7701,19 +7304,17 @@ function submitChangePassword() {
   const email = activeRole.email || document.getElementById('loginEmail').value.trim();
   
   showLoader('UPDATING PASSWORD');
-  callBackend('resetAdminPassword', [email, newPass], res => {
-      hideLoader();
-      if (res.success) {
-        document.getElementById('changePasswordFormBody').style.display = 'none';
-        document.getElementById('changePasswordFooter').style.display = 'none';
-        document.getElementById('changePasswordSuccessBody').style.display = 'block';
-      } else {
-        showToast(res.message, 'error');
-      }
-    }, err => {
-      hideLoader();
-      showToast('Connection error: ' + err.message, 'error');
-    });
+  try {
+    const { data, error } = await supabase.auth.updateUser({ password: newPass });
+    hideLoader();
+    if (error) throw error;
+    document.getElementById('changePasswordFormBody').style.display = 'none';
+    document.getElementById('changePasswordFooter').style.display = 'none';
+    document.getElementById('changePasswordSuccessBody').style.display = 'block';
+  } catch (err) {
+    hideLoader();
+    showToast('Connection error: ' + err.message, 'error');
+  }
 }
 
 </script>
@@ -7895,16 +7496,32 @@ function submitChangePassword() {
     btn.innerHTML = '<i class="ti ti-loader" style="animation:spin 1s linear infinite;"></i> Submitting...';
     btn.disabled = true;
     
-    callBackend('submitAppFeedback', ['Admin', 'Admin', 'admin@digiq.in', apfbCurrentRating, category, message], res => {
+    (async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+        
+        const { error } = await supabase.from('app_feedback').insert([{
+          role: 'Admin',
+          user_id: user.id,
+          category,
+          message,
+          rating: apfbCurrentRating
+        }]);
+        if (error) throw error;
+        
         btn.innerHTML = originalText;
         btn.disabled = false;
         closeAdminFeedbackModal();
         showToast('Feedback submitted successfully.', 'success');
-      }, err => {
+        document.getElementById('apfb-message').value = '';
+        apfbSetRating(5);
+      } catch (err) {
         btn.innerHTML = originalText;
         btn.disabled = false;
         showToast('Failed to submit feedback.', 'error');
-      });
+      }
+    })();
   }
 </script>
 
@@ -7958,15 +7575,44 @@ let qbFilters = {
   programme: '', semester: '', subject: '', unit: '', topic: '', difficulty: '', type: '', status: ''
 };
 
-function loadQuestionBank() {
-  callBackend('getQuestionBank', [window.digiQAdminSession], res => {
-    qbData = res || [];
+async function loadQuestionBank() {
+  try {
+    const { data: res, error } = await supabase.from('question_bank').select('*');
+    if (error) throw error;
+    
+    qbData = (res || []).map(row => ({
+      dbId: row.id,
+      QuestionID: row.legacy_id || row.id,
+      QuestionType: row.type,
+      Programme: row.programme,
+      Semester: row.semester,
+      Subject: row.subject,
+      Unit: row.unit,
+      Topic: row.topic,
+      Section: row.section,
+      'Title of Paper': row.title_of_paper,
+      Question: row.question_text,
+      Option1: row.option1,
+      Option2: row.option2,
+      Option3: row.option3,
+      Option4: row.option4,
+      AnsIndex: row.ans_index,
+      Explanation: row.explanation,
+      Difficulty: row.difficulty,
+      Marks: row.marks,
+      NegativeMarks: row.negative_marks,
+      KeyWords: row.keywords,
+      Status: row.status,
+      UsageCount: row.usage_count,
+      CreatedAt: row.created_at || new Date().toISOString()
+    }));
+    
     populateQbFilters();
     updateQbStats();
     renderQuestionBank();
-  }, err => {
-    showToast('Failed to load Question Bank', 'error');
-  });
+  } catch (err) {
+    showToast('Failed to load Question Bank: ' + err.message, 'error');
+  }
 }
 
 function updateQbStats() {
@@ -8326,17 +7972,39 @@ function processImportQbCsv() {
         return;
       }
       
-      const roleData = { email: window._userEmail || '' };
-      callBackend('bulkCreateQuestions', [payloads, roleData], res => {
-        btn.innerHTML = 'Import Questions'; btn.disabled = false;
-        if (res.success) {
-          showToast('Successfully imported ' + res.count + ' questions!', 'success');
+      const dbPayloads = payloads.map(q => ({
+        legacy_id: 'QB_' + Date.now().toString(36) + Math.random().toString(36).substring(2,7),
+        type: q.QuestionType || 'MCQ',
+        programme: q.Programme,
+        semester: q.Semester,
+        subject: q.Subject,
+        section: q.Section,
+        title_of_paper: q['Title of Paper'],
+        unit: q.Unit,
+        topic: q.Topic,
+        question_text: q.Question,
+        option1: q.Option1, option2: q.Option2, option3: q.Option3, option4: q.Option4,
+        ans_index: parseInt(q.AnsIndex)||0,
+        explanation: q.Explanation,
+        difficulty: q.Difficulty || 'Medium',
+        marks: parseFloat(q.Marks)||1,
+        negative_marks: parseFloat(q.NegativeMarks)||0,
+        keywords: q.KeyWords,
+        status: q.Status || 'Active'
+      }));
+      
+      (async () => {
+        try {
+          const { error } = await supabase.from('question_bank').insert(dbPayloads);
+          if (error) throw error;
+          btn.innerHTML = 'Import Questions'; btn.disabled = false;
+          showToast('Successfully imported ' + payloads.length + ' questions!', 'success');
           closeQbImportModal(); loadQuestionBank();
-        } else { showToast('Error: ' + res.error, 'error'); }
-      }, err => {
-        btn.innerHTML = 'Import Questions'; btn.disabled = false;
-        showToast('Request failed', 'error');
-      });
+        } catch (err) {
+          btn.innerHTML = 'Import Questions'; btn.disabled = false;
+          showToast('Import failed: ' + err.message, 'error');
+        }
+      })();
       
     } catch(ex) {
       btn.innerHTML = 'Import Questions'; btn.disabled = false;
@@ -8502,7 +8170,7 @@ function toggleQbTypeFields() {
   document.getElementById('qb-mcq-fields').style.display = (t === 'MCQ') ? 'block' : 'none';
 }
 
-function saveQuestion() {
+async function saveQuestion() {
   const btn = document.getElementById('qb-save-btn');
   btn.innerHTML = '<i class="ti ti-loader ti-spin"></i> Saving...'; btn.disabled = true;
   
@@ -8514,42 +8182,48 @@ function saveQuestion() {
   }
   
   const payload = {
-    QuestionType: document.getElementById('qb-f-type').value,
-    Status: document.getElementById('qb-f-status').value,
-    Difficulty: document.getElementById('qb-f-difficulty').value,
-    Programme: document.getElementById('qb-f-prog').value,
-    Semester: document.getElementById('qb-f-sem').value,
-    Subject: document.getElementById('qb-f-sub').value,
-    Section: document.getElementById('qb-f-sec').value,
-    'Title of Paper': document.getElementById('qb-f-paper').value,
-    Unit: document.getElementById('qb-f-unit').value,
-    Topic: document.getElementById('qb-f-topic').value,
-    Question: document.getElementById('qb-f-question').value,
-    Option1: document.getElementById('qb-f-opt1').value,
-    Option2: document.getElementById('qb-f-opt2').value,
-    Option3: document.getElementById('qb-f-opt3').value,
-    Option4: document.getElementById('qb-f-opt4').value,
-    AnsIndex: ansIdx,
-    Marks: document.getElementById('qb-f-marks').value,
-    NegativeMarks: document.getElementById('qb-f-neg').value,
-    Explanation: document.getElementById('qb-f-exp').value,
-    KeyWords: document.getElementById('qb-f-tags').value
+    type: document.getElementById('qb-f-type').value,
+    status: document.getElementById('qb-f-status').value,
+    difficulty: document.getElementById('qb-f-difficulty').value,
+    programme: document.getElementById('qb-f-prog').value,
+    semester: document.getElementById('qb-f-sem').value,
+    subject: document.getElementById('qb-f-sub').value,
+    section: document.getElementById('qb-f-sec').value,
+    title_of_paper: document.getElementById('qb-f-paper').value,
+    unit: document.getElementById('qb-f-unit').value,
+    topic: document.getElementById('qb-f-topic').value,
+    question_text: document.getElementById('qb-f-question').value,
+    option1: document.getElementById('qb-f-opt1').value,
+    option2: document.getElementById('qb-f-opt2').value,
+    option3: document.getElementById('qb-f-opt3').value,
+    option4: document.getElementById('qb-f-opt4').value,
+    ans_index: parseInt(ansIdx) || 0,
+    marks: parseFloat(document.getElementById('qb-f-marks').value) || 1,
+    negative_marks: parseFloat(document.getElementById('qb-f-neg').value) || 0,
+    explanation: document.getElementById('qb-f-exp').value,
+    keywords: document.getElementById('qb-f-tags').value
   };
   
-  const roleData = { email: window._userEmail || '' };
-  
-  if (qid) {
-    callBackend('updateQuestion', [qid, payload, roleData], res => {
-      btn.innerHTML = 'Save Question'; btn.disabled = false;
-      if(res.success) { showToast('Question updated successfully!', 'success'); closeQbAddModal(); loadQuestionBank(); }
-      else showToast('Error: ' + res.error, 'error');
-    }, err => { btn.innerHTML = 'Save Question'; btn.disabled = false; showToast('Request failed', 'error'); });
-  } else {
-    callBackend('createQuestion', [payload, roleData], res => {
-      btn.innerHTML = 'Save Question'; btn.disabled = false;
-      if(res.success) { showToast('Question created successfully!', 'success'); closeQbAddModal(); loadQuestionBank(); }
-      else showToast('Error: ' + res.error, 'error');
-    }, err => { btn.innerHTML = 'Save Question'; btn.disabled = false; showToast('Request failed', 'error'); });
+  try {
+    if (qid) {
+      // Find the UUID corresponding to this legacy_id/QuestionID
+      const q = qbData.find(x => x.QuestionID === qid);
+      if (!q) throw new Error("Question not found in cache");
+      const { error } = await supabase.from('question_bank').update(payload).eq('id', q.dbId);
+      if (error) throw error;
+      showToast('Question updated successfully!', 'success');
+    } else {
+      payload.legacy_id = 'QB_' + Date.now().toString(36);
+      const { error } = await supabase.from('question_bank').insert([payload]);
+      if (error) throw error;
+      showToast('Question created successfully!', 'success');
+    }
+    btn.innerHTML = 'Save Question'; btn.disabled = false;
+    closeQbAddModal();
+    loadQuestionBank();
+  } catch (err) {
+    btn.innerHTML = 'Save Question'; btn.disabled = false;
+    showToast('Error: ' + err.message, 'error');
   }
 }
 
@@ -8635,22 +8309,35 @@ function previewQuestion(id) {
 }
 function closeQbPreviewModal() { document.getElementById('qb-preview-modal').style.display = 'none'; }
 
-function archiveQuestionClient(id) {
+async function archiveQuestionClient(id) {
   if (confirm('Are you sure you want to archive question ' + id + '? It will no longer be available for new assessments.')) {
     showToast('Archiving...', 'info');
-    callBackend('archiveQuestion', [id], res => {
-      if(res.success) { showToast('Question archived.', 'success'); loadQuestionBank(); }
-      else showToast('Error: ' + res.error, 'error');
-    }, e => showToast('Failed', 'error'));
+    const q = qbData.find(x => x.QuestionID === id);
+    if (!q) return;
+    try {
+      const { error } = await supabase.from('question_bank').update({ status: 'Archived' }).eq('id', q.dbId);
+      if (error) throw error;
+      showToast('Question archived.', 'success'); 
+      loadQuestionBank();
+    } catch (err) {
+      showToast('Failed to archive: ' + err.message, 'error');
+    }
   }
 }
-function deleteQuestionClient(id) {
+
+async function deleteQuestionClient(id) {
   if (confirm('WARNING: Are you sure you want to permanently delete question ' + id + '? This action cannot be undone. If it is used in existing quizzes, it cannot be deleted.')) {
     showToast('Deleting...', 'info');
-    callBackend('deleteQuestion', [id], res => {
-      if(res.success) { showToast('Question deleted.', 'success'); loadQuestionBank(); }
-      else showToast('Error: ' + res.error, 'error');
-    }, e => showToast('Failed', 'error'));
+    const q = qbData.find(x => x.QuestionID === id);
+    if (!q) return;
+    try {
+      const { error } = await supabase.from('question_bank').delete().eq('id', q.dbId);
+      if (error) throw error;
+      showToast('Question deleted.', 'success'); 
+      loadQuestionBank();
+    } catch (err) {
+      showToast('Failed to delete: ' + err.message, 'error');
+    }
   }
 }
 
@@ -8684,33 +8371,39 @@ function clearQbSelection() {
   updateQbFloatingBar();
 }
 
-function bulkUpdateStatusClient(newStatus) {
+async function bulkUpdateStatusClient(newStatus) {
   const ids = getSelectedQbIds();
   if (ids.length === 0) return;
   if (confirm(`Are you sure you want to mark ${ids.length} questions as ${newStatus}?`)) {
     showToast(`Updating ${ids.length} questions...`, 'info');
-    callBackend('bulkUpdateQuestionStatus', [ids, newStatus], res => {
-      if(res.success) { 
-        showToast('Questions updated.', 'success'); 
-        clearQbSelection();
-        loadQuestionBank(); 
-      } else showToast('Error: ' + res.error, 'error');
-    }, e => showToast('Failed', 'error'));
+    const dbIds = ids.map(id => qbData.find(x => x.QuestionID === id)?.dbId).filter(Boolean);
+    try {
+      const { error } = await supabase.from('question_bank').update({ status: newStatus }).in('id', dbIds);
+      if (error) throw error;
+      showToast('Questions updated.', 'success'); 
+      clearQbSelection();
+      loadQuestionBank(); 
+    } catch (err) {
+      showToast('Failed to update: ' + err.message, 'error');
+    }
   }
 }
 
-function bulkDeleteQuestionsClient() {
+async function bulkDeleteQuestionsClient() {
   const ids = getSelectedQbIds();
   if (ids.length === 0) return;
   if (confirm(`WARNING: Are you sure you want to permanently delete ${ids.length} questions? Used questions will be skipped.`)) {
     showToast(`Deleting ${ids.length} questions...`, 'info');
-    callBackend('bulkDeleteQuestions', [ids], res => {
-      if(res.success) { 
-        showToast(`Deleted ${res.deletedCount} questions. Skipped ${res.skippedCount}.`, 'success'); 
-        clearQbSelection();
-        loadQuestionBank(); 
-      } else showToast('Error: ' + res.error, 'error');
-    }, e => showToast('Failed', 'error'));
+    const dbIds = ids.map(id => qbData.find(x => x.QuestionID === id)?.dbId).filter(Boolean);
+    try {
+      const { error } = await supabase.from('question_bank').delete().in('id', dbIds);
+      if (error) throw error;
+      showToast(`Questions deleted successfully.`, 'success'); 
+      clearQbSelection();
+      loadQuestionBank(); 
+    } catch (err) {
+      showToast('Failed to delete: ' + err.message, 'error');
+    }
   }
 }
 
@@ -8872,20 +8565,24 @@ function confirmQbSelection() {
     }, { passive: true });
   });
 
-  function exportQuestionBankDoc() {
+  async function exportQuestionBankDoc() {
     showGlobalLoader('GENERATING DOC...');
-    callBackend('generateQuestionBankDoc', [window.digiQAdminSession], url => {
-        hideGlobalLoader();
-        if (url) {
-          showToast('Doc created successfully!', 'success');
-          window.open(url, '_blank');
-        } else {
-          showToast('Error generating doc.', 'error');
-        }
-      }, err => {
-        hideGlobalLoader();
-        showToast('Error: ' + err.message, 'error');
+    try {
+      const { data, error } = await supabase.functions.invoke('generate_question_bank_doc', {
+        body: { filters: qbFilters } // Sending active filters!
       });
+      hideGlobalLoader();
+      if (error) throw error;
+      if (data && data.url) {
+        showToast('Doc created successfully!', 'success');
+        window.open(data.url, '_blank');
+      } else {
+        showToast('Error generating doc.', 'error');
+      }
+    } catch (err) {
+      hideGlobalLoader();
+      showToast('Error: ' + err.message, 'error');
+    }
   }
 
 
