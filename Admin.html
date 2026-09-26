@@ -6094,9 +6094,9 @@ async function editQuiz(quizId) {
       shuffleOptions: qData.shuffle_options, sendResultEmail: qData.send_result_email,
       sections: (qData.config_json || {}).sections || [],
       questions: questions.map(q => ({
-        Section: q.section, Type: q.type, Question: q.question_text, Option1: q.options ? q.options[0] : null,
-        Option2: q.options ? q.options[1] : null, Option3: q.options ? q.options[2] : null,
-        Option4: q.options ? q.options[3] : null, AnsIndex: q.answer_index, Marks: q.marks, NegativeMarks: q.negative_marks, ExtraData: q.extra_data
+        Section: q.section, Type: q.type, Question: q.question_text, Option1: q.option1,
+        Option2: q.option2, Option3: q.option3,
+        Option4: q.option4, AnsIndex: q.ans_index, Marks: q.marks, NegativeMarks: q.negative_marks, ExtraData: q.extra_data
       }))
     };
     hideLoader(); switchTab('create'); window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6721,8 +6721,11 @@ async function processQuizCreation() {
           section: q.Section || q.section || null,
           type: String(q.Type || q.type || q.QuestionType || 'MCQ').toUpperCase(),
           question_text: q.Question || q.question || q.question_text || '',
-          options: [optionsArr[0] || null, optionsArr[1] || null, optionsArr[2] || null, optionsArr[3] || null],
-          answer_index: parseInt(q.AnsIndex !== undefined ? q.AnsIndex : q.answer) || 0,
+          option1: optionsArr[0] || null,
+          option2: optionsArr[1] || null,
+          option3: optionsArr[2] || null,
+          option4: optionsArr[3] || null,
+          ans_index: parseInt(q.AnsIndex !== undefined ? q.AnsIndex : q.answer) || 0,
           marks: parseFloat(q.Marks || q.marks) || 1,
           negative_marks: parseFloat(q.NegativeMarks || q.negMarks) || 0,
           extra_data: q.ExtraData || q.extra || q.Extra || {}
@@ -7212,9 +7215,9 @@ async function downloadQuizData(quizId) {
       startTime: qData.start_time, endTime: qData.end_time, shuffleQuestions: qData.shuffle_questions,
       shuffleOptions: qData.shuffle_options, sendResultEmail: qData.send_result_email,
       questions: questions.map(q => ({
-        Section: q.section, Type: q.type, Question: q.question_text, Option1: q.options ? q.options[0] : null,
-        Option2: q.options ? q.options[1] : null, Option3: q.options ? q.options[2] : null,
-        Option4: q.options ? q.options[3] : null, AnsIndex: q.answer_index, Marks: q.marks, NegativeMarks: q.negative_marks, ExtraData: q.extra_data
+        Section: q.section, Type: q.type, Question: q.question_text, Option1: q.option1,
+        Option2: q.option2, Option3: q.option3,
+        Option4: q.option4, AnsIndex: q.ans_index, Marks: q.marks, NegativeMarks: q.negative_marks, ExtraData: q.extra_data
       }))
     };
     hideLoader();
