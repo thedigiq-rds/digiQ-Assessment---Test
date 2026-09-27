@@ -2414,7 +2414,7 @@ window.google.script.url = {
     <i class="ti ti-layout-dashboard" id="mob-page-icon" style="font-size: 1.2rem; color: #d97706; margin-right: 8px;"></i>
     <h2 class="mob-page-title" id="mob-page-title-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">Dashboard</h2>
     
-    <button onclick="loadStudentDashboard()" class="mob-refresh-btn" aria-label="Refresh">
+    <button onclick="loadStudentDashboard(true)" class="mob-refresh-btn" aria-label="Refresh">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>
       </svg>
@@ -2520,7 +2520,7 @@ window.google.script.url = {
                   <span class="refresh-dot" style="display:inline-block;vertical-align:middle;margin-right:7px;"></span>
                   <strong style="color:#0f172a; font-weight:700;">Live Dashboard</strong> <span style="color:var(--text-muted);">&nbsp;·&nbsp; Updated <span id="sd-last-refresh-time">Loading…</span></span>
                 </div>
-                <button class="btn-primary-admin" onclick="loadStudentDashboard()" style="padding:7px 14px; font-size:0.85rem; border-radius:8px; display:flex; align-items:center; gap:6px;">
+                <button class="btn-primary-admin" onclick="loadStudentDashboard(true)" style="padding:7px 14px; font-size:0.85rem; border-radius:8px; display:flex; align-items:center; gap:6px;">
                   <i class="ti ti-refresh"></i> Refresh
                 </button>
               </div>
@@ -4552,13 +4552,15 @@ window.google.script.url = {
   }
 
   let activeRefreshToast = null;
-  function loadStudentDashboard() {
+  function loadStudentDashboard(isManual = false) {
     startSdAutoRefresh();
     if (activeRefreshToast) {
       activeRefreshToast.classList.add('hide');
       setTimeout(() => activeRefreshToast && activeRefreshToast.remove(), 340);
     }
-    activeRefreshToast = showToast("Refreshing Data...", "info", 0);
+    if (isManual) {
+      activeRefreshToast = showToast("Refreshing Data...", "info", 0);
+    }
     (async () => {
       try {
         const { data: userD } = await supabase.auth.getUser();
@@ -4570,14 +4572,30 @@ window.google.script.url = {
 
         const data = {
           success: true,
-          activeTests: (dash.active_quizzes || []).map(q => ({
-            quizId: q.id,
-            title: q.title,
-            duration: q.duration,
-            isLive: true,
-            computedStatus: 'Live',
-            startTime: q.start_time
-          })),
+          activeTests: (dash.active_quizzes || []).map(q => {
+            let status = 'Live';
+            let isLive = true;
+            if (q.enable_schedule) {
+              const now = new Date().getTime();
+              const start = q.start_time ? new Date(q.start_time).getTime() : null;
+              const end = q.end_time ? new Date(q.end_time).getTime() : null;
+              if (start && now < start) {
+                status = 'Scheduled';
+                isLive = false;
+              } else if (end && now > end) {
+                status = 'Closed';
+                isLive = false;
+              }
+            }
+            return {
+              quizId: q.id,
+              title: q.title,
+              duration: q.duration,
+              isLive: isLive,
+              computedStatus: status,
+              startTime: q.start_time ? formatStandardDate(q.start_time) : null
+            };
+          }),
           pastTests: (dash.past_quizzes || []).map(p => ({
             title: p.quiz.title,
             score: p.response.score,
@@ -4594,7 +4612,9 @@ window.google.script.url = {
           setTimeout(() => activeRefreshToast && activeRefreshToast.remove(), 340);
           activeRefreshToast = null;
         }
-        showToast("Updated", "success", 3000);
+        if (isManual) {
+          showToast("Dashboard Refreshed", "success", 3000);
+        }
         const liveGrid = document.getElementById('sd-live-grid');
         const pastGrid = document.getElementById('sd-past-grid');
         liveGrid.innerHTML = '';
