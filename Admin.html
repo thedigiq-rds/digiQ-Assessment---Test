@@ -6090,6 +6090,12 @@ async function deleteQuiz(quizId) {
       const { data } = await supabase.from('quizzes').select('id').eq('legacy_id', quizId).maybeSingle();
       if (data) targetId = data.id;
     }
+    // Delete dependent records first to avoid foreign key violations (assuming no ON DELETE CASCADE)
+    await supabase.from('pending_essays').delete().eq('quiz_id', targetId);
+    await supabase.from('responses').delete().eq('quiz_id', targetId);
+    await supabase.from('exam_sessions').delete().eq('quiz_id', targetId);
+    await supabase.from('questions').delete().eq('quiz_id', targetId);
+
     const { error } = await supabase.from('quizzes').delete().eq('id', targetId);
     if (error) throw error;
     hideLoader(); showToast('Quiz deleted.', 'success'); loadDashboard();
