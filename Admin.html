@@ -6689,48 +6689,21 @@ async function processQuizCreation() {
          try { parsedEndTime = new Date(payload.endTime).toISOString(); } catch(e){}
       }
 
-      let quizId, linkId;
-      if (editingQuizId) {
-        const { error } = await supabase.from('quizzes').update({
-          title: payload.title, stream: payload.stream, semester: payload.sem,
-          duration: parseInt(payload.duration) || 0, pass_percent: parseInt(payload.passPercent) || 0,
-          custom_msg: payload.customMsg || null, send_certificate: payload.sendCert === "Yes",
-          cert_doc_id: payload.certDocId || null, enable_geofence: payload.enableGeofence === "Yes",
-          max_radius_meters: parseInt(payload.maxRadiusMeters) || null, campus_lat: parseFloat(payload.campusLat) || null,
-          campus_lon: parseFloat(payload.campusLon) || null, campus_name: payload.campusName || null,
-          enable_schedule: payload.enableSchedule === "Yes", start_time: parsedStartTime, end_time: parsedEndTime,
-          shuffle_questions: payload.shuffleQuestions === "Yes", shuffle_options: payload.shuffleOptions === "Yes",
-          send_result_email: payload.sendResultEmail === "Yes", config_json: { sections: payload.sections || [] }
-        }).eq('id', editingQuizId);
-        if (error) throw error;
-        
-        const { data: updatedQuiz } = await supabase.from('quizzes').select('id, legacy_id').eq('id', editingQuizId).single();
-        quizId = updatedQuiz.id;
-        linkId = updatedQuiz.legacy_id || updatedQuiz.id;
-      } else {
-        const baseTitle = (payload.title || 'Quiz').trim().replace(/[^a-zA-Z0-9]/g, '');
-        const legacyId = baseTitle + '_' + Date.now().toString(36);
-        const { data: newQuiz, error: insErr } = await supabase.from('quizzes').insert({
-          legacy_id: legacyId, title: payload.title, stream: payload.stream, semester: payload.sem,
-          duration: parseInt(payload.duration) || 0, pass_percent: parseInt(payload.passPercent) || 0,
-          custom_msg: payload.customMsg || null, send_certificate: payload.sendCert === "Yes",
-          cert_doc_id: payload.certDocId || null, enable_geofence: payload.enableGeofence === "Yes",
-          max_radius_meters: parseInt(payload.maxRadiusMeters) || null, campus_lat: parseFloat(payload.campusLat) || null,
-          campus_lon: parseFloat(payload.campusLon) || null, campus_name: payload.campusName || null,
-          enable_schedule: payload.enableSchedule === "Yes", start_time: parsedStartTime, end_time: parsedEndTime,
-          shuffle_questions: payload.shuffleQuestions === "Yes", shuffle_options: payload.shuffleOptions === "Yes",
-          send_result_email: payload.sendResultEmail === "Yes", config_json: { sections: payload.sections || [] },
-          status: 'Closed', created_by: user.id
-        }).select('id, legacy_id').single();
-        if (insErr) throw insErr;
-        quizId = newQuiz.id;
-        linkId = newQuiz.legacy_id || newQuiz.id;
-      }
+      const dbPayload = {
+        title: payload.title, stream: payload.stream, semester: payload.sem,
+        duration: parseInt(payload.duration) || 0, pass_percent: parseInt(payload.passPercent) || 0,
+        custom_msg: payload.customMsg || null, send_certificate: payload.sendCert === "Yes",
+        cert_doc_id: payload.certDocId || null, enable_geofence: payload.enableGeofence === "Yes",
+        max_radius_meters: parseInt(payload.maxRadiusMeters) || null, campus_lat: parseFloat(payload.campusLat) || null,
+        campus_lon: parseFloat(payload.campusLon) || null, campus_name: payload.campusName || null,
+        enable_schedule: payload.enableSchedule === "Yes", start_time: parsedStartTime, end_time: parsedEndTime,
+        shuffle_questions: payload.shuffleQuestions === "Yes", shuffle_options: payload.shuffleOptions === "Yes",
+        send_result_email: payload.sendResultEmail === "Yes", config_json: { sections: payload.sections || [] }
+      };
 
       const rows = finalCleanJson.map((q) => {
         let optionsArr = q.options || [q.Option1 || q.option1, q.Option2 || q.option2, q.Option3 || q.option3, q.Option4 || q.option4];
         return {
-          quiz_id: quizId,
           section: q.Section || q.section || null,
           type: String(q.Type || q.type || q.QuestionType || 'MCQ').toUpperCase(),
           question_text: q.Question || q.question || q.question_text || '',
@@ -6745,15 +6718,29 @@ async function processQuizCreation() {
         };
       });
 
+      let quizId, linkId;
       if (editingQuizId) {
-        // replaceQuestionsBatch
-        const { data, error } = await supabase.rpc('replace_questions_batch', { p_quiz_id: quizId, p_questions: rows });
+        const { data, error } = await supabase.rpc('update_assessment', {
+          p_quiz_id: editingQuizId,
+          p_quiz: dbPayload,
+          p_questions: rows
+        });
         if (error) throw error;
         if (data && data.error) throw new Error(data.error);
+        quizId = data.quiz_id;
+        linkId = data.legacy_id || data.quiz_id;
       } else {
-        // uploadQuestionsBatch
-        const { error } = await supabase.from('questions').insert(rows);
+        const baseTitle = (payload.title || 'Quiz').trim().replace(/[^a-zA-Z0-9]/g, '');
+        dbPayload.legacy_id = baseTitle + '_' + Date.now().toString(36);
+        dbPayload.status = 'Closed';
+        const { data, error } = await supabase.rpc('create_assessment', {
+          p_quiz: dbPayload,
+          p_questions: rows
+        });
         if (error) throw error;
+        if (data && data.error) throw new Error(data.error);
+        quizId = data.quiz_id;
+        linkId = data.legacy_id || data.quiz_id;
       }
 
       hideLoader(); loader.style.display = 'none'; btn.disabled = false;
