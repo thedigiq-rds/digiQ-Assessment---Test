@@ -4573,8 +4573,8 @@ window.google.script.url = {
         const data = {
           success: true,
           activeTests: (dash.active_quizzes || []).map(q => {
-            let status = 'Live';
-            let isLive = true;
+            let status = q.status === 'Closed' ? 'Closed' : 'Live';
+            let isLive = q.status === 'Open';
             if (q.enable_schedule) {
               const now = new Date().getTime();
               const start = q.start_time ? new Date(q.start_time).getTime() : null;
