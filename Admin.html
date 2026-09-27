@@ -6059,13 +6059,19 @@ function buildCharts() {
 async function toggleStatus(quizId) {
   showLoader('UPDATING STATUS');
   try {
-    const { data: qDataArr, error: qErr } = await supabase.from('quizzes').select('status').eq('id', quizId);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(quizId);
+    let targetId = quizId;
+    if (!isUUID) {
+      const { data } = await supabase.from('quizzes').select('id').eq('legacy_id', quizId).maybeSingle();
+      if (data) targetId = data.id;
+    }
+    const { data: qDataArr, error: qErr } = await supabase.from('quizzes').select('status').eq('id', targetId);
     if (qErr) throw qErr;
     if (!qDataArr || qDataArr.length === 0) throw new Error('Quiz not found or access denied.');
     const currentStatus = qDataArr[0].status;
     const newStatus = currentStatus === 'Open' ? 'Closed' : 'Open';
     
-    const { error: updErr } = await supabase.from('quizzes').update({ status: newStatus }).eq('id', quizId);
+    const { error: updErr } = await supabase.from('quizzes').update({ status: newStatus }).eq('id', targetId);
     if (updErr) throw updErr;
     hideLoader(); showToast('Quiz status updated.', 'success'); loadDashboard();
   } catch (err) {
@@ -6078,7 +6084,13 @@ async function deleteQuiz(quizId) {
   if (!ok) return;
   showLoader('DELETING QUIZ');
   try {
-    const { error } = await supabase.from('quizzes').delete().eq('id', quizId);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(quizId);
+    let targetId = quizId;
+    if (!isUUID) {
+      const { data } = await supabase.from('quizzes').select('id').eq('legacy_id', quizId).maybeSingle();
+      if (data) targetId = data.id;
+    }
+    const { error } = await supabase.from('quizzes').delete().eq('id', targetId);
     if (error) throw error;
     hideLoader(); showToast('Quiz deleted.', 'success'); loadDashboard();
   } catch (err) {
@@ -6092,9 +6104,15 @@ let existingQuestionsForEdit = null;
 async function editQuiz(quizId) {
   clearDeployedLinkBox(); showLoader('LOADING QUIZ');
   try {
-    const { data: qData, error: qErr } = await supabase.from('quizzes').select('*').eq('id', quizId).single();
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(quizId);
+    let targetId = quizId;
+    if (!isUUID) {
+      const { data } = await supabase.from('quizzes').select('id').eq('legacy_id', quizId).maybeSingle();
+      if (data) targetId = data.id;
+    }
+    const { data: qData, error: qErr } = await supabase.from('quizzes').select('*').eq('id', targetId).single();
     if (qErr) throw qErr;
-    const { data: questions, error: qnsErr } = await supabase.from('questions').select('*').eq('quiz_id', quizId);
+    const { data: questions, error: qnsErr } = await supabase.from('questions').select('*').eq('quiz_id', targetId);
     if (qnsErr) throw qnsErr;
 
     const details = {
@@ -7201,9 +7219,15 @@ function downloadReportPDF() {
 async function downloadQuizData(quizId) {
   showLoader('PREPARING DOWNLOAD');
   try {
-    const { data: qData, error: qErr } = await supabase.from('quizzes').select('*').eq('id', quizId).single();
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(quizId);
+    let targetId = quizId;
+    if (!isUUID) {
+      const { data } = await supabase.from('quizzes').select('id').eq('legacy_id', quizId).maybeSingle();
+      if (data) targetId = data.id;
+    }
+    const { data: qData, error: qErr } = await supabase.from('quizzes').select('*').eq('id', targetId).single();
     if (qErr) throw qErr;
-    const { data: questions, error: qnsErr } = await supabase.from('questions').select('*').eq('quiz_id', quizId);
+    const { data: questions, error: qnsErr } = await supabase.from('questions').select('*').eq('quiz_id', targetId);
     if (qnsErr) throw qnsErr;
 
     const details = {
