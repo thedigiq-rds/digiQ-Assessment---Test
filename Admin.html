@@ -4296,7 +4296,7 @@ document.addEventListener('focusout', function(e) {
               </tr>
             </thead>
             <tbody>
-              <tr><td colspan="8" style="text-align:center; color:#94a3b8;">Click Refresh List to load students.</td></tr>
+              <tr><td colspan="9" style="text-align:center; color:#94a3b8;">Click Refresh to load students.</td></tr>
             </tbody>
           </table>
         </div>
@@ -6860,306 +6860,364 @@ function copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => 
    STUDENT MANAGEMENT
 ════════════════════════════════════════ */
 
+// Canonical frontend student object: { id, name, email, rollNo, program, semester, whatsapp, createdAt }
 let allStudents = [];
 
 async function loadStudentsList() {
-  if (typeof updateStudentSemesterOptions === 'function') updateStudentSemesterOptions();
-  
   const tbody = document.querySelector('#studentsTable tbody');
-  if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8;">Loading students...</td></tr>`;
-  
+  if (tbody) tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:24px;">Loading students…</td></tr>`;
+
   try {
-    const { data: res, error } = await supabase.from('student_profiles').select('*');
+    const { data: res, error } = await supabase
+      .from('student_profiles')
+      .select('profile_id, roll_no, program, semester, whatsapp, profiles(id, full_name, email, created_at)');
+
     if (error) throw error;
-    
-    if (!res) {
-      if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--danger);">Error loading students.</td></tr>`;
-      return;
-    }
-    
-    // Map db rows back to frontend camelCase expected by renderStudentsTable if needed, but it seems frontend uses s.program, s.semester, s.name. Let's map it safely:
-    allStudents = res.map(row => ({
-      name: row.full_name || '',
-      email: row.email,
-      roll: row.roll_no,
-      program: row.program,
-      semester: row.semester,
-      phone: row.phone || ''
+
+    allStudents = (res || []).map(row => ({
+      id:        row.profile_id,
+      name:      row.profiles?.full_name  || '',
+      email:     row.profiles?.email      || '',
+      rollNo:    row.roll_no              || '',
+      program:   row.program              || '',
+      semester:  row.semester             || '',
+      whatsapp:  row.whatsapp             || '',
+      createdAt: row.profiles?.created_at || ''
     }));
-    
-    // Auto-populate filter options based on available students
-    const programs = new Set();
-    const sems = new Set();
-    allStudents.forEach(s => {
-      if (s.program) programs.add(s.program);
-      if (s.semester) sems.add(s.semester);
-    });
-    
+
     const progSel = document.getElementById('filterStdProgram');
     if (progSel) {
-      progSel.innerHTML = `<option value="">All Programs</option>` + 
+      const programs = new Set(allStudents.map(s => s.program).filter(Boolean));
+      ['B.A.','B.Sc.','B.Com.','M.A.','M.Sc.'].forEach(p => programs.add(p));
+      const cur = progSel.value;
+      progSel.innerHTML = '<option value="ALL">All Programs</option>' +
         Array.from(programs).sort().map(p => `<option value="${p}">${p}</option>`).join('');
+      if (cur && cur !== 'ALL') progSel.value = cur;
     }
+
     const semSel = document.getElementById('filterStdSemester');
     if (semSel) {
-      semSel.innerHTML = `<option value="">All Semesters</option>` + 
-        Array.from(sems).sort((a,b) => a.localeCompare(b, undefined, {numeric: true})).map(s => `<option value="${s}">${s}</option>`).join('');
+      const sems = new Set(allStudents.map(s => s.semester).filter(Boolean));
+      ['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5','Sem 6','Sem 7','Sem 8'].forEach(s => sems.add(s));
+      const cur = semSel.value;
+      semSel.innerHTML = '<option value="ALL">All Semesters</option>' +
+        Array.from(sems).sort((a,b) => a.localeCompare(b, undefined, {numeric:true}))
+          .map(s => `<option value="${s}">${s}</option>`).join('');
+      if (cur && cur !== 'ALL') semSel.value = cur;
     }
-    
+
     renderStudentsTable();
   } catch (err) {
-    if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:var(--danger);">Error: ${err.message}</td></tr>`;
+    console.error('loadStudentsList error:', err);
+    if (tbody) tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:var(--danger); padding:24px;">Error loading students: ${err.message}</td></tr>`;
   }
 }
 
 function renderStudentsTable() {
-  const progFilter = document.getElementById('filterStdProgram')?.value || '';
-  const semFilter = document.getElementById('filterStdSemester')?.value || '';
-  const sortFilter = document.getElementById('filterStdSort')?.value || 'name';
-  const tbody = document.querySelector('#studentsTable tbody');
-  
+  const progFilter = document.getElementById('filterStdProgram')?.value  || 'ALL';
+  const semFilter  = document.getElementById('filterStdSemester')?.value || 'ALL';
+  const sortFilter = document.getElementById('filterStdSort')?.value     || 'NAME_ASC';
+  const tbody      = document.querySelector('#studentsTable tbody');
   if (!tbody) return;
-  
+
+  const selectAll = document.getElementById('selectAllStudents');
+  if (selectAll) { selectAll.checked = false; selectAll.indeterminate = false; }
+  const btnBulkDel = document.getElementById('btnBulkDeleteStudents');
+  if (btnBulkDel) btnBulkDel.style.display = 'none';
+
   let filtered = allStudents.filter(s => {
-    if (progFilter && s.program !== progFilter) return false;
-    if (semFilter && s.semester !== semFilter) return false;
+    if (progFilter !== 'ALL' && s.program  !== progFilter) return false;
+    if (semFilter  !== 'ALL' && s.semester !== semFilter)  return false;
     return true;
   });
-  
-  if (sortFilter === 'name') {
-    filtered.sort((a,b) => (a.profiles?.full_name || '').localeCompare(b.profiles?.full_name || ''));
-  } else if (sortFilter === 'nameDesc') {
-    filtered.sort((a,b) => (b.profiles?.full_name || '').localeCompare(a.profiles?.full_name || ''));
-  } else if (sortFilter === 'roll') {
-    filtered.sort((a,b) => (a.roll_no || '').localeCompare(b.roll_no || '', undefined, {numeric: true}));
+
+  switch (sortFilter) {
+    case 'NAME_ASC':  filtered.sort((a,b) => (a.name||'').localeCompare(b.name||'')); break;
+    case 'NAME_DESC': filtered.sort((a,b) => (b.name||'').localeCompare(a.name||'')); break;
+    case 'ROLL_ASC':  filtered.sort((a,b) => (a.rollNo||'').localeCompare(b.rollNo||'', undefined, {numeric:true})); break;
+    case 'ROLL_DESC': filtered.sort((a,b) => (b.rollNo||'').localeCompare(a.rollNo||'', undefined, {numeric:true})); break;
+    case 'DATE_DESC': filtered.sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0)); break;
+    case 'DATE_ASC':  filtered.sort((a,b) => new Date(a.createdAt||0) - new Date(b.createdAt||0)); break;
   }
-  
+
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8;">No students found matching filters.</td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#94a3b8; padding:24px;">No students found matching the current filters.</td></tr>';
     return;
   }
-  
+
+  const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
   tbody.innerHTML = filtered.map(s => {
-    const created = new Date(s.created_at).toLocaleDateString();
-    return `
-      <tr>
-        <td style="text-align:center;"><input type="checkbox" class="student-checkbox" value="${s.profiles?.email}"></td>
-        <td><div style="font-weight:600; color:var(--text);">${s.profiles?.full_name || '-'}</div></td>
-        <td><span class="f-badge f-badge-gray">${s.roll_no || '-'}</span></td>
-        <td>${s.profiles?.email || '-'}</td>
-        <td>${s.program || '-'}</td>
-        <td>${s.semester || '-'}</td>
-        <td><span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">Managed in Auth</span></td>
-        <td>${created}</td>
-        <td><button class="btn-icon" style="color:var(--danger);" onclick="deleteStudent('${s.profiles?.email}')" title="Delete Student"><i class="ti ti-trash"></i></button></td>
-      </tr>
-    `;
+    const created   = s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-IN') : '—';
+    const safeEmail = esc(s.email);
+    return `<tr>
+      <td style="text-align:center;"><input type="checkbox" class="student-checkbox" value="${safeEmail}" data-student-id="${s.id}"></td>
+      <td><div style="font-weight:600; color:var(--text);">${esc(s.name)}</div></td>
+      <td><span class="f-badge f-badge-gray">${esc(s.rollNo)}</span></td>
+      <td>${safeEmail}</td>
+      <td>${esc(s.program)}</td>
+      <td>${esc(s.semester)}</td>
+      <td><span style="color:var(--text-muted); font-size:0.8rem; font-style:italic;">Managed in Auth</span></td>
+      <td>${created}</td>
+      <td><button class="btn-icon" style="color:var(--danger);" onclick="deleteStudent('${safeEmail}')" title="Delete Student"><i class="ti ti-trash"></i></button></td>
+    </tr>`;
   }).join('');
 }
 
 function toggleSelectAllStudents() {
-  const selectAll = document.getElementById('selectAllStudents');
+  const selectAll  = document.getElementById('selectAllStudents');
   const checkboxes = document.querySelectorAll('.student-checkbox');
   checkboxes.forEach(cb => cb.checked = selectAll.checked);
-  
   const btnDelete = document.getElementById('btnBulkDeleteStudents');
-  if (btnDelete) {
-    btnDelete.style.display = Array.from(checkboxes).some(cb => cb.checked) ? 'flex' : 'none';
-  }
+  if (btnDelete) btnDelete.style.display = Array.from(checkboxes).some(cb => cb.checked) ? 'flex' : 'none';
 }
 
-// Ensure toggleSelectAllStudents events trigger properly
 document.addEventListener('change', e => {
   if (e.target.classList.contains('student-checkbox')) {
     const checkboxes = document.querySelectorAll('.student-checkbox');
+    const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+    const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
     const btnDelete = document.getElementById('btnBulkDeleteStudents');
-    if (btnDelete) {
-      btnDelete.style.display = Array.from(checkboxes).some(cb => cb.checked) ? 'flex' : 'none';
-    }
+    if (btnDelete) btnDelete.style.display = anyChecked ? 'flex' : 'none';
+    const selectAll = document.getElementById('selectAllStudents');
+    if (selectAll) { selectAll.checked = allChecked; selectAll.indeterminate = anyChecked && !allChecked; }
   }
 });
 
-function bulkDeleteStudents() {
+async function bulkDeleteStudents() {
   const checkboxes = document.querySelectorAll('.student-checkbox:checked');
   if (checkboxes.length === 0) return;
-  if (!confirm(`Are you sure you want to delete ${checkboxes.length} selected student(s)?`)) return;
-  
-  // Collect emails
-  const emails = Array.from(checkboxes).map(cb => cb.value);
-  
-  // Note: bulk delete would require a new edge function endpoint, 
-  // but we can just loop the single delete for now since it's an admin op.
-  showLoader(`Deleting ${checkboxes.length} student(s)...`);
-  let deletedCount = 0;
-  
-  const deleteNext = async () => {
-    if (emails.length === 0) {
-      document.getElementById('loader').style.display = 'none';
-      showToast(`Successfully deleted ${deletedCount} student(s).`, 'success');
-      loadStudentsList();
-      return;
+  const ok = await showCenterConfirm('Bulk Delete Students',
+    `Are you sure you want to <strong>permanently delete ${checkboxes.length} selected student(s)</strong>? This removes login access and all profile data.`,
+    '<i class="ti ti-trash"></i> Delete All Selected', 'Cancel', 'acm-danger-ok');
+  if (!ok) return;
+  const emails = Array.from(checkboxes).map(cb => cb.value).filter(Boolean);
+  if (emails.length === 0) { showToast('No valid students selected.', 'warning'); return; }
+  showLoader(`Deleting ${emails.length} student(s)…`);
+  try {
+    const { data, error } = await supabase.functions.invoke('admin_ops', {
+      body: { action: 'deleteStudentsBatch', payload: { emails } }
+    });
+    hideLoader();
+    if (error) throw error;
+    if (data && data.error) throw new Error(data.error);
+    const deleted = data?.deletedCount ?? 0;
+    const errs    = data?.errors ?? [];
+    if (errs.length > 0) {
+      showToast(`Deleted ${deleted} student(s). ${errs.length} error(s).`, 'warning', 6000);
+      console.warn('Bulk delete errors:', errs);
+    } else {
+      showToast(`Successfully deleted ${deleted} student(s).`, 'success');
     }
-    const email = emails.pop();
-    try {
-      const { data, error } = await supabase.functions.invoke('admin_ops', { body: { action: 'deleteStudent', payload: { email } } });
-      if (error) throw error;
-      if (data && data.error) throw new Error(data.error);
-      deletedCount++;
-    } catch (err) {
-      showToast(`Error deleting ${email}: ${err.message}`, 'error');
-    }
-    deleteNext();
-  };
-  
-  deleteNext();
+    loadStudentsList();
+  } catch (err) { hideLoader(); showToast('Bulk delete error: ' + err.message, 'error'); }
 }
 
 async function deleteStudent(email) {
-  if (!confirm(`Are you sure you want to delete the student with email ${email}?`)) return;
-  showLoader('Deleting student...');
+  if (!email) { showToast('Cannot delete: student email is missing.', 'error'); return; }
+  const ok = await showCenterConfirm('Delete Student',
+    `Are you sure you want to <strong>permanently delete</strong> the student account for <strong>${email}</strong>?`,
+    '<i class="ti ti-trash"></i> Delete Permanently', 'Cancel', 'acm-danger-ok');
+  if (!ok) return;
+  showLoader('Deleting student…');
   try {
-    const { data, error } = await supabase.functions.invoke('admin_ops', { body: { action: 'deleteStudent', payload: { email } } });
+    const { data, error } = await supabase.functions.invoke('admin_ops', {
+      body: { action: 'deleteStudent', payload: { email } }
+    });
+    hideLoader();
     if (error) throw error;
     if (data && data.error) throw new Error(data.error);
-    document.getElementById('loader').style.display = 'none';
-    showToast('Student deleted successfully', 'success');
+    showToast('Student deleted successfully.', 'success');
     loadStudentsList();
-  } catch (err) {
-    document.getElementById('loader').style.display = 'none';
-    showToast(`Error: ${err.message}`, 'error');
-  }
+  } catch (err) { hideLoader(); showToast('Error deleting student: ' + err.message, 'error'); }
 }
 
-
 function updateStudentSemesterOptions() {
-  const stream = document.getElementById('stdProgram').value;
-  const sems = SEM_MAP_FULL[stream] || ['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5','Sem 6'];
+  const stream = document.getElementById('stdProgram')?.value || '';
   const semSel = document.getElementById('stdSemester');
-  semSel.innerHTML = sems.map(s => `<option value="${s}">${s}</option>`).join('');
+  if (!semSel) return;
+  const sems = (typeof SEM_MAP_FULL !== 'undefined' && SEM_MAP_FULL[stream]) || ['Sem 1','Sem 2','Sem 3','Sem 4','Sem 5','Sem 6','Sem 7','Sem 8'];
+  semSel.innerHTML = '<option value="" disabled selected>Select Semester</option>' +
+    sems.map(s => `<option value="${s}">${s}</option>`).join('');
 }
 
 function downloadStudentCSVTemplate() {
-  const csvContent = "data:text/csv;charset=utf-8,Name,Roll Number,Email,Program,Semester\nJohn Doe,CS2023001,john@example.com,B.Sc.,Sem 1";
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "Student_Upload_Template.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const rows = [
+    'FullName,RollNo,Email,WhatsApp,Program,Semester,Password',
+    'John Doe,CS2023001,john@example.com,9876543210,B.Sc.,Sem 1,mypassword123',
+    'Jane Smith,BA2023002,jane@example.com,,B.A.,Sem 2,'
+  ];
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url); link.setAttribute('download', 'student_upload_template.csv');
+  document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 function uploadStudentsCSV() {
-  const fileInput = document.getElementById('stdCsvFile');
+  const fileInput  = document.getElementById('stdCsvFile');
   const resultsDiv = document.getElementById('stdUploadResults');
-  if (!fileInput.files.length) {
-    showToast('Please select a CSV file first.', 'warning');
-    return;
+  if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+    showToast('Please select a CSV or Excel file first.', 'warning'); return;
   }
-  
-  const file = fileInput.files[0];
+  const file   = fileInput.files[0];
   const reader = new FileReader();
   reader.onload = function(e) {
     try {
-      const data = new Uint8Array(e.target.result);
+      const data     = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
-      const firstSheetName = workbook.SheetNames[0];
-      const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName], { defval: '' });
-      
-      if (!rawJson || rawJson.length === 0) {
-        showToast('File is empty or invalid format.', 'error');
-        return;
-      }
-      
-      showLoader(`Uploading ${rawJson.length} students...`);
+      const sheet    = workbook.Sheets[workbook.SheetNames[0]];
+      const rawJson  = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      if (!rawJson || rawJson.length === 0) { showToast('File is empty or has no valid rows.', 'error'); return; }
+
       resultsDiv.style.display = 'block';
       resultsDiv.innerHTML = '<strong>Upload Log:</strong><br>';
-      
-      let successCount = 0;
-      let errorCount = 0;
-      
-      // Process sequentially to avoid overwhelming the Edge Function
-      (async function processBatch() {
-          for (let i = 0; i < rawJson.length; i++) {
-              const row = rawJson[i];
-              // Case-insensitive header matching
-              const keys = Object.keys(row);
-              const getVal = (possibleKeys) => {
-                  for (const k of keys) {
-                      if (possibleKeys.includes(k.toLowerCase().trim())) return row[k];
-                  }
-                  return null;
-              };
-              
-              const name = getVal(['name', 'full name', 'student name']);
-              const rollNo = getVal(['roll number', 'roll', 'rollno', 'roll no']);
-              const email = getVal(['email', 'email id', 'email address']);
-              const stream = getVal(['program', 'stream', 'programme']);
-              const sem = getVal(['semester', 'sem']);
-              
-              if (!name || !rollNo || !email || !stream || !sem) {
-                  resultsDiv.innerHTML += `<span style="color:red;">Row ${i+2}: Missing required fields. Found columns: [${Object.keys(row).join(', ')}]</span><br>`;
-                  errorCount++;
-                  continue;
-              }
-              
-              const payload = { name, email, rollNo, stream, sem };
-              try {
-                  const { data, error } = await supabase.functions.invoke('admin_ops', { body: { action: 'addStudent', payload } });
-                  if (error) throw error;
-                  if (data && data.error) throw new Error(data.error);
-                  resultsDiv.innerHTML += `<span style="color:green;">Row ${i+2}: Created ${email} successfully.</span><br>`;
-                  successCount++;
-              } catch (err) {
-                  resultsDiv.innerHTML += `<span style="color:red;">Row ${i+2} (${email}): ${err.message}</span><br>`;
-                  errorCount++;
-              }
+      showLoader(`Processing ${rawJson.length} row(s)…`);
+
+      const getVal = (row, ...keys) => {
+        for (const k of Object.keys(row)) {
+          if (keys.includes(k.toLowerCase().trim())) return String(row[k]||'').trim();
+        }
+        return '';
+      };
+      const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      let successCount = 0, errorCount = 0;
+
+      (async () => {
+        for (let i = 0; i < rawJson.length; i++) {
+          const row    = rawJson[i];
+          const rowNum = i + 2;
+          const name     = getVal(row, 'fullname','full name','name','student name');
+          const rollNo   = getVal(row, 'rollno','roll no','roll number','roll');
+          const email    = getVal(row, 'email','email id','email address').toLowerCase();
+          const whatsapp = getVal(row, 'whatsapp','whatsappnumber','phone','mobile');
+          const stream   = getVal(row, 'program','programme','stream');
+          const sem      = getVal(row, 'semester','sem');
+          const password = getVal(row, 'password','pass','pwd');
+
+          if (!name)              { resultsDiv.innerHTML += `<span style="color:red;">Row ${rowNum}: Missing Name.</span><br>`;          errorCount++; continue; }
+          if (!rollNo)            { resultsDiv.innerHTML += `<span style="color:red;">Row ${rowNum}: Missing Roll Number.</span><br>`;    errorCount++; continue; }
+          if (!email)             { resultsDiv.innerHTML += `<span style="color:red;">Row ${rowNum}: Missing Email.</span><br>`;          errorCount++; continue; }
+          if (!emailRx.test(email)){ resultsDiv.innerHTML += `<span style="color:red;">Row ${rowNum}: Invalid email (${email}).</span><br>`; errorCount++; continue; }
+          if (!stream)            { resultsDiv.innerHTML += `<span style="color:red;">Row ${rowNum}: Missing Program.</span><br>`;        errorCount++; continue; }
+          if (!sem)               { resultsDiv.innerHTML += `<span style="color:red;">Row ${rowNum}: Missing Semester.</span><br>`;      errorCount++; continue; }
+
+          try {
+            const { data: res, error } = await supabase.functions.invoke('admin_ops', {
+              body: { action: 'addStudent', payload: { name, email, rollNo, stream, sem, whatsapp: whatsapp||null, password: password||null } }
+            });
+            if (error) throw error;
+            if (res && res.error) throw new Error(res.error);
+            resultsDiv.innerHTML += `<span style="color:green;">Row ${rowNum}: ✓ Created ${email}.</span><br>`;
+            successCount++;
+          } catch (err) {
+            resultsDiv.innerHTML += `<span style="color:red;">Row ${rowNum} (${email}): ${err.message}</span><br>`;
+            errorCount++;
           }
-          hideLoader();
-          showToast(`Finished: ${successCount} success, ${errorCount} errors.`, 'info', 5000);
-          if (successCount > 0 && typeof loadDashboard === 'function') loadDashboard();
+          resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        hideLoader();
+        resultsDiv.innerHTML += `<br><strong>Done: ${successCount} created, ${errorCount} failed.</strong>`;
+        resultsDiv.scrollTop  = resultsDiv.scrollHeight;
+        showToast(`Upload complete: ${successCount} success, ${errorCount} error(s).`, errorCount > 0 ? 'warning' : 'success', 6000);
+        if (successCount > 0) loadStudentsList();
+        fileInput.value = '';
       })();
 
-    } catch (err) {
-      hideLoader();
-      showToast('Error reading file: ' + err.message, 'error');
-    }
+    } catch (err) { hideLoader(); showToast('Error reading file: ' + err.message, 'error'); }
   };
   reader.readAsArrayBuffer(file);
 }
 
 async function submitStudentForm() {
-  const name = document.getElementById('stdName').value.trim();
-  const rollNo = document.getElementById('stdRoll').value.trim();
-  const email = document.getElementById('stdEmail').value.trim();
-  const stream = document.getElementById('stdProgram').value;
-  const sem = document.getElementById('stdSemester').value;
+  const name     = document.getElementById('stdName')?.value.trim()  || '';
+  const rollNo   = document.getElementById('stdRoll')?.value.trim()  || '';
+  const rawEmail = document.getElementById('stdEmail')?.value.trim() || '';
+  const email    = rawEmail.toLowerCase();
+  const stream   = document.getElementById('stdProgram')?.value      || '';
+  const sem      = document.getElementById('stdSemester')?.value     || '';
+  const whatsapp = document.getElementById('stdWhatsApp')?.value.trim() || '';
+  const password = document.getElementById('stdPassword')?.value.trim() || '';
 
-  if (!name || !rollNo || !email || !stream || !sem) {
-    showToast('Please fill all required fields.', 'warning');
-    return;
-  }
+  if (!name)   { showToast('Please enter the Full Name.', 'warning');  return; }
+  if (!rollNo) { showToast('Please enter the Roll Number.', 'warning'); return; }
+  if (!email)  { showToast('Please enter the Email.', 'warning');       return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Please enter a valid Email address.', 'warning'); return; }
+  if (!stream) { showToast('Please select a Program.',  'warning'); return; }
+  if (!sem)    { showToast('Please select a Semester.', 'warning'); return; }
 
-  const payload = { name, email, rollNo, stream, sem };
-  showLoader('ADDING STUDENT');
+  showLoader('CREATING STUDENT ACCOUNT…');
   try {
-    const { data: res, error } = await supabase.functions.invoke('admin_ops', { body: { action: 'addStudent', payload } });
+    const { data: res, error } = await supabase.functions.invoke('admin_ops', {
+      body: { action: 'addStudent', payload: { name, email, rollNo, stream, sem, whatsapp: whatsapp||null, password: password||null } }
+    });
+    hideLoader();
     if (error) throw error;
     if (res && res.error) throw new Error(res.error);
-    
-    hideLoader();
-    const pwd = res && res.password ? res.password : 'unknown';
-    showToast('Student created successfully!', 'success', 5000);
-    alert(`Student Created Successfully!\n\nName: ${name}\nEmail: ${email}\nPassword: ${pwd}\n\nPlease copy and share this password securely. It will not be shown again.`);
-    document.getElementById('stdName').value = '';
-    document.getElementById('stdRoll').value = '';
-    document.getElementById('stdEmail').value = '';
-    document.getElementById('stdProgram').value = '';
-    document.getElementById('stdSemester').value = '';
-    if(typeof loadDashboard === 'function') loadDashboard();
+
+    const generatedPwd = res?.password || '';
+    showToast('Student account created successfully!', 'success', 6000);
+
+    if (generatedPwd && typeof showCenterConfirm === 'function') {
+      await showCenterConfirm('Student Created ✓',
+        `<div style="text-align:left;font-size:0.9rem;line-height:1.8;">
+          <b>Name:</b> ${name}<br><b>Email:</b> ${email}<br><b>Roll No:</b> ${rollNo}<br>
+          <b>Program:</b> ${stream} — ${sem}<br><br>
+          <b>Password:</b> <span style="font-family:monospace;background:#f1f5f9;padding:3px 8px;border-radius:4px;user-select:all;">${generatedPwd}</span><br><br>
+          <span style="color:var(--danger);font-size:0.82rem;"><i class="ti ti-alert-triangle"></i> Copy and share this password securely. It will not be shown again.</span>
+        </div>`,
+        'OK, I\'ve Copied It', '', 'acm-confirm-ok');
+    }
+
+    ['stdName','stdRoll','stdEmail','stdWhatsApp','stdPassword'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    const progEl = document.getElementById('stdProgram');
+    if (progEl) { progEl.value = ''; updateStudentSemesterOptions(); }
+    loadStudentsList();
   } catch (err) {
-    hideLoader(); showToast('Error: ' + err.message, 'error');
+    hideLoader();
+    showToast('Error creating student: ' + err.message, 'error', 7000);
   }
+}
+
+function cancelStudentEdit() {
+  const ids = ['stdEditMode','stdOrigRoll','stdOrigProgram','stdOrigSemester'];
+  ids.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const titleEl = document.getElementById('stdFormPanelTitle');
+  if (titleEl) titleEl.textContent = 'Add New Student';
+  const submitBtn = document.getElementById('stdSubmitBtn');
+  if (submitBtn) submitBtn.innerHTML = '<i class="ti ti-user-plus"></i> Create Student Account';
+  const cancelBtn = document.getElementById('stdCancelEditBtn');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+  ['stdName','stdRoll','stdEmail','stdWhatsApp','stdPassword'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const progEl = document.getElementById('stdProgram');
+  if (progEl) { progEl.value = ''; updateStudentSemesterOptions(); }
+}
+
+function exportStudentsExcel() {
+  if (!allStudents || allStudents.length === 0) {
+    showToast('No student data to export. Please Refresh the list first.', 'warning'); return;
+  }
+  const progFilter = document.getElementById('filterStdProgram')?.value  || 'ALL';
+  const semFilter  = document.getElementById('filterStdSemester')?.value || 'ALL';
+  let toExport = allStudents.filter(s => {
+    if (progFilter !== 'ALL' && s.program  !== progFilter) return false;
+    if (semFilter  !== 'ALL' && s.semester !== semFilter)  return false;
+    return true;
+  });
+  if (toExport.length === 0) { showToast('No students match the current filters.', 'warning'); return; }
+
+  const exportData = toExport.map(s => ({
+    'Name': s.name, 'Roll Number': s.rollNo, 'Email': s.email,
+    'WhatsApp': s.whatsapp, 'Program': s.program, 'Semester': s.semester,
+    'Created': s.createdAt ? new Date(s.createdAt).toLocaleDateString('en-IN') : ''
+  }));
+  const ws  = XLSX.utils.json_to_sheet(exportData);
+  const wb  = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Students');
+  const fn  = `Students_Export_${new Date().toISOString().slice(0,10)}.xlsx`;
+  XLSX.writeFile(wb, fn);
+  showToast(`Exported ${toExport.length} student(s) to ${fn}`, 'success');
 }
 
 /* ════════════════════════════════════════
@@ -9067,17 +9125,6 @@ function epbUpdatePreview() {
   epbApplyLayout();
 }
 
-function downloadStudentCSVTemplate() {
-  const csvContent = "FullName,RollNo,Email,WhatsApp,Program,Semester,Password\nJohn Doe,CS2023001,john@example.com,9876543210,B.A.,Sem 1,password123\nJane Smith,BA2023002,jane@example.com,9876543211,B.A.,Sem 1,";
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", "student_upload_template.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
 
 function epbApplyLayout() {
   var masterUnit = document.getElementById('epb-paper-master-unit');
