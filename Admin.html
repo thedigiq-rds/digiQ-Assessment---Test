@@ -5423,6 +5423,16 @@ window.addEventListener('popstate', (e) => {
   }
 });
 
+function formatStandardDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return String(dateStr);
+  return d.toLocaleString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: true
+  });
+}
+
 function toggleAdminSidebar() {
   const sb = document.querySelector('.sidebar'); const bd = document.getElementById('sidebarBackdrop');
   if (sb) sb.classList.toggle('mobile-open'); if (bd) bd.classList.toggle('show');
