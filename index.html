@@ -1368,8 +1368,8 @@ window.google.script.url = {
       z-index: 20;
     }
     .fab-button {
-      width: 60px;
-      height: 60px;
+      width: 70px;
+      height: 70px;
       background: radial-gradient(circle at 30% 30%, #3b82f6 0%, #1d4ed8 60%, #1e3a8a 100%);
       border: 2px solid rgba(255, 255, 255, 0.4);
       border-radius: 50%;
@@ -2789,27 +2789,28 @@ window.google.script.url = {
     <!-- Central Blue FAB with colored sifter squares — opens question palette -->
     <div class="center-fab-wrapper">
       <button class="fab-button" id="main-action-btn" onclick="openSectionDrawer()" aria-label="Open Question Palette">
-        <!-- 7 Smaller Colored Sifter Squares -->
-        <div class="sifter-square sq-1"></div>
-        <div class="sifter-square sq-2"></div>
-        <div class="sifter-square sq-3"></div>
-        <div class="sifter-square sq-4"></div>
-        <div class="sifter-square sq-5"></div>
-        <div class="sifter-square sq-6"></div>
-        <div class="sifter-square sq-7"></div>
-        <!-- 3×3 Grid Icon (Colored Rects) -->
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:relative;z-index:2;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));">
-          <rect x="3"  y="3"  width="4" height="4" rx="0.5" fill="#fca5a5" stroke="none"></rect>
-          <rect x="10" y="3"  width="4" height="4" rx="0.5" fill="#fef08a" stroke="none"></rect>
-          <rect x="17" y="3"  width="4" height="4" rx="0.5" fill="#bbf7d0" stroke="none"></rect>
-          <rect x="3"  y="10" width="4" height="4" rx="0.5" fill="#bfdbfe" stroke="none"></rect>
-          <rect x="10" y="10" width="4" height="4" rx="0.5" fill="#ffffff" stroke="none"></rect>
-          <rect x="17" y="10" width="4" height="4" rx="0.5" fill="#e9d5ff" stroke="none"></rect>
-          <rect x="3"  y="17" width="4" height="4" rx="0.5" fill="#fbcfe8" stroke="none"></rect>
-          <rect x="10" y="17" width="4" height="4" rx="0.5" fill="#fed7aa" stroke="none"></rect>
-          <rect x="17" y="17" width="4" height="4" rx="0.5" fill="#99f6e4" stroke="none"></rect>
-        </svg>
-
+        <div style="display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; width: 100%; height: 100%; padding: 6px; gap: 2px;">
+          <!-- Answered -->
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; color: #fff; font-weight: bold; font-size: 0.75rem; line-height: 1;" title="Answered">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--success);margin-bottom:2px;box-shadow:0 0 2px rgba(0,0,0,0.3);"></div>
+            <span id="fab-ans">0</span>
+          </div>
+          <!-- Viewed -->
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; color: #fff; font-weight: bold; font-size: 0.75rem; line-height: 1;" title="Viewed">
+            <div style="width:8px;height:8px;border-radius:50%;background:#eab308;margin-bottom:2px;box-shadow:0 0 2px rgba(0,0,0,0.3);"></div>
+            <span id="fab-view">0</span>
+          </div>
+          <!-- Not Visited -->
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; color: #fff; font-weight: bold; font-size: 0.75rem; line-height: 1;" title="Not Visited">
+            <div style="width:8px;height:8px;border-radius:50%;background:#fff;border:1px solid #cbd5e1;margin-bottom:2px;box-shadow:0 0 2px rgba(0,0,0,0.3);"></div>
+            <span id="fab-not">0</span>
+          </div>
+          <!-- Active -->
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; color: #fff; font-weight: bold; font-size: 0.75rem; line-height: 1;" title="Active">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--primary);margin-bottom:2px;box-shadow:0 0 2px rgba(0,0,0,0.3);"></div>
+            <span id="fab-act">1</span>
+          </div>
+        </div>
       </button>
     </div>
 
@@ -3473,13 +3474,39 @@ window.google.script.url = {
   }
 
   function updateProgressUI() {
-    const answeredCount = Object.keys(answers).length;
+    let answeredCount = 0, viewedCount = 0, notVisitedCount = 0, activeCount = 1;
     const total = examData.length;
+    
+    for (let i = 0; i < total; i++) {
+      if (i === currentIdx) {
+        // Active
+      } else if (answers[examData[i].id]) {
+        answeredCount++;
+      } else if (typeof viewedQuestions !== 'undefined' && viewedQuestions.has(i)) {
+        viewedCount++;
+      } else {
+        notVisitedCount++;
+      }
+    }
+
     const pct = total > 0 ? (answeredCount / total * 100).toFixed(0) : 0;
 
-    document.getElementById('sidebar-answered').innerText = answeredCount;
-    document.getElementById('sidebar-progress').style.width = pct + '%';
-    document.getElementById('answered-count').innerText = answeredCount;
+    const sbAns = document.getElementById('sidebar-answered');
+    if(sbAns) sbAns.innerText = answeredCount;
+    const sbProg = document.getElementById('sidebar-progress');
+    if(sbProg) sbProg.style.width = pct + '%';
+    const ansCnt = document.getElementById('answered-count');
+    if(ansCnt) ansCnt.innerText = answeredCount;
+
+    // Update FAB stats
+    const fAns = document.getElementById('fab-ans');
+    if(fAns) fAns.innerText = answeredCount;
+    const fView = document.getElementById('fab-view');
+    if(fView) fView.innerText = viewedCount;
+    const fNot = document.getElementById('fab-not');
+    if(fNot) fNot.innerText = notVisitedCount;
+    const fAct = document.getElementById('fab-act');
+    if(fAct) fAct.innerText = activeCount;
   }
 
   /* ──────────────────────────────────────────────────────── */
