@@ -5486,7 +5486,7 @@ async function loadDashboard(silent = false) {
     
     const mappedResponses = (rpcData.responses || []).map(r => ({
       created_at: r[0], quiz_id: r[1], roll_no: r[2], student_name: r[3],
-      student_email: r[4], score: r[5], total_marks: r[6], percentage: r[7], passed: r[8]
+      student_email: r[4], score: r[5], total_marks: r[6], percentage: r[7], passed: r[8], id: r[9]
     }));
     
     const data = {
