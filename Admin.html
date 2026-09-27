@@ -6738,8 +6738,12 @@ async function processQuizCreation() {
         max_radius_meters: parseInt(payload.maxRadiusMeters) || null, campus_lat: parseFloat(payload.campusLat) || null,
         campus_lon: parseFloat(payload.campusLon) || null, campus_name: payload.campusName || null,
         enable_schedule: payload.enableSchedule === "Yes", start_time: parsedStartTime, end_time: parsedEndTime,
-        shuffle_questions: payload.shuffleQuestions === "Yes", shuffle_options: payload.shuffleOptions === "Yes",
-        send_result_email: payload.sendResultEmail === "Yes", config_json: { sections: payload.sections || [] }
+        send_result_email: payload.sendResultEmail === "Yes", 
+        config_json: { 
+          sections: payload.sections || [],
+          shuffle_questions: payload.shuffleQuestions === "Yes",
+          shuffle_options: payload.shuffleOptions === "Yes"
+        }
       };
 
       const rows = finalCleanJson.map((q) => {
