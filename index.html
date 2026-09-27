@@ -3454,16 +3454,21 @@ window.google.script.url = {
   /* ──────────────────────────────────────────────────────── */
   function buildSidebarTracker() {
     let html = ''; let globalQIndex = 0;
+    let sectionsArr = [];
     if (Array.isArray(config)) {
-      config.forEach(sec => {
-        html += `<div class="sec-title">${sec.name}</div><div class="circle-grid">`;
-        for (let i = 0; i < (sec.pick || 0); i++) {
-          html += `<div class="q-circle" id="circle-${globalQIndex}" data-index="${globalQIndex}" onclick="jumpTo(${globalQIndex})">${i+1}</div>`;
-          globalQIndex++;
-        }
-        html += `</div>`;
-      });
+      sectionsArr = config;
+    } else if (config && Array.isArray(config.sections)) {
+      sectionsArr = config.sections;
     }
+    
+    sectionsArr.forEach(sec => {
+      html += `<div class="sec-title">${sec.name}</div><div class="circle-grid">`;
+      for (let i = 0; i < (sec.pick || 0); i++) {
+        html += `<div class="q-circle" id="circle-${globalQIndex}" data-index="${globalQIndex}" onclick="jumpTo(${globalQIndex})">${i+1}</div>`;
+        globalQIndex++;
+      }
+      html += `</div>`;
+    });
     const container = document.getElementById('tracker-container');
     if (container) container.innerHTML = html;
     
