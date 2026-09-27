@@ -1729,7 +1729,7 @@ window.google.script.url = {
   </div>
 </div>
 
-<div id="toast-container"></div>
+
 
 <!-- ═══════════════════════════════════════════════════════ -->
 <!-- PROCTORING WARNING OVERLAY                              -->
@@ -3603,13 +3603,13 @@ window.google.script.url = {
       // Mark as implicitly answered if they interacted? Wait, if they just see the default order it's not answered unless they interact. 
       // But we initialized items. Let's not auto-answer, they must interact.
     } else {
-      container.innerHTML = q.options.map((opt, i) => {
-        const isSelected = (answers[q.id] != null && String(answers[q.id]).trim() === String(opt).trim());
+      container.innerHTML = (q.mcqOptions || q.options.map((o, idx) => ({text: o, origIndex: idx}))).map((optObj, i) => {
+        const isSelected = (answers[q.id] != null && String(answers[q.id]).trim() === String(optObj.origIndex).trim());
         const sel = isSelected ? 'selected' : '';
-        const safeOpt = String(opt).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        return `<button class="option-btn ${sel}" onclick="selectAns('${q.id}', '${safeOpt}')">
+        const safeOpt = String(optObj.text).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `<button class="option-btn ${sel}" onclick="selectAns('${q.id}', '${optObj.origIndex}')">
           <span class="option-letter">${OPTION_LETTERS[i]}</span>
-          <span>${opt}</span>
+          <span>${optObj.text}</span>
         </button>`;
       }).join('');
     }
