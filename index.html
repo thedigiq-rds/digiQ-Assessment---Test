@@ -4580,12 +4580,12 @@ window.google.script.url = {
           })),
           pastTests: (dash.past_quizzes || []).map(p => ({
             title: p.quiz.title,
-            score: p.response.score_obtained,
-            total: p.response.total_score,
+            score: p.response.score,
+            total: p.response.total_marks,
             perc: p.response.percentage,
-            passed: p.response.passed ? 'Yes' : 'No',
-            timestamp: p.response.submitted_at,
-            sendCert: p.quiz.send_cert,
+            passed: p.response.passed,
+            timestamp: p.response.created_at,
+            sendCert: p.quiz.send_certificate,
             certDocId: p.quiz.cert_doc_id
           }))
         };
