@@ -3555,7 +3555,7 @@ document.addEventListener('focusout', function(e) {
         <div class="data-table-wrapper" style="max-height:460px; overflow-y:auto; overflow-x:auto;">
           <table class="data-table">
             <thead style="position:sticky; top:0; z-index:2;">
-              <tr><th>Date</th><th>Roll No</th><th>Name</th><th>Email</th><th>Score</th><th>%</th><th>Result</th></tr>
+              <tr><th>Date</th><th>Roll No</th><th>Name</th><th>Email</th><th>Score</th><th>%</th><th>Result</th><th>Action</th></tr>
             </thead>
             <tbody id="reports-list"></tbody>
           </table>
@@ -5603,8 +5603,28 @@ function renderFilteredReports(data) {
       <td>${r.score} / ${r.total_marks}</td>
       <td><strong>${r.percentage}%</strong></td>
       <td><span class="${passed ? 'badge-pass' : 'badge-fail'}">${passed ? 'Passed' : 'Fail'}</span></td>
+      <td><button class="btn-icon" style="color:var(--danger);" onclick="deleteReportEntry('${r.id}', this)" title="Delete"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12M9 7V4a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3"></path></svg></button></td>
     </tr>`;
   }).join('');
+}
+
+async function deleteReportEntry(id, btn) {
+  if (!confirm('Are you sure you want to delete this submission? This action cannot be undone.')) return;
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<span class="inline-spinner" style="border-top-color:var(--danger); width:14px; height:14px;"></span>';
+  btn.disabled = true;
+  try {
+    const { error } = await supabase.from('responses').delete().eq('id', id);
+    if (error) throw error;
+    showToast('Submission deleted successfully.', 'success');
+    globalResponses = globalResponses.filter(r => r.id !== id);
+    renderReportsTable();
+  } catch (err) {
+    console.error(err);
+    showToast('Failed to delete submission.', 'error');
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
+  }
 }
 
 /* ════════════════════════════════════════
