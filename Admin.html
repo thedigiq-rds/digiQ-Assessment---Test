@@ -5650,25 +5650,27 @@ async function loadPendingEssays() {
   if (loading) loading.style.display = 'block';
 
   try {
-    const { data, error } = await supabase.from('pending_essays').select('*, responses(*)');
+    const { data, error } = await supabase.from('pending_essays').select('*, quizzes(title), responses(created_at)');
     if (error) throw error;
     if (loading) loading.style.display = 'none';
     
-    // Map snake_case relation to legacy frontend structure
+    // All fields are directly on pending_essays; quizzes join gives title; responses join gives created_at
     globalPendingEssays = (data || []).map(r => ({
-      dbId: r.id,
-      responseId: r.response_id,
-      quizId: r.responses?.quiz_id,
-      quizTitle: r.responses?.quiz_id,
-      rollNo: r.responses?.roll_no,
-      studentName: r.responses?.student_name,
-      email: r.responses?.student_email,
-      submittedAt: r.responses?.created_at,
-      question: r.question_text || 'Essay Question',
-      answer: r.student_answer,
-      maxMarks: r.max_marks || 1,
-      awardedMarks: r.marks_awarded,
-      feedback: r.feedback
+      dbId:         r.id,                         // pending_essays PK — used as submissionId
+      submissionId: r.id,
+      responseId:   r.response_id,
+      quizId:       r.quiz_id,
+      quizTitle:    r.quizzes?.title || r.quiz_id, // human-readable title
+      rollNo:       r.roll_no,
+      studentName:  r.student_name,
+      email:        r.student_email,
+      submittedAt:  r.responses?.created_at || r.created_at,
+      questionText: r.question_text || 'Essay Question',
+      studentAnswer:r.student_answer || '',         // the actual essay answer
+      assignedMarks:r.assigned_marks || 10,
+      awardedMarks: r.awarded_marks,
+      assessorName: r.assessor_name || '',
+      remarks:      r.remarks || ''
     }));
     
     renderEssaysList(globalPendingEssays);
