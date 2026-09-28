@@ -6784,7 +6784,15 @@ async function processQuizCreation() {
         linkId = data.legacy_id || data.quiz_id;
       } else {
         const baseTitle = (payload.title || 'Quiz').trim().replace(/[^a-zA-Z0-9]/g, '');
-        dbPayload.legacy_id = baseTitle + '_' + Date.now().toString(36);
+        // Generate clean slug: Title, then Title1, Title2... for collisions
+        let slug = baseTitle, suffix = 0;
+        while (true) {
+          const candidate = suffix === 0 ? baseTitle : baseTitle + suffix;
+          const { data: existSlug } = await supabase.from('quizzes').select('id').eq('legacy_id', candidate).maybeSingle();
+          if (!existSlug) { slug = candidate; break; }
+          suffix++;
+        }
+        dbPayload.legacy_id = slug;
         dbPayload.status = 'Closed';
         const { data, error } = await supabase.rpc('create_assessment', {
           p_quiz: dbPayload,
