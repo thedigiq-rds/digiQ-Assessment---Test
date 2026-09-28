@@ -4215,7 +4215,14 @@ document.addEventListener('focusout', function(e) {
             </div>
             <div class="f-group" style="margin-bottom:0;">
               <label class="f-label">Password</label>
-              <input type="text" id="stdPassword" class="f-input" placeholder="Leave blank to keep existing">
+              <input type="text" id="stdPassword" class="f-input" placeholder="Leave blank to auto-generate">
+            </div>
+            <!-- Send email option -->
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(249,115,22,0.06); border-radius:8px; border:1px solid rgba(249,115,22,0.2);">
+              <input type="checkbox" id="stdSendEmail" style="width:16px; height:16px; accent-color:var(--primary); cursor:pointer; flex-shrink:0;">
+              <label for="stdSendEmail" style="font-size:0.87rem; color:var(--text); cursor:pointer; line-height:1.4; margin:0;">
+                <strong>Send welcome email</strong> to student with login credentials
+              </label>
             </div>
           </div>
           <div style="display:flex; gap:10px;">
@@ -4230,13 +4237,14 @@ document.addEventListener('focusout', function(e) {
           
           
           <div class="info-box" style="margin-bottom:16px;">
-            <strong>Expected CSV Format:</strong><br>
-            
-            <div style="margin-top:8px;">
+            <strong>Expected CSV Columns:</strong><br>
+            <span style="font-size:0.8rem; color:var(--text-muted);">FullName, RollNo, Email, WhatsApp, Program, Semester, Password, <strong>SendEmail</strong></span><br>
+            <div style="margin-top:8px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
               <a href="javascript:void(0)" onclick="downloadStudentCSVTemplate()" style="color:var(--primary); font-weight:600; text-decoration:underline; font-size:0.8rem;"><i class="ti ti-download"></i> Download Sample Template</a>
+              <span style="font-size:0.75rem; color:var(--text-muted);"><strong>SendEmail</strong>: Yes = send mail &nbsp;|&nbsp; No or blank = skip</span>
             </div>
           </div>
-          <input type="file" id="stdCsvFile" accept=".csv" class="f-input" style="padding:10px;">
+          <input type="file" id="stdCsvFile" accept=".csv,.xlsx,.xls" class="f-input" style="padding:10px;">
           <button class="btn-primary-admin" onclick="uploadStudentsCSV()" style="width:100%; margin-top:16px; background:var(--teal); border-color:var(--teal);"><i class="ti ti-upload"></i> Upload CSV</button>
           
           <div id="stdUploadResults" style="margin-top:16px; font-size:0.85rem; display:none; padding:12px; border-radius:8px; background:#f8fafc; border:1px solid #e2e8f0; max-height:200px; overflow-y:auto; color:var(--text);">
@@ -7043,9 +7051,9 @@ function updateStudentSemesterOptions() {
 
 function downloadStudentCSVTemplate() {
   const rows = [
-    'FullName,RollNo,Email,WhatsApp,Program,Semester,Password',
-    'John Doe,CS2023001,john@example.com,9876543210,B.Sc.,Sem 1,mypassword123',
-    'Jane Smith,BA2023002,jane@example.com,,B.A.,Sem 2,'
+    'FullName,RollNo,Email,WhatsApp,Program,Semester,Password,SendEmail',
+    'John Doe,CS2023001,john@example.com,9876543210,B.Sc.,Sem 1,mypassword123,Yes',
+    'Jane Smith,BA2023002,jane@example.com,,B.A.,Sem 2,,No'
   ];
   const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const url  = URL.createObjectURL(blob);
@@ -7095,6 +7103,8 @@ function uploadStudentsCSV() {
           const stream   = getVal(row, 'program','programme','stream');
           const sem      = getVal(row, 'semester','sem');
           const password = getVal(row, 'password','pass','pwd');
+          const sendEmailVal = getVal(row, 'sendemail','send email','send_email').toLowerCase();
+          const sendEmail = (sendEmailVal === 'yes' || sendEmailVal === 'y' || sendEmailVal === '1');
 
           if (!name)              { resultsDiv.innerHTML += `<span style="color:red;">Row ${rowNum}: Missing Name.</span><br>`;          errorCount++; continue; }
           if (!rollNo)            { resultsDiv.innerHTML += `<span style="color:red;">Row ${rowNum}: Missing Roll Number.</span><br>`;    errorCount++; continue; }
@@ -7105,7 +7115,7 @@ function uploadStudentsCSV() {
 
           try {
             const { data: res, error } = await supabase.functions.invoke('admin_ops', {
-              body: { action: 'addStudent', payload: { name, email, rollNo, stream, sem, whatsapp: whatsapp||null, password: password||null } }
+              body: { action: 'addStudent', payload: { name, email, rollNo, stream, sem, whatsapp: whatsapp||null, password: password||null, sendEmail } }
             });
             if (error) throw error;
             if (res && res.error) throw new Error(res.error);
@@ -7139,6 +7149,7 @@ async function submitStudentForm() {
   const sem      = document.getElementById('stdSemester')?.value     || '';
   const whatsapp = document.getElementById('stdWhatsApp')?.value.trim() || '';
   const password = document.getElementById('stdPassword')?.value.trim() || '';
+  const sendEmail = document.getElementById('stdSendEmail')?.checked || false;
 
   if (!name)   { showToast('Please enter the Full Name.', 'warning');  return; }
   if (!rollNo) { showToast('Please enter the Roll Number.', 'warning'); return; }
@@ -7150,14 +7161,15 @@ async function submitStudentForm() {
   showLoader('CREATING STUDENT ACCOUNT…');
   try {
     const { data: res, error } = await supabase.functions.invoke('admin_ops', {
-      body: { action: 'addStudent', payload: { name, email, rollNo, stream, sem, whatsapp: whatsapp||null, password: password||null } }
+      body: { action: 'addStudent', payload: { name, email, rollNo, stream, sem, whatsapp: whatsapp||null, password: password||null, sendEmail } }
     });
     hideLoader();
     if (error) throw error;
     if (res && res.error) throw new Error(res.error);
 
     const generatedPwd = res?.password || '';
-    showToast('Student account created successfully!', 'success', 6000);
+    const emailWasSent  = res?.emailSent === true;
+    showToast(emailWasSent ? 'Student account created and email sent!' : 'Student account created successfully!', 'success', 6000);
 
     if (generatedPwd && typeof showCenterConfirm === 'function') {
       await showCenterConfirm('Student Created ✓',
@@ -7165,12 +7177,14 @@ async function submitStudentForm() {
           <b>Name:</b> ${name}<br><b>Email:</b> ${email}<br><b>Roll No:</b> ${rollNo}<br>
           <b>Program:</b> ${stream} — ${sem}<br><br>
           <b>Password:</b> <span style="font-family:monospace;background:#f1f5f9;padding:3px 8px;border-radius:4px;user-select:all;">${generatedPwd}</span><br><br>
+          <span style="font-size:0.82rem; color:var(--text-muted);">${emailWasSent ? '📧 Welcome email sent to student.' : '📭 No email was sent (send email was unchecked).'}</span><br>
           <span style="color:var(--danger);font-size:0.82rem;"><i class="ti ti-alert-triangle"></i> Copy and share this password securely. It will not be shown again.</span>
         </div>`,
         'OK, I\'ve Copied It', '', 'acm-confirm-ok');
     }
 
     ['stdName','stdRoll','stdEmail','stdWhatsApp','stdPassword'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+    const sendEmailCb = document.getElementById('stdSendEmail'); if (sendEmailCb) sendEmailCb.checked = false;
     const progEl = document.getElementById('stdProgram');
     if (progEl) { progEl.value = ''; updateStudentSemesterOptions(); }
     loadStudentsList();
@@ -7190,6 +7204,7 @@ function cancelStudentEdit() {
   const cancelBtn = document.getElementById('stdCancelEditBtn');
   if (cancelBtn) cancelBtn.style.display = 'none';
   ['stdName','stdRoll','stdEmail','stdWhatsApp','stdPassword'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  const sendEmailCb2 = document.getElementById('stdSendEmail'); if (sendEmailCb2) sendEmailCb2.checked = false;
   const progEl = document.getElementById('stdProgram');
   if (progEl) { progEl.value = ''; updateStudentSemesterOptions(); }
 }
