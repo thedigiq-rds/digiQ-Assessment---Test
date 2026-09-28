@@ -31,8 +31,10 @@ window.google.script.url = {
   async function resolveQuizId(qId) {
      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
      if (uuidRegex.test(qId)) return qId;
-     const { data, error } = await supabase.from('quizzes').select('id').eq('legacy_id', qId).single();
-     if (error || !data) throw new Error("Quiz not found.");
+     // Look up by legacy_id (title slug like "New" or "New1")
+     const { data, error } = await supabase.from('quizzes').select('id').eq('legacy_id', qId).maybeSingle();
+     if (error) throw new Error("Failed to look up assessment: " + error.message);
+     if (!data) throw new Error(`Assessment "${qId}" not found. The link may be incorrect or the assessment may have been removed.`);
      return data.id;
   }
 </script>
@@ -3134,7 +3136,9 @@ window.google.script.url = {
     }
     (async () => {
       try {
-        const { data: res, error } = await window.supabase.from('quizzes').select('title, stream, semester, duration, config_json, enable_geofence, max_radius_meters, campus_lat, campus_lon, login_method, send_certificate').eq('id', QUIZ_ID).single();
+        // Resolve slug/legacy_id → UUID (already a UUID if it matches, otherwise looks up legacy_id)
+        QUIZ_ID = await resolveQuizId(QUIZ_ID);
+        const { data: res, error } = await window.supabase.from('quizzes').select('title, stream, semester, duration, config_json, enable_geofence, max_radius_meters, campus_lat, campus_lon, send_certificate').eq('id', QUIZ_ID).single();
         if (error) throw error;
         
         document.getElementById('loader').style.display = 'none';
