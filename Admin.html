@@ -4219,13 +4219,7 @@ document.addEventListener('focusout', function(e) {
               <label class="f-label">Password</label>
               <input type="text" id="stdPassword" class="f-input" placeholder="Leave blank to auto-generate">
             </div>
-            <!-- Send email option -->
-            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; background:rgba(249,115,22,0.06); border-radius:8px; border:1px solid rgba(249,115,22,0.2);">
-              <input type="checkbox" id="stdSendEmail" style="width:16px; height:16px; accent-color:var(--primary); cursor:pointer; flex-shrink:0;">
-              <label for="stdSendEmail" style="font-size:0.87rem; color:var(--text); cursor:pointer; line-height:1.4; margin:0;">
-                <strong>Send welcome email</strong> to student with login credentials
-              </label>
-            </div>
+
           </div>
           <div style="display:flex; gap:10px;">
             <button class="btn-primary-admin" id="stdSubmitBtn" onclick="submitStudentForm()" style="flex:1;"><i class="ti ti-user-plus"></i> Create Student Account</button>
@@ -4240,10 +4234,10 @@ document.addEventListener('focusout', function(e) {
           
           <div class="info-box" style="margin-bottom:16px;">
             <strong>Expected CSV Columns:</strong><br>
-            <span style="font-size:0.8rem; color:var(--text-muted);">FullName, RollNo, Email, WhatsApp, Program, Semester, Password, <strong>SendEmail</strong></span><br>
+            <span style="font-size:0.8rem; color:var(--text-muted);">FullName, RollNo, Email, WhatsApp, Program, Semester, Password</span><br>
             <div style="margin-top:8px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
               <a href="javascript:void(0)" onclick="downloadStudentCSVTemplate()" style="color:var(--primary); font-weight:600; text-decoration:underline; font-size:0.8rem;"><i class="ti ti-download"></i> Download Sample Template</a>
-              <span style="font-size:0.75rem; color:var(--text-muted);"><strong>SendEmail</strong>: Yes = send mail &nbsp;|&nbsp; No or blank = skip</span>
+              
             </div>
           </div>
           <input type="file" id="stdCsvFile" accept=".csv,.xlsx,.xls" class="f-input" style="padding:10px;">
@@ -7063,7 +7057,7 @@ function updateStudentSemesterOptions() {
 
 function downloadStudentCSVTemplate() {
   const rows = [
-    'FullName,RollNo,Email,WhatsApp,Program,Semester,Password,SendEmail',
+    'FullName,RollNo,Email,WhatsApp,Program,Semester,Password',
     'John Doe,CS2023001,john@example.com,9876543210,B.Sc.,Sem 1,mypassword123,Yes',
     'Jane Smith,BA2023002,jane@example.com,,B.A.,Sem 2,,No'
   ];
