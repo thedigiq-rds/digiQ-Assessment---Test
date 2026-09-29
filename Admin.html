@@ -1633,7 +1633,7 @@ window.google.script.url = {
     }
     .assess-modal-header h2 {
       font-family: var(--font-heading); font-size: 1.15rem; font-weight: 700;
-      margin: 0 0 4px; color: #fff;
+      margin: 0 0 4px; color: #ffffff !important;
     }
     .assess-modal-meta {
       display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
@@ -5829,7 +5829,7 @@ function openAssessModal(groupId) {
   updateAssessStatus(0, totalMax, group.passPercent);
 
   bodyEl.innerHTML = group.questions.map((q, i) => {
-    const safeQ = String(q.questionText || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const safeQ = q.questionText || '';
     const safeA = String(q.studentAnswer || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const max = Number(q.assignedMarks) || 10;
     const isGraded = !!group.assessorName;
