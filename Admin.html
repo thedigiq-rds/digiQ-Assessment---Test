@@ -9626,6 +9626,10 @@ function epbPrint() {
         qObj.Question = q.qText; qObj.Option1 = q.correctAns; qObj.Option2 = q.correctAns; qObj.AnsIndex = 0; extra.tolerance = q.tolerance;
       } else if (q.type === 'FILL_BLANK') {
         qObj.Question = q.qText; qObj.Option1 = q.correctAns; qObj.Option2 = q.correctAns; qObj.AnsIndex = 0; extra.caseSensitive = q.caseSensitive;
+      } else if (q.type === 'SHORT_ANSWER') {
+        qObj.Type = 'SHORT'; qObj.Question = q.qText; qObj.Option1 = q.correctAns || ''; qObj.Option2 = (q.wordLimit || 50).toString(); qObj.AnsIndex = 0;
+      } else if (q.type === 'ESSAY') {
+        qObj.Type = 'ESSAY'; qObj.Question = q.qText; qObj.Option1 = (q.wordLimit || 500).toString(); qObj.AnsIndex = 0;
       }
       qObj.ExtraData = JSON.stringify(extra);
       finalQs.push(qObj);
