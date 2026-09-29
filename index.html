@@ -2977,11 +2977,27 @@ window.google.script.url = {
   function mapExamData(raw, conf) {
     if (!raw) return [];
     let data = raw.map(q => {
-      let opts = q.option1 !== undefined ? [q.option1, q.option2, q.option3, q.option4].filter(x => x != null) : (q.options || []);
-      let mcqOpts = opts.map((o, i) => ({ text: o, origIndex: i }));
-      if (conf && conf.shuffle_options === true && String(q.type || 'MCQ').toUpperCase() === 'MCQ') {
-        shuffleArray(mcqOpts);
+      let opts = [];
+      let qType = String(q.type || 'MCQ').toUpperCase();
+      
+      if (['MULTIPLE_MCQ', 'STATEMENT_BASED', 'MULTIPLE_STATEMENT', 'CHRONOLOGY'].includes(qType)) {
+        try { opts = JSON.parse(q.option1 || '[]'); } catch(e) { opts = []; }
+      } else if (qType === 'MATCHING') {
+        try {
+          opts = { left: JSON.parse(q.option1 || '[]'), right: JSON.parse(q.option2 || '[]') };
+        } catch(e) { opts = { left: [], right: [] }; }
+      } else {
+        opts = q.option1 !== undefined ? [q.option1, q.option2, q.option3, q.option4].filter(x => x != null && String(x).trim() !== '') : (q.options || []);
       }
+
+      let mcqOpts = [];
+      if (Array.isArray(opts)) {
+        mcqOpts = opts.map((o, i) => ({ text: o, origIndex: i }));
+        if (conf && conf.shuffle_options === true && ['MCQ', 'SINGLE_MCQ'].includes(qType)) {
+          shuffleArray(mcqOpts);
+        }
+      }
+
       return {
         ...q,
         question: q.question_text || q.question || '',
@@ -3681,27 +3697,7 @@ window.google.script.url = {
   /* ──────────────────────────────────────────────────────── */
   /* INTERACTION                                               */
   /* ──────────────────────────────────────────────────────── */
-  
-  function toggleMultiAns(qId, val) {
-    let decoded = String(val).replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/\\'/g, "'");
-    let current = [];
-    try { current = JSON.parse(answers[qId] || "[]"); } catch(e){}
-    if (current.includes(decoded)) current = current.filter(x => x !== decoded);
-    else current.push(decoded);
-    answers[qId] = JSON.stringify(current);
-    renderQuestion();
-    saveStateToLocal();
-    updateProgressUI();
-  }
-  
-  function updateMatchingAns(qId, leftIndex, rightVal) {
-    let current = [];
-    try { current = JSON.parse(answers[qId] || "[]"); } catch(e){}
-    current[leftIndex] = rightVal;
-    answers[qId] = JSON.stringify(current);
-    saveStateToLocal();
-    updateProgressUI();
-  }
+
   
   function updateChronologyAns(qId, orderedArrayStr) {
     answers[qId] = orderedArrayStr;
