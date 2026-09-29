@@ -2745,7 +2745,7 @@ document.addEventListener('focusout', function(e) {
         <div style="margin-bottom:15px; font-size:0.9rem; color:var(--text-dim); text-align:left;">An OTP has been sent to your email. Enter it below to reset your password.</div>
         <div class="f-group" style="text-align:left;">
           <label class="f-label">Secure OTP</label>
-          <input type="text" id="forgotOTP" class="f-input" placeholder="Enter 6-digit OTP" autocomplete="off" maxlength="6" style="text-align:center; font-size:1.2rem; letter-spacing:4px;">
+          <input type="text" id="forgotOTP" class="f-input" placeholder="Enter OTP (6 or 8 digits)" autocomplete="off" maxlength="8" style="text-align:center; font-size:1.2rem; letter-spacing:4px;">
         </div>
         <button class="btn-sage" onclick="verifyForgotPasswordOTP()" style="justify-content:center; text-align:center; margin-bottom:10px;">
           <i class="ti ti-shield-check"></i> Verify OTP
@@ -5247,7 +5247,7 @@ async function requestForgotPasswordOTP() {
 async function verifyForgotPasswordOTP() {
   const email = document.getElementById('forgotEmail').value.trim();
   const otp = document.getElementById('forgotOTP').value.trim();
-  if (!otp || otp.length !== 6) {
+  if (!otp || otp.length < 6) {
     showToast('Please enter the 6-digit OTP.', 'warning');
     return;
   }
