@@ -2183,6 +2183,7 @@ window.google.script.url = {
     .fab-container { display: none !important; }
     .page-header { display: none !important; }
     .desk-only-stats { display: none !important; }
+    .desk-only-refresh { display: none !important; }
 
     /* Compact, two-up analytics cards. The existing Chart.js canvases and
        data remain unchanged; only their mobile presentation is condensed. */
@@ -2924,7 +2925,17 @@ document.addEventListener('focusout', function(e) {
         <button class="toggle-sidebar-btn" onclick="document.getElementById('adminSidebar').classList.toggle('collapsed')"><i class="ti ti-menu-2"></i></button>
         <span class="top-bar-title" id="topBarTitle">Dashboard</span>
       </div>
-      <div class="top-bar-right" style="position: relative;">
+      <div class="top-bar-right" style="position: relative; display: flex; align-items: center; gap: 16px;">
+        <!-- Desktop Refresh Card -->
+        <div class="topbar-info desk-only-refresh" style="background:rgba(255,255,255,0.7); backdrop-filter:blur(4px); padding:6px 12px; border-radius:12px; display:flex; align-items:center; gap:12px; border:1px solid var(--main-border); box-shadow:0 2px 6px rgba(0,0,0,0.04);">
+          <div style="font-size:0.85rem;">
+            <span class="refresh-dot" style="display:inline-block;vertical-align:middle;margin-right:7px;"></span>
+            <span style="color:var(--text-muted);">Updated <span id="last-refresh-time">Loading…</span></span>
+          </div>
+          <button class="btn-primary-admin" id="refreshBtn" onclick="manualRefresh()" style="padding:5px 12px; font-size:0.85rem; border-radius:8px; display:flex; align-items:center; gap:6px;">
+            <i class="ti ti-refresh"></i> Refresh
+          </button>
+        </div>
         <!-- Profile Icon Button in Top Bar -->
         <div class="sb-profile-btn" id="sbProfileBtn" onclick="toggleSbProfile()" style="position:relative; margin-left: 8px;">
           <div class="sb-avatar">
@@ -3053,15 +3064,6 @@ document.addEventListener('focusout', function(e) {
         <div class="page-header" style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
         <div>
           <div class="page-heading"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
-        </div>
-        <div class="topbar-info" style="background:rgba(255,255,255,0.7); backdrop-filter:blur(4px); padding:8px 16px; border-radius:12px; display:flex; align-items:center; gap:16px; border:1px solid var(--main-border); box-shadow:0 2px 6px rgba(0,0,0,0.04);">
-          <div style="font-size:0.85rem;">
-            <span class="refresh-dot" style="display:inline-block;vertical-align:middle;margin-right:7px;"></span>
-            <strong style="color:#0f172a; font-weight:700;">Live Dashboard</strong> <span style="color:var(--text-muted);">&nbsp;·&nbsp; Updated <span id="last-refresh-time">Loading…</span></span>
-          </div>
-          <button class="btn-primary-admin" id="refreshBtn" onclick="manualRefresh()" style="padding:7px 14px; font-size:0.85rem; border-radius:8px; display:flex; align-items:center; gap:6px;">
-            <i class="ti ti-refresh"></i> Refresh
-          </button>
         </div>
       </div>
 
