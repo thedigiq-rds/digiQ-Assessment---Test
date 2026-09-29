@@ -3155,12 +3155,23 @@ document.addEventListener('focusout', function(e) {
               <select id="cqSem" class="f-select" onchange="clearDeployedLinkBox()"></select>
             </div>
             <div>
+              <label class="f-label">Questions to Present</label>
+              <input type="text" id="cqQuestionsToPresent" class="f-input" placeholder="e.g. 10 or All" value="All" oninput="clearDeployedLinkBox()">
+            </div>
+            <div>
               <label class="f-label">Duration (min)</label>
               <input type="number" id="cqTime" class="f-input" placeholder="e.g. 60" min="1" oninput="clearDeployedLinkBox()">
             </div>
+          </div>
+
+          <div class="grid-4" style="margin-bottom:16px;">
             <div>
-              <label class="f-label">Pass Percentage (%)</label>
-              <input type="number" id="cqPass" class="f-input" placeholder="e.g. 40" min="0" max="100" oninput="clearDeployedLinkBox()">
+              <label class="f-label">Marks per question</label>
+              <input type="number" id="cqMarksPerQuestion" class="f-input" placeholder="e.g. 1" value="1" step="0.5" oninput="clearDeployedLinkBox()">
+            </div>
+            <div>
+              <label class="f-label">Negative marking</label>
+              <input type="number" id="cqNegativeMarking" class="f-input" placeholder="e.g. 0.5" value="0" step="0.5" oninput="clearDeployedLinkBox()">
             </div>
           </div>
 
@@ -3191,6 +3202,21 @@ document.addEventListener('focusout', function(e) {
               <div style="color:var(--text-dim); max-width:400px; font-size:0.85rem;">
                 Instructors will manually review student essays and award marks up to this limit.
               </div>
+            </div>
+          </div>
+
+          <!-- Set Passing Percentage -->
+          <div style="margin-bottom:18px;">
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px;">
+              <label class="f-label" style="margin-bottom:0; white-space:nowrap;">Set Passing Percentage</label>
+              <div class="compact-cert-switch">
+                <button type="button" class="cert-pill active-no" id="passBtnNo" onclick="setPassMode(false)">No</button>
+                <button type="button" class="cert-pill" id="passBtnYes" onclick="setPassMode(true)">Yes</button>
+              </div>
+            </div>
+            <div id="pass-settings-panel" style="display:none; margin-top:8px; background:rgba(99,102,241,0.05); border:1px solid rgba(99,102,241,0.15); border-radius:12px; padding:14px;">
+              <label class="f-label" style="margin-bottom:6px;">Passing Percentage (%)</label>
+              <input type="number" id="cqPass" class="f-input" placeholder="e.g. 40" min="0" max="100" oninput="clearDeployedLinkBox()">
             </div>
           </div>
 
@@ -3294,18 +3320,28 @@ document.addEventListener('focusout', function(e) {
           </div>
 
           <!-- Section Configuration -->
-
           <div class="hr-rule"></div>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-            <div>
-              <div class="panel-title">Section Configuration</div>
-              <div class="panel-desc" style="margin-bottom:0;">Define questions per section (must match Excel column names)</div>
+          <div style="margin-bottom:18px;">
+            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:14px;">
+              <div style="flex:1;">
+                <div class="panel-title">Configure Sections</div>
+                <div class="panel-desc" style="margin-bottom:0;">Divide the assessment into multiple sections.</div>
+              </div>
+              <div class="compact-cert-switch">
+                <button type="button" class="cert-pill active-no" id="sectionsBtnNo" onclick="setSectionsMode(false)">No</button>
+                <button type="button" class="cert-pill" id="sectionsBtnYes" onclick="setSectionsMode(true)">Yes</button>
+              </div>
             </div>
-            <button type="button" class="btn-outline" onclick="addSectionRow()" style="padding:9px 16px;">+ Add Section</button>
-          </div>
-          <div id="sections-container"></div>
-          <div id="sections-placeholder" style="background:rgba(99,102,241,0.05); border:1.5px dashed rgba(99,102,241,0.25); border-radius: 12px; padding:16px; text-align:center; color:var(--text-muted); margin-bottom:18px; font-size:0.88rem; line-height:1.5;">
-            <i class="ti ti-info-circle"></i> No sections configured. All questions will be under a single section named after the Assessment Title.
+            <div id="sections-settings-panel" style="display:none; padding:14px; background:rgba(99,102,241,0.02); border:1px solid rgba(99,102,241,0.15); border-radius:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                <div class="panel-desc" style="margin-bottom:0;">Define questions per section (must match Excel column names)</div>
+                <button type="button" class="btn-outline" onclick="addSectionRow()" style="padding:9px 16px;">+ Add Section</button>
+              </div>
+              <div id="sections-container"></div>
+              <div id="sections-placeholder" style="background:rgba(99,102,241,0.05); border:1.5px dashed rgba(99,102,241,0.25); border-radius: 12px; padding:16px; text-align:center; color:var(--text-muted); margin-bottom:18px; font-size:0.88rem; line-height:1.5;">
+                <i class="ti ti-info-circle"></i> No sections configured. All questions will be under a single section named after the Assessment Title.
+              </div>
+            </div>
           </div>
 
         </div>
@@ -3418,6 +3454,8 @@ document.addEventListener('focusout', function(e) {
               <h4>Add Question</h4>
             </div>
             <div class="cfb-qt-list">
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('SHORT_ANSWER')"><i class="ti ti-text-size"></i> Short Answer</button>
+              <button class="cfb-qt-btn" onclick="mbAddQuestion('ESSAY')"><i class="ti ti-align-left"></i> Essay / Descriptive</button>
               <button class="cfb-qt-btn" onclick="mbAddQuestion('SINGLE_MCQ')"><i class="ti ti-circle-dot"></i> Single Correct MCQ</button>
               <button class="cfb-qt-btn" onclick="mbAddQuestion('MULTIPLE_MCQ')"><i class="ti ti-square-check"></i> Multiple Correct MCQ</button>
               <button class="cfb-qt-btn" onclick="mbAddQuestion('TRUE_FALSE')"><i class="ti ti-toggle-right"></i> True / False</button>
@@ -6675,13 +6713,15 @@ async function processQuizCreation() {
   const title = document.getElementById('cqTitle').value.trim();
   if (!title) { showToast('Please enter a quiz title.', 'warning'); loader.style.display='none'; hideLoader(); btn.disabled=false; return; }
 
-  const sections = []; let validationPassed = true;
-  document.querySelectorAll('.sec-row').forEach(r => {
-    const sName = r.querySelector('.sec-name').value.trim(); const sPick = parseInt(r.querySelector('.sec-pick').value);
-    if (!sName) { showToast('Section name cannot be empty.', 'warning'); validationPassed = false; }
-    if (isNaN(sPick) || sPick < 1) { showToast('Questions to present must be a positive number.', 'warning'); validationPassed = false; }
-    sections.push({ name: sName, pick: sPick });
-  });
+  let sections = []; let validationPassed = true;
+  if (document.getElementById('sectionsBtnYes') && document.getElementById('sectionsBtnYes').classList.contains('active-yes')) {
+    document.querySelectorAll('.sec-row').forEach(r => {
+      const sName = r.querySelector('.sec-name').value.trim(); const sPick = parseInt(r.querySelector('.sec-pick').value);
+      if (!sName) { showToast('Section name cannot be empty.', 'warning'); validationPassed = false; }
+      if (isNaN(sPick) || sPick < 1) { showToast('Questions to present must be a positive number.', 'warning'); validationPassed = false; }
+      sections.push({ name: sName, pick: sPick });
+    });
+  }
   if (!validationPassed) { loader.style.display='none'; hideLoader(); btn.disabled=false; return; }
 
   const file = document.getElementById('cqFile').files[0];
@@ -6699,6 +6739,9 @@ async function processQuizCreation() {
 
   const payload = {
     title, sections, stream: document.getElementById('cqStream').value, sem: document.getElementById('cqSem').value,
+    questionsToPresent: document.getElementById('cqQuestionsToPresent')?.value.trim() || 'All',
+    marksPerQuestion: parseFloat(document.getElementById('cqMarksPerQuestion')?.value) || 1,
+    negativeMarking: parseFloat(document.getElementById('cqNegativeMarking')?.value) || 0,
     duration, passPercent: passPercent || '0', sendCert: _certEnabled ? "Yes" : "No", certDocId: _certEnabled ? certDocId : '',
     sendResultEmail: _emailEnabled ? "Yes" : "No",
     customMsg: document.getElementById('cqMsg').value || `Dear {{name}}, your assessment result is ready. Score: {{score}}.`,
@@ -6738,7 +6781,7 @@ async function processQuizCreation() {
 
       const dbPayload = {
         title: payload.title, stream: payload.stream, semester: payload.sem,
-        duration: parseInt(payload.duration) || 0, pass_percent: parseInt(payload.passPercent) || 0,
+        duration: parseInt(payload.duration) || 0, pass_percent: (payload.passPercent === '' || payload.passPercent === '0') ? null : (parseInt(payload.passPercent) || 0),
         custom_msg: payload.customMsg || null, send_certificate: payload.sendCert === "Yes",
         cert_doc_id: payload.certDocId || null, enable_geofence: payload.enableGeofence === "Yes",
         max_radius_meters: parseInt(payload.maxRadiusMeters) || null, campus_lat: parseFloat(payload.campusLat) || null,
@@ -6748,7 +6791,10 @@ async function processQuizCreation() {
         config_json: { 
           sections: payload.sections || [],
           shuffle_questions: payload.shuffleQuestions === "Yes",
-          shuffle_options: payload.shuffleOptions === "Yes"
+          shuffle_options: payload.shuffleOptions === "Yes",
+          questions_to_present: payload.questionsToPresent,
+          marks_per_question: payload.marksPerQuestion,
+          negative_marking: payload.negativeMarking
         }
       };
 
@@ -6763,8 +6809,8 @@ async function processQuizCreation() {
           option3: optionsArr[2] || null,
           option4: optionsArr[3] || null,
           ans_index: parseInt(q.AnsIndex !== undefined ? q.AnsIndex : q.answer) || 0,
-          marks: parseFloat(q.Marks || q.marks) || 1,
-          negative_marks: parseFloat(q.NegativeMarks || q.negMarks) || 0,
+          marks: (q.Marks !== undefined && q.Marks !== '') ? parseFloat(q.Marks) : ((q.marks !== undefined && q.marks !== '') ? parseFloat(q.marks) : payload.marksPerQuestion),
+          negative_marks: (q.NegativeMarks !== undefined && q.NegativeMarks !== '') ? parseFloat(q.NegativeMarks) : ((q.negMarks !== undefined && q.negMarks !== '') ? parseFloat(q.negMarks) : payload.negativeMarking),
           extra_data: q.ExtraData || q.extra || q.Extra || {}
         };
       });
@@ -9351,6 +9397,8 @@ function epbPrint() {
     else if (type === 'MULTIPLE_STATEMENT') { newQ.statements = ['', '', '']; newQ.options = ['1 & 2', '2 & 3', '1 & 3', 'All of the above']; newQ.correctIdx = 3; }
     else if (type === 'NUMERICAL') { newQ.correctAns = ''; newQ.tolerance = 0; }
     else if (type === 'FILL_BLANK') { newQ.correctAns = ''; newQ.caseSensitive = false; }
+    else if (type === 'SHORT_ANSWER') { newQ.correctAns = ''; newQ.wordLimit = 50; }
+    else if (type === 'ESSAY') { newQ.wordLimit = 500; }
     mbQuestions.push(newQ);
     mbRenderQuestions();
     setTimeout(() => { const el = document.getElementById(qId); if(el) el.scrollIntoView({ behavior:'smooth' }); }, 120);
