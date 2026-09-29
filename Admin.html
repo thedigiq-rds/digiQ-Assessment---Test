@@ -1262,7 +1262,7 @@ window.google.script.url = {
       color: var(--text-dim); cursor: pointer; transition: all 0.18s;
       font-family: var(--font-primary);
     }
-    .cert-pill.active-no  { background: var(--main-surface); color: var(--text-dim); }
+    .cert-pill.active-no  { background: #ef4444; color: #fff; border-color: #ef4444; }
     .cert-pill.active-yes { background: var(--primary); color: #fff; }
 
     #cert-doc-panel { display: none; align-items: center; gap: 10px; flex: 1; min-width: 250px; }
@@ -3139,10 +3139,10 @@ document.addEventListener('focusout', function(e) {
             <input type="text" id="cqTitle" class="f-input" placeholder="e.g. Mid-Semester English Assessment" oninput="clearDeployedLinkBox()">
           </div>
 
-          <div class="grid-4" style="margin-bottom:16px;">
+          <div style="display:grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom:16px;">
             <div>
-              <label class="f-label">Stream</label>
-              <select id="cqStream" class="f-select" onchange="updateSemesterOptions(); clearDeployedLinkBox()">
+              <label class="f-label" style="font-size:0.8rem;">Stream</label>
+              <select id="cqStream" class="f-select" style="padding:8px;" onchange="updateSemesterOptions(); clearDeployedLinkBox()">
                 <option value="B.A.">B.A.</option>
                 <option value="B.Sc.">B.Sc.</option>
                 <option value="B.Com.">B.Com.</option>
@@ -3151,27 +3151,24 @@ document.addEventListener('focusout', function(e) {
               </select>
             </div>
             <div>
-              <label class="f-label">Semester</label>
-              <select id="cqSem" class="f-select" onchange="clearDeployedLinkBox()"></select>
+              <label class="f-label" style="font-size:0.8rem;">Semester</label>
+              <select id="cqSem" class="f-select" style="padding:8px;" onchange="clearDeployedLinkBox()"></select>
             </div>
             <div>
-              <label class="f-label">Questions to Present</label>
-              <input type="text" id="cqQuestionsToPresent" class="f-input" placeholder="e.g. 10 or All" value="All" oninput="clearDeployedLinkBox()">
+              <label class="f-label" style="font-size:0.8rem; white-space:nowrap;">Max Questions</label>
+              <input type="text" id="cqQuestionsToPresent" class="f-input" style="padding:8px;" placeholder="e.g. 10 or All" value="All" oninput="clearDeployedLinkBox()">
             </div>
             <div>
-              <label class="f-label">Duration (min)</label>
-              <input type="number" id="cqTime" class="f-input" placeholder="e.g. 60" min="1" oninput="clearDeployedLinkBox()">
-            </div>
-          </div>
-
-          <div class="grid-4" style="margin-bottom:16px;">
-            <div>
-              <label class="f-label">Marks per question</label>
-              <input type="number" id="cqMarksPerQuestion" class="f-input" placeholder="e.g. 1" value="1" step="0.5" oninput="clearDeployedLinkBox()">
+              <label class="f-label" style="font-size:0.8rem;">Duration</label>
+              <input type="number" id="cqTime" class="f-input" style="padding:8px;" placeholder="mins" min="1" oninput="clearDeployedLinkBox()">
             </div>
             <div>
-              <label class="f-label">Negative marking</label>
-              <input type="number" id="cqNegativeMarking" class="f-input" placeholder="e.g. 0.5" value="0" step="0.5" oninput="clearDeployedLinkBox()">
+              <label class="f-label" style="font-size:0.8rem;">Marks</label>
+              <input type="number" id="cqMarksPerQuestion" class="f-input" style="padding:8px;" placeholder="1" value="1" step="0.5" oninput="clearDeployedLinkBox()">
+            </div>
+            <div>
+              <label class="f-label" style="font-size:0.8rem; white-space:nowrap;">Neg Marks</label>
+              <input type="number" id="cqNegativeMarking" class="f-input" style="padding:8px;" placeholder="0" value="0" step="0.5" oninput="clearDeployedLinkBox()">
             </div>
           </div>
 
@@ -6646,6 +6643,40 @@ function setGeoMode(enabled, isEditMode = false) {
 }
 
 let _emailEnabled = false;
+
+function setPassMode(isYes) {
+  const btnYes = document.getElementById('passBtnYes');
+  const btnNo = document.getElementById('passBtnNo');
+  const panel = document.getElementById('pass-settings-panel');
+  if(isYes) {
+    if(btnYes) { btnYes.classList.add('active-yes'); btnYes.classList.remove('active-no'); }
+    if(btnNo) { btnNo.classList.remove('active-no','active-yes'); }
+    if(panel) panel.style.display = 'block';
+  } else {
+    if(btnNo) { btnNo.classList.add('active-no'); btnNo.classList.remove('active-yes'); }
+    if(btnYes) { btnYes.classList.remove('active-yes','active-no'); }
+    if(panel) panel.style.display = 'none';
+    if(document.getElementById('cqPass')) document.getElementById('cqPass').value = '';
+  }
+}
+
+function setSectionsMode(isYes) {
+  const btnYes = document.getElementById('sectionsBtnYes');
+  const btnNo = document.getElementById('sectionsBtnNo');
+  const panel = document.getElementById('sections-settings-panel');
+  if(isYes) {
+    if(btnYes) { btnYes.classList.add('active-yes'); btnYes.classList.remove('active-no'); }
+    if(btnNo) { btnNo.classList.remove('active-no','active-yes'); }
+    if(panel) panel.style.display = 'block';
+  } else {
+    if(btnNo) { btnNo.classList.add('active-no'); btnNo.classList.remove('active-yes'); }
+    if(btnYes) { btnYes.classList.remove('active-yes','active-no'); }
+    if(panel) panel.style.display = 'none';
+    if(document.getElementById('sections-container')) document.getElementById('sections-container').innerHTML = '';
+    if(typeof updateSectionsPlaceholder === 'function') updateSectionsPlaceholder();
+  }
+}
+
 function setEmailMode(enabled) {
   _emailEnabled = enabled;
   const btnYes = document.getElementById('emailBtnYes'); const btnNo = document.getElementById('emailBtnNo');
