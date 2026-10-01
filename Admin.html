@@ -4594,14 +4594,20 @@ document.addEventListener('focusout', function(e) {
     <div id="cfb-forms-list-grid" class="cfb-grid">
       <div class="cfb-empty">
         <div class="cfb-empty-icon"><i class="ti ti-forms"></i></div>
-        <div class="cfb-empty-title">Loading forms...</div>
-        <div class="cfb-empty-sub">Please wait</div>
+        <div class="cfb-empty-title">No Forms created</div>
+        <div class="cfb-empty-sub">Click + New Form to get started</div>
       </div>
     </div>
   </div>
 
   <!-- Editor (hidden by default) -->
   <div id="cfb-view-editor" style="display:none;">
+    <!-- Form meta card -->
+    <div class="cfb-form-meta" style="margin-bottom: 16px;">
+      <input class="cfb-form-title-input" id="cfb-f-title" type="text" placeholder="Form Title" oninput="cfbMarkDirty()">
+      <textarea class="cfb-form-desc-input" id="cfb-f-desc" placeholder="Form description (optional)" oninput="cfbMarkDirty()" rows="2"></textarea>
+    </div>
+
     <!-- View sub-tabs -->
     <div class="cfb-view-tabs" id="cfb-sub-tabs">
       <div class="cfb-view-tab active" data-view="build"     onclick="cfbSwitchView('build')"><i class="ti ti-pencil"></i> Build</div>
@@ -4633,11 +4639,6 @@ document.addEventListener('focusout', function(e) {
       </div>
       <!-- Right: Canvas -->
       <div class="cfb-canvas" id="cfb-canvas">
-        <!-- Form meta card -->
-        <div class="cfb-form-meta">
-          <input class="cfb-form-title-input" id="cfb-f-title" type="text" placeholder="Form Title" oninput="cfbMarkDirty()">
-          <textarea class="cfb-form-desc-input" id="cfb-f-desc" placeholder="Form description (optional)" oninput="cfbMarkDirty()" rows="2"></textarea>
-        </div>
         <!-- Questions injected here by cfbRenderCanvas() -->
         <div id="cfb-questions-container" style="display:flex; flex-direction:column; gap:14px;"></div>
         <div style="text-align:center; padding:16px 0;">
@@ -9400,8 +9401,35 @@ function epbPrint() {
     mbSections.forEach(s => {
       const btn = document.createElement('button');
       btn.className = s.id === mbActiveSection ? 'cfb-btn cfb-btn-primary cfb-btn-sm' : 'cfb-btn cfb-btn-secondary cfb-btn-sm';
-      btn.innerText = s.name;
+      btn.style.display = 'inline-flex';
+      btn.style.alignItems = 'center';
+      btn.style.gap = '6px';
+      
+      const textSpan = document.createElement('span');
+      textSpan.innerText = s.name;
+      
+      const editIcon = document.createElement('i');
+      editIcon.className = 'ti ti-pencil';
+      editIcon.style.fontSize = '0.9em';
+      editIcon.style.opacity = '0.7';
+      editIcon.title = 'Rename section';
+      
+      editIcon.onmouseover = () => editIcon.style.opacity = '1';
+      editIcon.onmouseout = () => editIcon.style.opacity = '0.7';
+      
+      editIcon.onclick = (e) => {
+        e.stopPropagation();
+        const newName = prompt('Enter new name for section:', s.name);
+        if(newName && newName.trim() !== '') {
+          s.name = newName.trim();
+          mbRenderTabs();
+        }
+      };
+      
       btn.onclick = () => { mbActiveSection = s.id; mbRenderTabs(); mbRenderQuestions(); };
+      
+      btn.appendChild(textSpan);
+      btn.appendChild(editIcon);
       cont.appendChild(btn);
     });
   }
