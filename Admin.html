@@ -2491,6 +2491,13 @@ window.google.script.url = {
       line-height: 1.2;
     }
     
+    
+    .cfb-q-card { flex-direction: row !important; }
+    .cfb-q-card .mb-card-header { flex-direction: column; width: 140px; flex-shrink: 0; border-bottom: none !important; border-right: 1px solid var(--main-border); align-items: flex-start !important; justify-content: flex-start !important; gap: 16px; }
+    .cfb-q-card .mb-card-body { flex: 1; min-width: 0; }
+    .cfb-q-card .mb-card-header span { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+    .cfb-q-card .mb-type-badge { margin-top: 4px; }
+
     /* Main Content adjustments */
     .main-content { width: 100% !important; margin: 0; border: none; border-radius: 0; box-shadow: none; background: #fafafc; flex: 1; flex-direction: column; overflow-y: auto; overflow-x: hidden; padding: 0 !important; }
     
@@ -3725,12 +3732,14 @@ document.addEventListener('focusout', function(e) {
                     <option value="3">3</option><option value="4">4</option>
                     <option value="5">5</option><option value="6">6</option>
                     <option value="7">7</option><option value="8">8</option>
-                  </select>
-                </div>
+                                </div>
+              <div>
+                <label class="epb-label">5. Subject</label>
+                <input type="text" id="epb-subject" oninput="epbUpdatePreview()" class="epb-input" placeholder="e.g. English">
               </div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
                 <div>
-                  <label class="epb-label">5. Paper Type</label>
+                  <label class="epb-label">6. Paper Type</label>
                   <select id="epb-papertype" onchange="epbUpdatePreview()" class="epb-input epb-select">
                     <option value=""></option>
                     <option value="Major">Major</option><option value="Minor">Minor</option>
@@ -3739,25 +3748,25 @@ document.addEventListener('focusout', function(e) {
                   </select>
                 </div>
                 <div>
-                  <label class="epb-label">6. Paper Code</label>
+                  <label class="epb-label">7. Paper Code</label>
                   <input type="text" id="epb-papercode" oninput="epbUpdatePreview()" class="epb-input" placeholder="e.g. PHY-301">
                 </div>
               </div>
               <div>
-                <label class="epb-label">7. Title of Paper</label>
+                <label class="epb-label">8. Title of Paper</label>
                 <input type="text" id="epb-title" oninput="epbUpdatePreview()" class="epb-input" placeholder="e.g. Quantum Mechanics">
               </div>
               <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
                 <div>
-                  <label class="epb-label">8. Exam Date</label>
+                  <label class="epb-label">9. Exam Date</label>
                   <input type="date" id="epb-date" oninput="epbUpdatePreview()" class="epb-input">
                 </div>
                 <div>
-                  <label class="epb-label">9. Total Marks</label>
+                  <label class="epb-label">10. Total Marks</label>
                   <input type="text" id="epb-marks" oninput="epbUpdatePreview()" class="epb-input" placeholder="e.g. 80">
                 </div>
                 <div>
-                  <label class="epb-label">10. Duration</label>
+                  <label class="epb-label">11. Duration</label>
                   <input type="text" id="epb-time" oninput="epbUpdatePreview()" class="epb-input" placeholder="3 Hours">
                 </div>
               </div>
@@ -3820,6 +3829,7 @@ document.addEventListener('focusout', function(e) {
                         <div style="display:flex; align-items:center; gap:4px; font-size:0.68rem; font-family:sans-serif; color:#000;">
                           <span id="epb-preview-program" style="font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:3px; border:1px solid #000;  display:none;"></span>
                           <span id="epb-preview-semester-box" style="font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:3px; border:1px solid #000;  display:none;">Sem <span id="epb-preview-semester"></span></span>
+                          <span id="epb-preview-subject" style="font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:3px; border:1px solid #000;  display:none;"></span>
                           <span id="epb-preview-papertype" style="font-weight:700; background:#f1f5f9; padding:2px 6px; border-radius:3px; border:1px solid #000;  display:none;"></span>
                         </div>
                         <span style="font-size:0.62rem; font-family:sans-serif; font-weight:700; background:#f1f5f9; color:#000; padding:4px 6px; border-radius:3px; border:1px solid #000; ">Paper Code: <span id="epb-preview-papercode"></span></span>
@@ -4452,7 +4462,7 @@ document.addEventListener('focusout', function(e) {
   .cfb-qt-btn:hover { border-color:var(--primary-lt,#818cf8); background:#f0f1ff; color:var(--primary,#6366f1); }
 
   /* Canvas */
-  .cfb-canvas { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:16px; }
+  .cfb-canvas { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:16px; min-width: 0; }
   .cfb-form-meta { background:#f8fafc; border:1.5px solid var(--main-border); border-radius:12px; padding:20px; }
   .cfb-form-meta input, .cfb-form-meta textarea { width:100%; border:none; background:transparent; font-family:'Poppins',sans-serif; outline:none; }
   .cfb-form-meta input.cfb-form-title-input { font-size:1.4rem; font-weight:700; color:var(--text); }
@@ -9164,6 +9174,7 @@ function epbUpdatePreview() {
   setText('epb-preview-academicyear', get('epb-academicyear'));
   var prog = get('epb-program'); showEl('epb-preview-program', !!prog); setText('epb-preview-program', prog);
   var sem = get('epb-semester'); showEl('epb-preview-semester-box', !!sem); setText('epb-preview-semester', sem);
+  var subj = get('epb-subject'); showEl('epb-preview-subject', !!subj); setText('epb-preview-subject', subj);
   var pt = get('epb-papertype'); showEl('epb-preview-papertype', !!pt); setText('epb-preview-papertype', pt);
   setText('epb-preview-papercode', get('epb-papercode'));
   setText('epb-preview-title', get('epb-title'));
