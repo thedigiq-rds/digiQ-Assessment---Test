@@ -1039,9 +1039,15 @@ window.google.script.url = {
        PANELS / CARDS
     ═══════════════════════════════════════════════════════ */
     .panel {
-      background: var(--color-surface); border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px;
-      box-shadow: var(--shadow-sm); max-width: 100%; overflow: hidden;
+      background: transparent !important; 
+      border: none;
+      border-top: 1px solid var(--color-border) !important;
+      border-radius: 0 !important; 
+      padding: 32px 0 0 0 !important; 
+      margin-top: 16px;
+      margin-bottom: 32px;
+      box-shadow: none !important; 
+      max-width: 100%; 
     }
     .panel-title { font-family: var(--font-heading); font-size: 1.1rem; font-weight: 600; color: var(--color-text-main); margin-bottom: 4px; }
     .panel-desc  { color: var(--color-text-muted); font-size: 0.9rem; margin-bottom: 24px; }
@@ -1584,7 +1590,7 @@ window.google.script.url = {
         grid-template-columns: 1fr 1fr !important; gap: 12px !important;
       }
       .stats-grid { padding: 0 8px !important; }
-      .panel { padding: 16px 14px !important; }
+      .panel { padding: 24px 0 0 0 !important; }
       .login-split-container {
         flex-direction: column !important; max-width: 420px !important;
         min-height: unset !important; border-radius: 22px !important;
@@ -3099,7 +3105,7 @@ document.addEventListener('focusout', function(e) {
         <div class="chart-box"><div class="chart-copy"><div class="chart-label">By Stream</div><div class="chart-metric" id="chart-stat-streams">—</div></div><div class="chart-canvas-wrap"><canvas id="chart-streamshare"></canvas></div></div>
       </div>
 
-      <div style="margin-top: 24px;">
+      <div class="panel" style="margin-top: 24px;">
         <div class="panel-title">Recent Submissions</div>
         <div class="panel-desc">Latest 10 responses across all your assessments</div>
         <div style="overflow-x:auto;">
