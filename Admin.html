@@ -2541,7 +2541,7 @@ window.google.script.url = {
     
     /* ═════════ CFB (Form Builder & Analytics) MOBILE OVERRIDES ═════════ */
     .cfb-builder-wrap { flex-direction: column; height: auto !important; border: none; background: transparent; }
-    .cfb-builder-sidebar { width: 100%; border-right: none; border-bottom: 1.5px solid var(--main-border); border-radius: 12px 12px 0 0; }
+    .cfb-builder-sidebar { width: 100%; border-right: none; border-bottom: 1.5px solid var(--main-border); border-radius: 0; }
     .cfb-qt-list { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; padding: 12px; gap: 8px; -webkit-overflow-scrolling: touch; }
     .cfb-qt-btn { flex-shrink: 0; white-space: nowrap; padding: 8px 14px; }
     .cfb-canvas { padding: 16px 0; overflow: visible; }
@@ -4464,8 +4464,8 @@ document.addEventListener('focusout', function(e) {
   .cfb-empty-sub   { font-size:0.9rem; color:var(--text-muted); }
 
   /* Builder layout */
-  .cfb-builder-wrap { display:flex; gap:0; border:1.5px solid var(--main-border); border-radius:16px; background:#fff; }
-  .cfb-builder-sidebar { width:260px; flex-shrink:0; border-right:1.5px solid var(--main-border); display:flex; flex-direction:column; background:#f8fafc; }
+  .cfb-builder-wrap { display:flex; gap:0; border:none !important; border-radius:0 !important; background:transparent !important; }
+  .cfb-builder-sidebar { width:260px; flex-shrink:0; border-right:1px solid var(--main-border); display:flex; flex-direction:column; background:transparent !important; border-radius:0 !important; }
   .cfb-builder-sidebar-head { padding:16px; border-bottom:1px solid var(--main-border); }
   .cfb-builder-sidebar-head h4 { font-size:0.85rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); margin:0; }
   .cfb-qt-list { padding:12px; display:flex; flex-direction:column; gap:6px; }
@@ -4474,7 +4474,7 @@ document.addEventListener('focusout', function(e) {
 
   /* Canvas */
   .cfb-canvas { flex:1; padding:24px; display:block; min-width: 0; }
-  .cfb-form-meta { background:#f8fafc; border:1.5px solid var(--main-border); border-radius:12px; padding:20px; }
+  .cfb-form-meta { background:transparent; border:none; border-bottom:1px solid var(--color-border); border-radius:0; padding:20px 0; margin-bottom: 24px; }
   .cfb-form-meta input, .cfb-form-meta textarea { width:100%; border:none; background:transparent; font-family:'Poppins',sans-serif; outline:none; }
   .cfb-form-meta input.cfb-form-title-input { font-size:1.4rem; font-weight:700; color:var(--text); }
   .cfb-form-meta textarea.cfb-form-desc-input { font-size:0.9rem; color:var(--text-muted); resize:none; margin-top:8px; min-height:40px; }
