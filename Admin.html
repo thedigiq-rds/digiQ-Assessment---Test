@@ -4474,11 +4474,12 @@ document.addEventListener('focusout', function(e) {
 
   /* Canvas */
   .cfb-canvas { flex:1; padding:24px; display:block; min-width: 0; }
-  .cfb-form-meta { background:transparent; border:none; border-bottom:1px solid var(--color-border); border-radius:0; padding:20px 0; margin-bottom: 24px; }
+  .cfb-form-meta { background:transparent; border:none; border-bottom:1px solid var(--color-border); border-radius:0; padding:20px 24px; margin-bottom: 24px; }
   .cfb-form-meta input, .cfb-form-meta textarea { width:100%; border:none; background:transparent; font-family:'Poppins',sans-serif; outline:none; }
   .cfb-form-meta input.cfb-form-title-input { font-size:1.4rem; font-weight:700; color:var(--text); }
   .cfb-form-meta textarea.cfb-form-desc-input { font-size:0.9rem; color:var(--text-muted); resize:none; margin-top:8px; min-height:40px; }
   
+  #cfb-questions-container { display: flex; flex-direction: column; gap: 14px; }
   /* Question card */
   .cfb-q-card { background:#fff; border:1.5px solid var(--main-border); border-radius:12px; padding:18px; display:flex; gap:12px; transition:border-color 0.15s, box-shadow 0.15s; position:relative; }
   .cfb-q-card:hover { border-color:var(--primary-lt,#818cf8); box-shadow:0 4px 12px rgba(99,102,241,0.07); }
@@ -4659,10 +4660,10 @@ document.addEventListener('focusout', function(e) {
         </div>
       </div>
       <!-- Right: Canvas -->
-      <div class="cfb-canvas" id="cfb-canvas" style="display: flex !important; flex-direction: column !important; justify-content: flex-start !important; margin-top: 0 !important; align-items: stretch !important;">
+      <div class="cfb-canvas" id="cfb-canvas">
         <!-- Questions injected here by cfbRenderCanvas() -->
-        <div id="cfb-questions-container" style="display: flex !important; flex-direction: column !important; justify-content: flex-start !important; margin-top: 0 !important; flex-grow: 0 !important; gap:14px;"></div>
-        <div style="text-align:center; padding:16px 0; margin-top:16px; flex-grow: 0 !important;">
+        <div id="cfb-questions-container"></div>
+        <div style="text-align:center; padding:16px 0; margin-top:16px;">
           <button class="cfb-btn cfb-btn-secondary" onclick="cfbAddQuestion('short_answer')"><i class="ti ti-plus"></i> Add Question</button>
         </div>
       </div>
